@@ -1,9 +1,12 @@
 # Registro de decisões (ADR) — FauvoVet
 
+> **Atenção:** a ADR-010 (15/10/2026) trocou a stack para PHP + MySQL por causa da hospedagem contratada.
+> As ADRs 002, 003, 005 e 009 ficam registradas como histórico e estão **substituídas** (ver ADR-010).
+
 Formato: contexto → decisão → consequências (benefício, custo, risco, compatibilidade Locaweb). Decisões são
 reversíveis salvo indicação.
 
-## ADR-001 — Monorepo pnpm com TypeScript estrito (2026-10-15)
+## ADR-001 — Monorepo pnpm com TypeScript estrito (2026-10-15) — **SUBSTITUÍDA pela ADR-010** (Node/pnpm agora só para build e testes)
 
 - **Decisão:** pnpm workspaces (`apps/*`, `packages/*`), TypeScript 6.0.3 fixado, Node 24 (`mise.toml`, `.nvmrc`),
   `packageManager: pnpm@12.4.2`.
@@ -11,7 +14,7 @@ reversíveis salvo indicação.
   ecossistema de lint. Reavaliar quando houver suporte.
 - **Consequência:** sem Turborepo/Nx por ora (menos dependências); `pnpm -r` basta no tamanho atual.
 
-## ADR-002 — NestJS 12 + SQL explícito com `pg` (sem ORM nesta fase) (2026-10-15)
+## ADR-002 — NestJS 12 + SQL explícito com `pg` (sem ORM nesta fase) (2026-10-15) — **SUBSTITUÍDA pela ADR-010**
 
 - **Contexto:** o CLAUDE.md sugere Prisma ou Drizzle "após avaliar RLS e migrações".
 - **Decisão:** migrações em SQL puro versionadas com checksum (`apps/api/migrations`, runner próprio de ~60 linhas) e
@@ -22,7 +25,7 @@ reversíveis salvo indicação.
 - **Custos/risco:** menos tipagem automática de linhas. Mitigação: DTOs em `packages/contracts` e testes de integração
   contra banco real. Reavaliar Drizzle (query builder tipado compatível com SQL manual) na Fase 1.
 
-## ADR-003 — Multi-tenant em banco compartilhado com RLS (2026-10-15)
+## ADR-003 — Multi-tenant em banco compartilhado com RLS (2026-10-15) — **SUBSTITUÍDA pela ADR-010**
 
 - **Decisão:** coluna `tenant_id` + `ENABLE ROW LEVEL SECURITY` com políticas `USING` e `WITH CHECK` baseadas em
   `app.current_tenant_id()`; papel da aplicação sem posse das tabelas e sem `BYPASSRLS`; papel de migração separado.
@@ -34,7 +37,7 @@ reversíveis salvo indicação.
   têm RLS: o usuário vê a si mesmo e os membros do tenant ativo; sessões só do próprio usuário.
 - **Futuro:** tenants grandes podem migrar para banco dedicado mantendo a API (o contexto continua por sessão).
 
-## ADR-004 — Sessão opaca em cookie HttpOnly + CSRF por token de sessão (2026-10-15)
+## ADR-004 — Sessão opaca em cookie HttpOnly + CSRF por token de sessão (2026-10-15) — princípios mantidos; implementação atual na ADR-010
 
 - **Decisão:** token aleatório de 256 bits no cookie `fv_session` (`HttpOnly`, `SameSite=Lax`, `Secure` em produção,
   `Path=BASE_PATH`); apenas o SHA-256 é guardado. Mutações exigem `X-CSRF-Token` (token por sessão, comparação em tempo
@@ -45,7 +48,7 @@ reversíveis salvo indicação.
   inexistente e senha errada, com verificação de hash fictício para equalizar tempo.
 - **Pendências:** MFA para perfis privilegiados, recuperação de senha por e-mail e gestão de dispositivos (Fase 1/5).
 
-## ADR-005 — PostgreSQL local sem root/Docker via binários `embedded-postgres` (2026-10-15)
+## ADR-005 — PostgreSQL local sem root/Docker via binários `embedded-postgres` (2026-10-15) — **SUBSTITUÍDA pela ADR-010**
 
 - **Contexto:** a máquina de desenvolvimento (WSL2 Ubuntu 26.04) não tem `sudo` sem senha e o Docker Desktop não está
   integrado à distro. O CLAUDE.md prioriza Docker Compose.
@@ -71,7 +74,7 @@ reversíveis salvo indicação.
 - Unicidade global permitiria descobrir se um CPF/CNPJ já é cliente do FauvoVet (enumeração entre tenants). Validamos
   apenas dígitos verificadores. Deduplicação comercial fica para o painel Superadmin auditado.
 
-## ADR-009 — Web: Next.js 16 App Router, sessão no cliente, tokens CSS próprios (2026-10-15)
+## ADR-009 — Web: Next.js 16 App Router, sessão no cliente, tokens CSS próprios (2026-10-15) — **SUBSTITUÍDA pela ADR-010**
 
 - **Decisão:** `apps/web` com Next.js 16.4 + React 19 + Tailwind CSS 4. Páginas autenticadas são _client components_
   que consultam `GET /auth/me` e `/tenant`; a autorização real permanece na API (a UI apenas esconde o que o papel não
@@ -86,3 +89,41 @@ reversíveis salvo indicação.
   CSP com nonce via `proxy.ts` quando houver renderização dinâmica — registrado em `docs/IDEAS.md`.
 - **Custo/risco:** checagem de sessão no cliente causa um _skeleton_ breve na primeira carga; sem SSR de dados sensíveis
   (bom para cache/CDN, nada clínico em HTML estático).
+
+## ADR-010 — Stack PHP 8 + Laravel 13 + MySQL 5.7+, isolamento multi-tenant em camadas no código (2026-10-15)
+
+**Contexto.** O proprietário informou o plano real: **Hospedagem Dedicada Locaweb 4 GB**, só painel, **sem SSH**,
+banco **MySQL** do painel, domínio já apontado. Pela documentação pública da Locaweb, a hospedagem de sites Linux
+suporta **PHP** e MySQL; Node.js persistente não é oferecido. A stack anterior (NestJS + Next.js + PostgreSQL com RLS)
+não roda nesse plano. O proprietário pediu reescrita sem PostgreSQL, com foco em segurança e multi-tenant, seguindo o
+modelo de outro projeto dele já operado na Locaweb (Laravel + Vite, Node só para build local, deploy por FTP).
+
+**Decisão.**
+
+- Backend **Laravel 13** (PHP ≥ 8.3; `config.platform.php = 8.3.0` para o `vendor/` funcionar em 8.3–8.5),
+  Blade + **Alpine (build CSP)** + Tailwind 4 compilados localmente pelo Vite; só `public/build` vai ao servidor.
+- **MySQL/Percona 5.7+** (sem recursos exclusivos do 8.0). Local e CI usam Percona 5.7.44 sem root
+  (`scripts/local-mysql.mjs`, checksum SHA-256 fixado).
+- **Isolamento sem RLS, em camadas** (detalhes em `docs/SECURITY.md`):
+  1. clínica ativa vem **só da sessão no servidor** e é revalidada a cada requisição (`ResolveTenant`);
+  2. escopo obrigatório que **falha fechado** (`BelongsToTenant` + `TenantScope`): sem clínica ativa, a consulta não executa;
+  3. **firewall de SQL** (`TenantQueryFirewall`, antes de cada consulta): bloqueia SQL em tabela de clínica sem
+     `tenant_id`, ou cujo valor não seja o da clínica ativa;
+  4. **FKs compostas** `(tenant_id, x_id)` no banco impedem relacionar dados de clínicas diferentes;
+  5. testes de arquitetura: toda tabela com `tenant_id` precisa estar no firewall; todo model de clínica implementa `TenantOwned`.
+- Deploy **sem SSH**: `pnpm deploy:package` monta `app-fauvovet/` (fora da web) e `public_html/fauvovet/`; migrações e
+  caches por endpoints HTTP protegidos (`/_deploy/*`: flag + token SHA-256 + limite em arquivo).
+- Sessão no banco, cookie criptografado `HttpOnly`/`SameSite=Lax`/`Path=/fauvovet` (`Secure` com HTTPS), CSRF do
+  Laravel (token + origem) sem cookie `XSRF-TOKEN`, CSP com nonce sem `unsafe-inline`/`unsafe-eval`.
+
+**Consequências.**
+
+- **Mais fraco que RLS** num ponto: o banco não sabe qual é a clínica ativa; uma consulta escrita com `withoutGlobalScopes`
+  ou SQL bruto é barrada pelo firewall (heurístico), não pelo motor do banco. Mitigação: firewall + testes que tentam
+  burlá-lo + revisão. Registrado como risco aceito em `docs/SECURITY.md`.
+- Auditoria "somente inclusão" é garantida pela aplicação (model bloqueia UPDATE/DELETE); a hospedagem compartilhada
+  normalmente não permite trigger/usuários separados no MySQL.
+- A busca clínica (Fase 2) será feita com `FULLTEXT` do InnoDB + tabelas de índice próprias por clínica; avaliar
+  qualidade em português (stopwords, acentos) antes de prometer paridade com `tsvector` (ver `docs/IDEAS.md`).
+- O código Node/NestJS/Next anterior permanece no histórico do Git (commits `7d303af`, `4a9ade7`).
+- **Reversível:** se a hospedagem mudar para VPS, a aplicação Laravel roda igual; o isolamento em camadas continua válido.

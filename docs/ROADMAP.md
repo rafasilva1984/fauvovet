@@ -1,30 +1,28 @@
 # Roadmap — FauvoVet
 
-Ordem conforme CLAUDE.md §11. Atualizado em 2026-10-15.
+Ordem conforme CLAUDE.md §11. Atualizado em 2026-10-15 (stack PHP/MySQL — ADR-010).
 
 ## Fase 0 — Fundação (em andamento)
 
-- [x] Monorepo pnpm, TypeScript estrito, ESLint, Prettier, `.gitattributes`, `.env.example`, MIT, CI.
-- [x] PostgreSQL local reproduzível sem root (embedded) + migrações versionadas com checksum.
-- [x] API: login/logout, sessão segura, CSRF, seleção de tenant/unidade, RBAC inicial, onboarding, unidades, tema, auditoria, health.
-- [x] RLS + suíte de isolamento com dois tenants (HTTP e banco).
-- [x] Scripts: `bootstrap`, `dev`, `db:*`, `verify`, `docs:validate`, `security:secrets`, `perf:check`, `smoke`.
-- [x] Web: design system inicial (tokens + tema por tenant), login, cadastro, seleção de contexto, shell responsivo, painel por função, unidades, equipe, aparência.
-- [x] E2E Playwright desktop + mobile, axe WCAG AA (claro/escuro), Web Vitals de laboratório.
-- [ ] Docker Compose (dev e VPS) testado em ambiente com Docker.
-- [ ] Política mínima de backup documentada e testada (restore).
+- [x] Stack compatível com a hospedagem (Laravel 13, PHP ≥ 8.3, MySQL 5.7+, sem SSH) e CI com PHP 8.3.
+- [x] MySQL local reproduzível sem root (Percona 5.7) + migrações.
+- [x] Login, sessão segura, escolha de clínica/unidade, RBAC, cadastro de clínica, unidades, equipe (leitura), aparência, auditoria.
+- [x] Isolamento em 5 camadas + suíte com duas clínicas.
+- [x] Interface responsiva (Blade + Alpine CSP + Tailwind), E2E desktop/celular, axe AA.
+- [x] Kit de deploy sem SSH (pacote, token, migração/diagnóstico via HTTP, smoke) ensaiado localmente.
+- [ ] **Primeiro deploy de teste na Locaweb** (aguarda dados do painel: PHP, MySQL, HTTPS). ← próximo
+- [ ] HTTPS ativo + backup/restauração testados (bloqueante para dados reais).
 
 ## Fase 1 — MVP clínico operável
 
-Gestão de usuários (convite, recuperação, MFA), responsáveis e pacientes, agenda, atendimento/prontuário com bloqueio e
-adendos, anexos privados, modelos básicos + PDF, UI premium mobile.
+Gestão de equipe (convite, papéis, desativação), recuperação de senha, MFA do titular; responsáveis e pacientes
+(espécies amplas), agenda, atendimento/prontuário com bloqueio e adendos, anexos privados, modelos básicos + PDF (dompdf).
 
 ## Fase 2 — Busca clínica e importação documental
 
-`ClinicalSearchService` sobre PostgreSQL FTS (pt-BR + `unaccent` + `pg_trgm`), facetas, trechos, origem; worker com fila
-para extração PDF/DOCX/DOC; templates por tenant com versões. Aceite: casos 1–10 de CLAUDE.md §3.3.
+Busca com FULLTEXT do InnoDB e índice próprio por clínica (avaliar qualidade em português), facetas e trechos com
+origem; extração de PDF/DOCX em PHP (fila `database` + cron); templates por clínica com versões. Aceite: CLAUDE.md §3.3.
 
 ## Fases 3–6
 
-Consolidação clínica (vacinas, exames, internação, cirurgia, portal), gestão comercial, integrações e SaaS comercial,
-inteligência assistida — ver CLAUDE.md §11.
+Ver CLAUDE.md §11.

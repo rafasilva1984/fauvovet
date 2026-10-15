@@ -1,15 +1,13 @@
 # Ideias e melhorias propostas — FauvoVet
 
-| Ideia                                                          | Impacto | Urgência                        | Custo | Dependências            | Justificativa                                                         |
-| -------------------------------------------------------------- | ------- | ------------------------------- | ----- | ----------------------- | --------------------------------------------------------------------- |
-| Rate limit em Redis                                            | Alto    | Antes de >1 réplica             | Baixo | Redis                   | Limitador atual é por processo                                        |
-| Verificação de e-mail no onboarding                            | Alto    | Antes de abrir cadastro público | Médio | Provedor de e-mail      | Evita contas com e-mail de terceiros e reduz enumeração               |
-| Avaliar Drizzle como query builder tipado                      | Médio   | Fase 1                          | Médio | ADR-002                 | Tipagem de linhas sem perder SQL/RLS explícitos                       |
-| Atualizar `last_seen_at` da sessão com _throttle_              | Baixo   | Fase 1                          | Baixo | —                       | Gestão de dispositivos e expiração por inatividade                    |
-| gitleaks + `pnpm audit` na CI                                  | Médio   | Fase 0/1                        | Baixo | —                       | Complementa varredura local simples                                   |
-| Docker Compose testado (dev + VPS)                             | Alto    | Fase 0                          | Médio | Ambiente com Docker     | Requisito de deploy Locaweb VPS                                       |
-| Teste automatizado de contraste do tema padrão em claro/escuro | Médio   | Incremento web                  | Baixo | —                       | Garantir WCAG AA do tema FauvoVet                                     |
-| CSP com nonce (via `proxy.ts`)                                 | Médio   | Antes da produção               | Médio | Renderização dinâmica   | Remover `'unsafe-inline'` de `script-src`                             |
-| Fontes self-hosted com licença OFL                             | Baixo   | Fase 1                          | Baixo | Avaliar licença         | Identidade tipográfica sem depender de fontes do sistema              |
-| Busca global no topo (atalho `/`)                              | Alto    | Fase 2                          | Alto  | `ClinicalSearchService` | Espaço reservado no cabeçalho; não exibir controle antes de funcionar |
-| Encerrar processos filhos do `pnpm dev` ao receber SIGTERM     | Baixo   | Fase 1                          | Baixo | —                       | `timeout`/kill do pai deixa `tsc --watch` órfão (Ctrl+C funciona)     |
+> Revisado em 2026-10-15 após a troca de stack (ADR-010); ideias da stack Node foram removidas.
+
+| Ideia                                                                                           | Impacto | Urgência                        | Custo | Dependências       | Justificativa                                                                    |
+| ----------------------------------------------------------------------------------------------- | ------- | ------------------------------- | ----- | ------------------ | -------------------------------------------------------------------------------- |
+| Verificação de e-mail no onboarding                                                             | Alto    | Antes de abrir cadastro público | Médio | Provedor de e-mail | Evita contas com e-mail de terceiros e reduz enumeração                          |
+| Busca clínica em MySQL: FULLTEXT InnoDB × tabela de termos normalizados (sem acento, sinônimos) | Alto    | Fase 2                          | Médio | ADR-010            | MySQL não tem `tsvector`/`unaccent`; medir relevância em pt-BR antes de escolher |
+| Criação da primeira clínica sem ligar o cadastro público (endpoint de deploy protegido)         | Médio   | Antes da produção               | Baixo | —                  | Evita janela com cadastro aberto                                                 |
+| Script de envio por FTPS automatizado (como no outro projeto)                                   | Médio   | Após 1º deploy manual           | Médio | Dados do FTP       | Menos erro manual; manter FileZilla como alternativa                             |
+| Backup lógico agendado (dump via cron do painel) + teste de restauração                         | Alto    | Antes de dados reais            | Médio | Cron do painel     | A hospedagem pode não ter backup automático                                      |
+| gitleaks na CI (além da varredura local)                                                        | Médio   | Fase 1                          | Baixo | —                  | Detecção de segredos mais completa                                               |
+| Busca global no topo (atalho `/`)                                                               | Alto    | Fase 2                          | Alto  | Busca clínica      | Reservar espaço; não exibir controle antes de funcionar                          |

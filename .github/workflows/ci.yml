@@ -15,23 +15,31 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+
+      # PHP 8.3 = versão mínima suportada (composer.json › config.platform.php). A hospedagem pode usar 8.3–8.5.
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, mbstring, intl, sodium, zip
+          coverage: none
+          tools: composer:v2
 
       - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version-file: .nvmrc
+          node-version: '24'
           cache: pnpm
 
-      # Mesmo fluxo do desenvolvedor: .env fictício + PostgreSQL embutido (sem serviços externos).
-      - name: Bootstrap (PostgreSQL embutido, migrações e seed fictício)
+      # Mesmo fluxo do desenvolvedor: .env fictício + MySQL/Percona 5.7 local (sem serviços externos).
+      - name: Bootstrap (MySQL local, migrações, seed fictício, build)
         run: pnpm bootstrap
 
-      - name: Navegador do Playwright (Chromium + dependências do sistema)
-        run: pnpm --filter @fauvovet/web exec playwright install --with-deps chromium
+      - name: Navegador do Playwright
+        run: pnpm exec playwright install --with-deps chromium
 
       - name: Gate obrigatório (pnpm verify --e2e)
         run: pnpm verify --e2e
@@ -41,9 +49,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: apps/web/playwright-report
+          path: playwright-report
           retention-days: 7
 
-      - name: Parar PostgreSQL local
+      - name: Parar MySQL local
         if: always()
         run: pnpm db:stop

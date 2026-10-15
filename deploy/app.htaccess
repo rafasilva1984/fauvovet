@@ -1,0 +1,2 @@
+# Proteção extra: se app-fauvovet/ algum dia ficar dentro de uma pasta pública por engano, nada é servido.
+Require all denied

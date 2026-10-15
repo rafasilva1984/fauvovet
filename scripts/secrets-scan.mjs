@@ -12,7 +12,7 @@ const files = execFileSync('git', ['ls-files', '--cached', '--others', '--exclud
 })
   .split('\n')
   .filter(Boolean)
-  .filter((f) => !/(^|\/)pnpm-lock\.yaml$/.test(f));
+  .filter((f) => !/(^|\/)(pnpm-lock\.yaml|composer\.lock)$/.test(f));
 
 const RULES = [
   { name: 'Chave privada', re: /-----BEGIN (RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----/ },
@@ -20,6 +20,7 @@ const RULES = [
   { name: 'Chave AWS', re: /\bAKIA[0-9A-Z]{16}\b/ },
   { name: 'Chave Anthropic/OpenAI', re: /\bsk-(ant-)?[A-Za-z0-9_-]{30,}\b/ },
   { name: 'Token Slack', re: /\bxox[baprs]-[A-Za-z0-9-]{10,}\b/ },
+  { name: 'APP_KEY real do Laravel', re: /APP_KEY=base64:[A-Za-z0-9+/]{40,}={0,2}/ },
   {
     name: 'URL com senha não-dev',
     re: /\b[a-z]+:\/\/[^\s:@/]+:(?!dev-only-)[^\s@/]{6,}@(?!127\.0\.0\.1|localhost|postgres[:/])[^\s/]+/i,
@@ -28,7 +29,8 @@ const RULES = [
 const FORBIDDEN_FILES = [
   /(^|\/)\.env$/,
   /(^|\/)\.env\.(?!example$)[^/]+$/,
-  /\.(pem|key|p12|pfx|dump|backup)$/i,
+  /\.(pem|key|p12|pfx|dump|backup|sql)$/i,
+  /(^|\/)auth\.json$/,
 ];
 
 let problems = 0;
@@ -61,6 +63,4 @@ if (problems) {
   console.error(`\n${problems} problema(s) encontrado(s). Remova os segredos antes de commitar.`);
   process.exit(1);
 }
-console.log(
-  `✔ Varredura de segredos: ${files.length} arquivos verificados, nenhum segredo encontrado.`,
-);
+console.log(`✔ Varredura de segredos: ${files.length} arquivos verificados, nenhum segredo encontrado.`);

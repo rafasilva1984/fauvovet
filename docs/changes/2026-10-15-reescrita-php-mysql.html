@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FauvoVet — Reescrita para PHP/Laravel + MySQL (hospedagem sem SSH)</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #1a2935; background: #f4f7f8; line-height: 1.65; }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 20px 80px; }
+    header { border-radius: 20px; padding: 32px; color: white; background: linear-gradient(120deg, #0b4652, #1a7375); }
+    header p { color: #e1f5f0; margin-bottom: 0; }
+    h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.2; margin: 0; }
+    h2 { font-size: 1.2rem; margin: 0 0 12px; }
+    section { margin-top: 20px; background: #fff; padding: 24px; border: 1px solid #dee7e8; border-radius: 14px; }
+    p, li { overflow-wrap: anywhere; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    pre { overflow-x: auto; border-radius: 8px; padding: 14px; color: #e9fbff; background: #172b32; }
+    .tag { display: inline-block; font-size: 0.8rem; font-weight: 700; border: 1px solid #f5cf83; background: #fff8e4; color: #7a4b12; border-radius: 30px; padding: 3px 10px; }
+    .note { border-left: 4px solid #338b96; padding-left: 12px; }
+    .todo { color: #9e3d26; font-weight: 650; }
+    table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+    th, td { padding: 10px; border-bottom: 1px solid #e0e7e8; text-align: left; }
+    small { color: #52646d; }
+    .pass { color: #116b3a; font-weight: 700; }
+    .notrun { color: #8a5a00; font-weight: 700; }
+    .warn { border-left: 4px solid #c27c0e; background: #fff8e4; padding: 10px 12px; border-radius: 6px; }
+    h3 { font-size: 1rem; margin: 18px 0 8px; }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e4eef0; background: #0f1a1e; }
+      section { background: #15242a; border-color: #23373e; }
+      th, td { border-color: #23373e; }
+      .warn { background: #2a2210; }
+      small { color: #9fb3ba; }
+      .pass { color: #5fd28f; } .notrun { color: #f0b54a; } .todo { color: #ff9b85; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="tag">INCREMENTO IMPLEMENTADO — FASE 0 · SUBSTITUI A STACK ANTERIOR</span>
+      <h1>Reescrita para PHP 8 + Laravel 13 + MySQL, com isolamento multi-tenant em camadas</h1>
+      <p>ID: <strong>2026-10-15-reescrita-php-mysql</strong> · Data: <strong>15/10/2026</strong> · Versão: <strong>0.2.0</strong> · Módulos: <strong>A. Tenants, §5 Isolamento, §7 UI, §9 Deploy</strong> · Estado: <strong>implementado e testado localmente; deploy na Locaweb ainda não executado</strong></p>
+    </header>
+
+    <section>
+      <h2>1. Objetivo e contexto</h2>
+      <p>O plano contratado é <strong>Hospedagem Dedicada Locaweb 4 GB, só painel, sem SSH, com MySQL</strong>. A stack anterior (NestJS + Next.js + PostgreSQL com RLS) exigia Node.js persistente e PostgreSQL, que esse plano não oferece. A pedido do proprietário, a aplicação foi reescrita em <strong>PHP/Laravel + MySQL</strong>, seguindo o modelo de outro projeto dele já operado na Locaweb (Node só para compilar CSS/JS localmente; deploy por FTP), <strong>sem perder o isolamento entre clínicas</strong> (ADR-010).</p>
+      <p><strong>Critério de aceite:</strong> todas as funcionalidades da fundação anterior funcionando na nova stack; isolamento entre duas clínicas provado em cada camada; pacote de deploy ensaiado em modo produção (migração e caches via HTTP, sem terminal); <code>pnpm verify --e2e</code> verde.</p>
+    </section>
+
+    <section>
+      <h2>2. O que mudou</h2>
+      <p><strong>Removido</strong> (permanece no histórico do Git, commits <code>7d303af</code> e <code>4a9ade7</code>): <code>apps/api</code> (NestJS), <code>apps/web</code> (Next.js), <code>packages/contracts</code>, scripts do PostgreSQL embutido.</p>
+      <p><strong>Adicionado:</strong></p>
+      <ul>
+        <li><strong>Laravel 13.36</strong> na raiz (PHP ≥ 8.3; <code>config.platform.php=8.3.0</code> → Symfony 7.4 LTS, para o <code>vendor/</code> rodar em 8.3–8.5).</li>
+        <li><strong>Isolamento</strong> (<code>app/Tenancy</code>): <code>TenantContext</code>, <code>TenantScope</code> + <code>BelongsToTenant</code> (falha fechada), <code>TenantOwned</code>, <code>TenantQueryFirewall</code> (antes de cada SQL), <code>Roles</code>; middlewares <code>ResolveTenant</code> (antes do route model binding), <code>RequirePermission</code>, <code>SecurityHeaders</code> (CSP com nonce), <code>RequestContext</code>, <code>PreventRequestForgery</code> (sem cookie XSRF), <code>DeployRateLimit</code>.</li>
+        <li><strong>Migrações MySQL 5.7+</strong>: <code>2026_10_15_000001_create_identity_tables</code> (users, sessions, cache, jobs) e <code>2026_10_15_000002_create_tenancy_tables</code> (tenants, units, memberships, membership_units com FKs compostas, tenant_themes, audit_events).</li>
+        <li><strong>Telas</strong> (Blade + Alpine build CSP + Tailwind 4): login, cadastro PF/PJ, escolha de clínica/unidade, painel por função, unidades (lista/criação/detalhe), equipe, aparência, erros 403/404/419/429/500/503 em pt-BR.</li>
+        <li><strong>Deploy sem SSH</strong>: <code>deploy/public/index.php</code> + <code>.htaccess</code>, <code>deploy/env.production.example</code>, endpoints <code>/_deploy/diagnostico|migrar|otimizar</code> (flag + token SHA-256 + limite em arquivo), scripts <code>deploy:package</code>, <code>deploy:token</code>, <code>deploy:remote</code>, <code>smoke</code>.</li>
+        <li><strong>Ambiente local sem root</strong>: <code>scripts/local-mysql.mjs</code> (Percona Server 5.7.44 com SHA-256 conferido, <code>libaio</code> e <code>pdo_mysql</code> extraídos dos pacotes do Ubuntu), <code>scripts/php.mjs</code>, <code>scripts/dev-router.php</code> (imita <code>/fauvovet</code>).</li>
+        <li><strong>Qualidade</strong>: PHPUnit (55 testes), Larastan nível 6, Pint, Prettier, <code>composer audit</code>, Playwright (14 cenários × 2 dispositivos), benchmark, CI com PHP 8.3.</li>
+      </ul>
+      <p><strong>Falhas encontradas e corrigidas pelos testes nesta reescrita:</strong> (1) cor da clínica não aparecia na tela — o CSS base sobrescrevia o tema (achado pelo E2E); (2) dados de layout de uma clínica reaproveitados na requisição seguinte em processo persistente (achado pelo teste de isolamento; corrigido com reset por requisição e memo amarrado à clínica); (3) ID de outra clínica na URL respondia 302 em vez de 404 (escopo rodava antes da clínica ativa); (4) ferramentas de deploy quebravam antes da 1ª migração (rate limit dependia da tabela <code>cache</code>); (5) IDs do seed inválidos como ULID; (6) <code>verify</code> injetava o <code>.env</code> de desenvolvimento nos testes — a guarda <code>*_test</code> recusou, como projetado.</p>
+    </section>
+
+    <section>
+      <h2>3. Pré-requisitos (WSL2 e Git Bash)</h2>
+      <ul>
+        <li><strong>PHP 8.3+</strong> com <code>mbstring</code>, <code>intl</code>, <code>sodium</code> (verificado: 8.5.4). <code>pdo_mysql</code>: extraído automaticamente no Ubuntu/Debian ou <code>sudo apt install php8.x-mysql</code>.</li>
+        <li><strong>Composer 2</strong> (verificado: 2.10.3). <strong>Node 24 + pnpm 12.4.2</strong> só para build/testes.</li>
+        <li><strong>MySQL</strong>: opcional — <code>pnpm bootstrap</code> baixa Percona 5.7 (~86 MB) para <code>.data/</code>, porta <code>33079</code>, só <code>127.0.0.1</code>.</li>
+        <li>Portas: 33079 (MySQL), 8000 (dev), 8100 (E2E), 8300 (benchmark).</li>
+        <li>Variáveis: <code>.env.example</code> (valores fictícios). Produção: <code>deploy/env.production.example</code>.</li>
+      </ul>
+      <p class="warn"><strong>Git Bash/macOS:</strong> NOT RUN. O MySQL automático é só Linux x86_64; nesses ambientes use MySQL próprio e <code>pnpm bootstrap --external-db</code>.</p>
+    </section>
+
+    <section>
+      <h2>4. Passo a passo para aplicar a mudança</h2>
+      <h3>Instalação nova ou existente (a stack mudou: trate como nova)</h3>
+      <pre><code>git pull --ff-only
+rm -rf node_modules apps packages          # restos da stack anterior, se existirem
+pnpm bootstrap                             # composer, pnpm, APP_KEY, MySQL local, migrações, seed, build
+pnpm dev                                   # http://127.0.0.1:8000/fauvovet</code></pre>
+      <p>Resultado esperado do bootstrap: <code>Bancos fauvovet_dev, fauvovet_test ... prontos</code>, <code>Seed fictício: 2 clínicas, 3 unidades, 6 usuários</code> e <code>Ambiente pronto</code>. O PostgreSQL local antigo (<code>.data/pg</code>) não é mais usado e pode ser apagado.</p>
+      <h3>Deploy na Locaweb</h3>
+      <p>Passo a passo completo e numerado em <code>docs/DEPLOY_LOCAWEB.md</code> (pacote, FileZilla, <code>.env</code> no servidor, <code>deploy:remote diagnostico → migrar → otimizar</code>, criação da 1ª clínica, desligar ferramentas, smoke).</p>
+    </section>
+
+    <section>
+      <h2>5. Como testar</h2>
+      <pre><code>pnpm db:start
+pnpm verify --e2e            # gate completo (resumo PASS/FAIL no final)
+pnpm test:tenant-isolation   # só isolamento (19 testes)
+pnpm perf:check              # baseline</code></pre>
+      <h3>Manual (senha = <code>SEED_PASSWORD</code> do <code>.env</code>)</h3>
+      <ol>
+        <li><code>ana.titular@aurora.exemplo.test</code> → escolha “Aurora — Centro” → painel de gestão; Unidades → crie uma; Aparência → <code>#808080</code> bloqueia o salvar, <code>#1d4e89</code> salva e a cor muda na tela.</li>
+        <li><code>bruno.vet@…</code> → menu só com Painel e Unidades; abrir <code>/fauvovet/equipe</code> → 403.</li>
+        <li><code>diana.titular@horizonte.exemplo.test</code> → só “Atendimento domiciliar”; abrir <code>/fauvovet/unidades/01K7FV000000000000000TNA01</code> (unidade da Aurora) → 404.</li>
+        <li><code>eva.plantonista@exemplo.test</code> → troca entre as duas clínicas; nada se mistura.</li>
+        <li>No celular (ou DevTools): barra inferior, menu ☰ com “Trocar clínica/unidade” e “Sair”.</li>
+      </ol>
+      <h3>Tentativas que DEVEM falhar (todas cobertas por teste)</h3>
+      <ul>
+        <li><code>tenant_id</code> de outra clínica em formulário, URL ou cabeçalho → ignorado; dado gravado na clínica da sessão.</li>
+        <li>Consulta sem clínica ativa → bloqueada. <code>DB::table('units')->get()</code>, <code>withoutGlobalScopes()</code>, SQL bruto, filtro com ID de outra clínica → bloqueados pelo firewall.</li>
+        <li>Vincular unidade de B a vínculo de A no banco → erro de FK composta.</li>
+        <li>POST sem token CSRF → 419; ferramentas de deploy sem token → 404; 6ª tentativa/min → 429.</li>
+        <li>Senha errada 10× → bloqueio temporário; 11 tentativas no mesmo e-mail → 429.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>6. Performance e usabilidade</h2>
+      <p><strong>Benchmark</strong> (<code>pnpm perf:check</code>, 150 requisições após 15 de aquecimento, PHP embutido com opcache, Percona 5.7 local, i7-12700H, WSL2; <em>não é o PHP-FPM da Locaweb</em> — referência relativa):</p>
+      <table><thead><tr><th>Rota</th><th>p50</th><th>p95</th><th>p99</th></tr></thead><tbody>
+        <tr><td>GET /login (anônimo)</td><td>16,9 ms</td><td>22,3 ms</td><td>25,6 ms</td></tr>
+        <tr><td>GET /painel</td><td>30,1 ms</td><td>37,1 ms</td><td>46,9 ms</td></tr>
+        <tr><td>GET /unidades</td><td>28,1 ms</td><td>35,7 ms</td><td>39,0 ms</td></tr>
+        <tr><td>GET /equipe</td><td>28,7 ms</td><td>34,6 ms</td><td>36,5 ms</td></tr>
+      </tbody></table>
+      <p><strong>Web Vitals de laboratório</strong> (E2E, sem throttling): LCP login 64–76 ms e painel 56–92 ms; CLS 0; transferido ~98 KB por página. Assets: JS 23,6 KB e CSS 5,9 KB comprimidos (gzip). INP e rede móvel simulada: NOT RUN.</p>
+      <p><strong>Acessibilidade:</strong> axe WCAG 2.0/2.1/2.2 A/AA sem violações em login, cadastro, contexto, painel, unidades, aparência e equipe (claro) e login/painel (escuro), desktop e Pixel 7. Nenhuma violação de CSP no console (Alpine CSP).</p>
+    </section>
+
+    <section>
+      <h2>7. Publicação na Locaweb / FileZilla (se aplicável)</h2>
+      <p><strong>Compatível com o plano informado</strong> (PHP + MySQL, sem SSH). Ainda <strong>não publicado</strong>: aguarda a versão do PHP no painel (≥ 8.3), os dados do MySQL e a verificação de HTTPS. Procedimento completo em <code>docs/DEPLOY_LOCAWEB.md</code>; resumo:</p>
+      <pre><code>pnpm verify --e2e
+pnpm deploy:package        # .deploy/fauvovet-&lt;versão&gt;/{app-fauvovet, public_html/fauvovet}
+pnpm deploy:token          # token (gerenciador de senhas) + DEPLOY_TOKEN_SHA256 (.env do servidor)
+# FileZilla (SFTP/FTPS): app-fauvovet/ → raiz do FTP ; public_html/fauvovet/ → public_html/fauvovet/
+export FAUVOVET_DEPLOY_TOKEN='...'
+pnpm deploy:remote https://dradeboragakdino.com.br/fauvovet diagnostico
+pnpm deploy:remote https://dradeboragakdino.com.br/fauvovet migrar
+pnpm deploy:remote https://dradeboragakdino.com.br/fauvovet otimizar
+SMOKE_URL=https://dradeboragakdino.com.br/fauvovet pnpm smoke</code></pre>
+      <p><strong>Ensaio realizado</strong> (simulação fiel em <code>.data/prodsim</code>: pacote real, <code>index.php</code> de produção apontando para <code>../../app-fauvovet</code>, <code>APP_ENV=production</code>, <code>APP_DEBUG=false</code>, banco vazio): diagnóstico 200 (PHP 8.5.4, nenhuma extensão faltando, 2 migrações pendentes) → migrar 200 → otimizar (config/route/view cache = 0) → cadastro 302 para o painel → <code>pnpm smoke</code> 6/6 PASS → nenhum arquivo de log de erro. Limitação: o servidor do ensaio não lê <code>.htaccess</code>; as regras do Apache serão verificadas no primeiro deploy real.</p>
+      <p class="warn">Sem HTTPS: apenas teste com dados fictícios; <code>SESSION_SECURE_COOKIE=true</code> e certificado ativo são obrigatórios antes de qualquer dado real.</p>
+    </section>
+
+    <section>
+      <h2>8. Backup e rollback</h2>
+      <ul>
+        <li><strong>Código:</strong> <code>git revert</code> deste commit volta à stack Node/PostgreSQL anterior (que não roda na hospedagem atual). No servidor, rollback = reenviar o pacote <code>.deploy/</code> da versão anterior (guarde cada pacote publicado).</li>
+        <li><strong>Banco:</strong> migrações são forward-only. Antes de qualquer deploy com migração nova, faça backup pelo painel; reverter = restaurar o backup.</li>
+        <li><strong>Local:</strong> dados fictícios e recriáveis. Para recomeçar: <code>pnpm db:stop</code>, mover <code>.data/mysql</code> para fora do projeto e <code>pnpm db:setup &amp;&amp; pnpm db:migrate &amp;&amp; pnpm db:seed</code>.</li>
+        <li><strong>Emergência em produção:</strong> renomear <code>public_html/fauvovet/index.php</code> pelo FileZilla.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>9. Troubleshooting</h2>
+      <table><thead><tr><th>Sintoma</th><th>Causa / ação</th></tr></thead><tbody>
+        <tr><td><code>pdo_mysql ausente</code> / <code>could not find driver</code></td><td>Rode <code>pnpm db:setup</code> (extrai a extensão) e use os comandos via <code>pnpm</code>/<code>node scripts/php.mjs</code>; ou instale <code>php8.x-mysql</code>.</td></tr>
+        <tr><td><code>Testes recusados: banco "fauvovet_dev"</code> / <code>migrate:fresh recusado</code></td><td>Guarda de segurança: algo injetou <code>DB_DATABASE</code> de desenvolvimento. Rode pelos comandos do projeto.</td></tr>
+        <tr><td>Página com <code>Bloqueado pelo firewall de clínicas</code> no log (<code>tenant_firewall_blocked</code>)</td><td>Consulta em tabela de clínica sem escopo — use o model com <code>BelongsToTenant</code>; não use SQL bruto.</td></tr>
+        <tr><td>E2E “Já existe um servidor”</td><td>Encerre o processo na porta 8100 (<code>ss -ltnp | grep 8100</code>).</td></tr>
+        <tr><td>Deploy: 500 em tudo antes de migrar</td><td>Normal (tabelas <code>sessions</code>/<code>cache</code> ausentes). Rode <code>deploy:remote … migrar</code>.</td></tr>
+        <tr><td><code>diagnostico</code> 404</td><td>Ferramentas desligadas, token errado, ou cache de configuração antigo: apague <code>app-fauvovet/bootstrap/cache/config.php</code>.</td></tr>
+      </tbody></table>
+      <p><strong>Limitações conhecidas:</strong> sem RLS — firewall heurístico (risco aceito, documentado); sem MFA/recuperação de senha/convites; backup automático não configurado; HTTPS do domínio não verificado.</p>
+    </section>
+
+    <section>
+      <h2>10. Evidências e rastreabilidade</h2>
+      <table><thead><tr><th>Validação</th><th>Status</th><th>Evidência/observação</th></tr></thead>
+      <tbody>
+        <tr><td>Testes unitários + integração (MySQL 5.7 real)</td><td class="pass">PASS</td><td>55/55 (<code>pnpm test</code>), ~5,5 s</td></tr>
+        <tr><td>Isolamento multi-tenant</td><td class="pass">PASS</td><td>19/19 (<code>pnpm test:tenant-isolation</code>) + E2E de isolamento</td></tr>
+        <tr><td>E2E desktop/mobile</td><td class="pass">PASS</td><td>28/28 (Desktop Chrome + Pixel 7), ~42 s</td></tr>
+        <tr><td>Análise estática / formatação / auditoria</td><td class="pass">PASS</td><td>PHPStan nível 6 sem erros; Pint; Prettier; <code>composer audit</code> sem vulnerabilidades</td></tr>
+        <tr><td>Performance</td><td class="pass">PASS (baseline)</td><td>seção 6</td></tr>
+        <tr><td>Build / pacote / ensaio de produção</td><td class="pass">PASS</td><td><code>pnpm deploy:package</code> (6.582 arquivos, manifesto SHA-256) + simulação + smoke 6/6</td></tr>
+        <tr><td>Deploy real na Locaweb</td><td class="notrun">NOT RUN</td><td>aguarda dados do painel (PHP, MySQL, HTTPS)</td></tr>
+        <tr><td>CI com PHP 8.3</td><td class="notrun">NOT RUN</td><td>executa após o push; resultado registrado em <code>docs/PROGRESS.md</code></td></tr>
+        <tr><td>Git Bash</td><td class="notrun">NOT RUN</td><td>ambiente indisponível</td></tr>
+        <tr><td>Documentação e Git remoto</td><td class="pass">PASS</td><td><code>pnpm docs:validate</code>; commit/push registrados em <code>docs/PROGRESS.md</code></td></tr>
+      </tbody></table>
+      <p class="note"><strong>Commit:</strong> “refactor!: reescreve FauvoVet em PHP/Laravel + MySQL para hospedagem sem SSH” na <code>main</code> (hash em <code>docs/PROGRESS.md</code>). Guias anteriores (stack substituída): <a href="2026-10-15-fundacao-api-multitenant.html">fundação API</a>, <a href="2026-10-15-web-shell-login.html">web</a>. <strong>Próxima ação:</strong> primeiro deploy de teste na Locaweb com os dados do painel.</p>
+    </section>
+  </main>
+</body>
+</html>

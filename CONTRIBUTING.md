@@ -1,24 +1,26 @@
 # Contribuindo com o FauvoVet
 
-1. Faça fork/branch descritiva (`feat/agenda-semana`, `fix/csrf-origin`).
-2. `pnpm bootstrap` e desenvolva com `pnpm dev`.
-3. Cada incremento deve trazer: testes (inclusive **isolamento entre dois tenants** quando tocar dados), migração SQL
-   nova (nunca editar uma migração já aplicada — o checksum impede), guia HTML em `docs/changes/AAAA-MM-DD-slug.html`
-   a partir do `TEMPLATE.html`, e atualização de `docs/PROGRESS.md`.
-4. Rode `pnpm verify` antes do push. Ele precisa terminar com todas as etapas `PASS`.
-5. Abra PR descrevendo o que funciona, o que foi testado, pendências e riscos.
+1. Branch descritiva (`feat/agenda-semana`, `fix/firewall-join`), `pnpm bootstrap`, `pnpm dev`.
+2. Cada incremento traz: testes (incluindo **isolamento entre duas clínicas** quando tocar dados), migração nova
+   (nunca editar migração já aplicada), guia HTML em `docs/changes/AAAA-MM-DD-slug.html` (a partir do `TEMPLATE.html`)
+   e atualização de `docs/PROGRESS.md`.
+3. `pnpm verify --e2e` precisa terminar com tudo `PASS` antes do push.
+
+## Regras para dados de clínica (obrigatórias)
+
+- Tabela de clínica: coluna `tenant_id`, `UNIQUE (tenant_id, id)`, FKs compostas `(tenant_id, x_id)` para outras
+  tabelas de clínica, e registro em `TenantQueryFirewall::TENANT_TABLES` (um teste falha se faltar).
+- Model: `use BelongsToTenant` + `implements TenantOwned`. Nunca aceite `tenant_id` vindo da requisição.
+- Evite SQL bruto e `withoutGlobalScopes()` em tabelas de clínica; o firewall bloqueia, e exceções exigem revisão.
+- `runAsSystem()` só antes da escolha de clínica e sempre com filtro explícito (ex.: `user_id` do usuário autenticado).
+- Permissões no backend (`permission:` nas rotas); a interface só reflete.
+- Compatível com **MySQL 5.7** (sem CHECK, CTE, funções de janela, colunas geradas) e **PHP 8.3**.
 
 ## Convenções
 
-- TypeScript estrito; validação de entrada com `zod` em `packages/contracts`.
-- SQL sempre parametrizado; toda tabela de domínio com `tenant_id`, RLS (`USING` + `WITH CHECK`) e, quando houver
-  relação entre tabelas de tenant, FK composta `(tenant_id, id)`.
-- Permissões no backend com `@RequirePermission()`; a interface apenas reflete.
-- Mensagens ao usuário em pt-BR; código e identificadores em inglês.
-- Dados de teste **100% fictícios** (domínios `.test`). Nunca usar dados reais de clínicas, tutores ou pacientes.
-- Scripts em Node (`scripts/*.mjs`) para funcionar em WSL, Git Bash, Linux e macOS; evite `sed -i`, `cp -r`, `sudo`.
-- Finais de linha LF (`.gitattributes`).
+Mensagens em pt-BR; código em inglês. Dados de teste 100% fictícios (domínios `.test`). Scripts em Node
+(`scripts/*.mjs`) para funcionar em WSL/Linux/macOS. Finais de linha LF.
 
 ## Segurança
 
-Não abra issue pública para vulnerabilidades — use _security advisory_ privada do GitHub (veja `docs/SECURITY.md`).
+Vulnerabilidades: _security advisory_ privada no GitHub (veja `docs/SECURITY.md`).

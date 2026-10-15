@@ -1,0 +1,39 @@
+# FauvoVet — public_html/fauvovet/.htaccess (Apache da hospedagem)
+Options -Indexes -MultiViews
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Nunca servir arquivos ocultos (.env, .git, .htaccess etc.)
+    RewriteRule (^|/)\. - [F,L]
+
+    # Encaminha o cabeçalho Authorization
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Remove barra final (exceto pastas reais)
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Tudo que não for arquivo real vai para o front controller
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# Só index.php pode executar PHP nesta pasta
+<FilesMatch "\.php$">
+    Require all denied
+</FilesMatch>
+<Files "index.php">
+    Require all granted
+</Files>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    # Assets do Vite têm hash no nome: cache longo e imutável
+    <FilesMatch "\.(css|js|woff2?|svg|png|ico)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+</IfModule>

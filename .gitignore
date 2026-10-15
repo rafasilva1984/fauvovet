@@ -1,40 +1,42 @@
 # Dependências e builds
-node_modules/
-dist/
-.next/
-out/
-coverage/
-*.tsbuildinfo
-.turbo/
+/vendor/
+/node_modules/
+/public/build/
+/public/hot
+/public/storage
+/.deploy/
 
 # Ambiente e segredos — NUNCA versionar
 .env
 .env.*
 !.env.example
+/storage/*.key
+auth.json
 *.pem
 *.key
 *.p12
 *.pfx
 
-# Dados locais (PostgreSQL embutido, uploads, dumps, backups)
-.data/
-uploads/
-*.dump
+# Dados locais (MySQL local, ferramentas baixadas, simulações), dumps e backups
+/.data/
+*.sql
 *.sql.gz
+*.dump
 *.backup
 
-# Testes
-playwright-report/
-test-results/
-blob-report/
-.perf/
+# Testes e relatórios
+/.phpunit.cache/
+.phpunit.result.cache
+/playwright-report/
+/test-results/
+/blob-report/
+/.perf/
 
 # Sistema/editor
 .DS_Store
 Thumbs.db
 *.log
-.idea/
-.vscode/*
-!.vscode/extensions.json
-.next-e2e/
-apps/web/next-env.d.ts
+/.idea/
+/.vscode/
+/.zed/
+_ide_helper.php

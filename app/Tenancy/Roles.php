@@ -1,0 +1,92 @@
+<?php
+
+namespace App\Tenancy;
+
+/**
+ * Papéis e permissões (CLAUDE.md §5.2). Negar por padrão: uma permissão só existe se listada aqui.
+ */
+final class Roles
+{
+    public const LABELS = [
+        'tenant_owner' => 'Titular',
+        'tenant_manager' => 'Gestão',
+        'veterinarian' => 'Médico-veterinário',
+        'clinical_assistant' => 'Assistente clínico',
+        'receptionist' => 'Recepção',
+        'finance' => 'Financeiro',
+        'stock' => 'Estoque',
+        'pet_services' => 'Banho e tosa',
+    ];
+
+    private const BASE = ['tenant:read', 'units:read'];
+
+    private const MATRIX = [
+        'tenant_owner' => ['tenant:update', 'theme:update', 'units:create', 'members:read', 'audit:read', 'clinical:read', 'clinical:write'],
+        'tenant_manager' => ['units:create', 'members:read', 'audit:read'],
+        'veterinarian' => ['clinical:read', 'clinical:write'],
+        'clinical_assistant' => ['clinical:read'],
+        'receptionist' => [],
+        'finance' => [],
+        'stock' => [],
+        'pet_services' => [],
+    ];
+
+    /** @return list<string> */
+    public static function all(): array
+    {
+        return array_keys(self::LABELS);
+    }
+
+    public static function isRole(mixed $role): bool
+    {
+        return is_string($role) && array_key_exists($role, self::LABELS);
+    }
+
+    public static function label(string $role): string
+    {
+        return self::LABELS[$role] ?? $role;
+    }
+
+    /**
+     * @param  array<int, mixed>  $roles
+     * @return list<string>
+     */
+    public static function permissions(array $roles): array
+    {
+        $set = [];
+        foreach ($roles as $role) {
+            if (! self::isRole($role)) {
+                continue; // papel desconhecido não concede nada
+            }
+            foreach ([...self::BASE, ...self::MATRIX[$role]] as $p) {
+                $set[$p] = true;
+            }
+        }
+        $list = array_keys($set);
+        sort($list);
+
+        return $list;
+    }
+
+    /** @param  array<int, mixed>  $roles */
+    public static function has(array $roles, string $permission): bool
+    {
+        return in_array($permission, self::permissions($roles), true);
+    }
+
+    /**
+     * Painel inicial por função (CLAUDE.md §7.1).
+     *
+     * @param  array<int, mixed>  $roles
+     */
+    public static function dashboard(array $roles): string
+    {
+        return match (true) {
+            in_array('tenant_owner', $roles, true), in_array('tenant_manager', $roles, true) => 'management',
+            in_array('veterinarian', $roles, true), in_array('clinical_assistant', $roles, true) => 'clinical',
+            in_array('receptionist', $roles, true) => 'reception',
+            in_array('finance', $roles, true) => 'finance',
+            default => 'operations',
+        };
+    }
+}

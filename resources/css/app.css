@@ -1,0 +1,126 @@
+@import 'tailwindcss';
+
+@source '../views/**/*.blade.php';
+@source '../js/**/*.js';
+
+/*
+ * Design tokens FauvoVet. A clínica personaliza apenas --fv-primary/--fv-secondary (e as cores de
+ * texto sobre elas, calculadas no servidor com contraste AA). Nenhum CSS é duplicado por cliente.
+ */
+:root {
+  --fv-primary: #0e5e66;
+  --fv-on-primary: #ffffff;
+  --fv-secondary: #7a4fa3;
+  --fv-on-secondary: #ffffff;
+  --fv-bg: #f5f7f6;
+  --fv-surface: #ffffff;
+  --fv-surface-2: #eef3f2;
+  --fv-border: #d9e3e1;
+  --fv-text: #0f1e24;
+  --fv-muted: #4f6268;
+  --fv-danger: #b42318;
+  --fv-danger-bg: #fdecea;
+  --fv-success: #146c43;
+  --fv-success-bg: #e6f4ec;
+  --fv-warning: #7a4b00;
+  --fv-warning-bg: #fff6e0;
+  --fv-link: color-mix(in oklab, var(--fv-primary) 88%, black);
+  --fv-ring: color-mix(in oklab, var(--fv-primary) 70%, white);
+  --fv-shadow: 0 1px 2px rgb(15 30 36 / 6%), 0 8px 24px rgb(15 30 36 / 6%);
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --fv-bg: #0b1417;
+  --fv-surface: #111d21;
+  --fv-surface-2: #172629;
+  --fv-border: #26393d;
+  --fv-text: #e6efed;
+  --fv-muted: #9cb1b5;
+  --fv-danger: #ff8a7a;
+  --fv-danger-bg: #3a1714;
+  --fv-success: #6fd69c;
+  --fv-success-bg: #12301f;
+  --fv-warning: #f3c06b;
+  --fv-warning-bg: #2e2410;
+  --fv-link: color-mix(in oklab, var(--fv-primary) 45%, white);
+  --fv-ring: color-mix(in oklab, var(--fv-primary) 50%, white);
+  --fv-shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 8px 24px rgb(0 0 0 / 25%);
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --fv-bg: #0b1417;
+    --fv-surface: #111d21;
+    --fv-surface-2: #172629;
+    --fv-border: #26393d;
+    --fv-text: #e6efed;
+    --fv-muted: #9cb1b5;
+    --fv-danger: #ff8a7a;
+    --fv-danger-bg: #3a1714;
+    --fv-success: #6fd69c;
+    --fv-success-bg: #12301f;
+    --fv-warning: #f3c06b;
+    --fv-warning-bg: #2e2410;
+    --fv-link: color-mix(in oklab, var(--fv-primary) 45%, white);
+    --fv-ring: color-mix(in oklab, var(--fv-primary) 50%, white);
+    --fv-shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 8px 24px rgb(0 0 0 / 25%);
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--fv-bg);
+  --color-surface: var(--fv-surface);
+  --color-surface-2: var(--fv-surface-2);
+  --color-line: var(--fv-border);
+  --color-ink: var(--fv-text);
+  --color-muted: var(--fv-muted);
+  --color-brand: var(--fv-primary);
+  --color-on-brand: var(--fv-on-primary);
+  --color-accent: var(--fv-secondary);
+  --color-on-accent: var(--fv-on-secondary);
+  --color-link: var(--fv-link);
+  --color-ring: var(--fv-ring);
+  --color-danger: var(--fv-danger);
+  --color-danger-bg: var(--fv-danger-bg);
+  --color-success: var(--fv-success);
+  --color-success-bg: var(--fv-success-bg);
+  --color-warning: var(--fv-warning);
+  --color-warning-bg: var(--fv-warning-bg);
+  --shadow-card: var(--fv-shadow);
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+}
+
+html,
+body {
+  background: var(--fv-bg);
+  color: var(--fv-text);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 3px solid var(--fv-ring);
+  outline-offset: 2px;
+}
+
+[x-cloak] {
+  display: none !important;
+}
+
+.fv-glow {
+  background: radial-gradient(circle, var(--fv-secondary), transparent 65%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,28 +1,32 @@
-# Modelo de dados — FauvoVet
+# Modelo de dados — FauvoVet (MySQL 5.7+)
 
-> Fonte da verdade: `apps/api/migrations/*.sql`. Este documento resume o que **está migrado**.
+> Fonte da verdade: `database/migrations/*.php`. IDs ULID (`char(26)`), `utf8mb4_unicode_ci`, InnoDB, timestamps em UTC
+> (exibição no fuso da unidade). Sem recursos exclusivos do MySQL 8 (sem CHECK, CTE, colunas geradas).
 
-## 0001_foundation (aplicada)
+## 2026_10_15_000001_create_identity_tables
 
-| Tabela             | Escopo           | RLS                                             | Observações                                                                                             |
-| ------------------ | ---------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `tenants`          | tenant (id)      | `id = current_tenant`                           | PF/PJ, documento só dígitos (não único — ADR-008), status                                               |
-| `units`            | tenant           | `tenant_id = current_tenant`                    | `UNIQUE (tenant_id, id)` para FKs compostas; nome único por tenant (case-insensitive); fuso por unidade |
-| `users`            | global           | si mesmo + membros do tenant ativo              | e-mail minúsculo único; Argon2id; contador de falhas e bloqueio                                         |
-| `memberships`      | tenant           | `tenant_id = current_tenant`                    | `roles text[]` com CHECK na lista de papéis; `UNIQUE (tenant_id, user_id)`                              |
-| `membership_units` | tenant           | `tenant_id = current_tenant`                    | restrição opcional de unidades; FKs compostas impedem cruzar tenants                                    |
-| `user_sessions`    | usuário          | `user_id = current_user`                        | só hash SHA-256 do token; contexto ativo com FKs compostas para vínculo/unidade                         |
-| `tenant_themes`    | tenant           | `tenant_id = current_tenant`                    | tokens de cor `#RRGGBB` (CHECK) e modo; sem CSS por cliente                                             |
-| `audit_events`     | tenant (ou nulo) | lê só do tenant ativo; insere nulo ou do tenant | **append-only** (trigger bloqueia UPDATE/DELETE inclusive do dono)                                      |
+| Tabela                 | Escopo      | Observações                                                                                            |
+| ---------------------- | ----------- | ------------------------------------------------------------------------------------------------------ |
+| `users`                | global      | e-mail único (191), senha Argon2id, `status`, contador de falhas, `locked_until`, sem "lembrar de mim" |
+| `sessions`             | por usuário | sessão do Laravel no banco (payload criptografado, `SESSION_ENCRYPT=true`)                             |
+| `cache`, `cache_locks` | sistema     | rate limit de login/cadastro (sem Redis na hospedagem)                                                 |
+| `jobs`, `failed_jobs`  | sistema     | fila `database` (ainda sem uso)                                                                        |
 
-Funções (`schema app`): `current_tenant_id()`, `current_user_id()`, `auth_find_user(email)`,
-`auth_register_login_result(...)`, `auth_resolve_session(hash)`, `my_memberships()` (todas `SECURITY DEFINER` com
-`search_path` fixo, exceto as duas primeiras).
+## 2026_10_15_000002_create_tenancy_tables
 
-Convenções: IDs `uuid` gerados no servidor (`gen_random_uuid()`), `timestamptz`, `updated_at` por trigger, auditoria
-sem dados sensíveis (e-mails de falha de login são registrados apenas como impressão digital SHA-256 truncada).
+| Tabela             | Escopo            | Integridade                                                                                                                                       |
+| ------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tenants`          | a própria clínica | PF/PJ, documento só dígitos e **não único** (ADR-008), `status` (active/suspended/closed)                                                         |
+| `units`            | clínica           | `UNIQUE (tenant_id, id)`; nome único por clínica (sem diferenciar maiúsculas); fuso por unidade                                                   |
+| `memberships`      | clínica           | `roles` JSON validado pela aplicação; `UNIQUE (tenant_id, user_id)`, `UNIQUE (tenant_id, id)`                                                     |
+| `membership_units` | clínica           | FKs **compostas** para `memberships(tenant_id,id)` e `units(tenant_id,id)`                                                                        |
+| `tenant_themes`    | clínica           | tokens `#RRGGBB` validados (AA) e modo                                                                                                            |
+| `audit_events`     | clínica (ou nulo) | somente inclusão (model bloqueia UPDATE/DELETE); eventos sem clínica (ex.: falha de login) nunca aparecem para clínicas; IP só como HMAC truncado |
+
+Tabelas de clínica registradas no firewall: `TenantQueryFirewall::TENANT_TABLES` (um teste falha se uma tabela com
+`tenant_id` não estiver na lista).
 
 ## Planejado (não migrado)
 
-`TenantPlan`, `Subscription`, `Guardian`, `Patient`, `GuardianPatientLink`, `Appointment`, `Encounter`, `ClinicalNote`,
-`Diagnosis` … conforme CLAUDE.md §6.3, introduzidos por vertical slice com migração própria.
+Pacientes, responsáveis, agenda, prontuário etc. conforme CLAUDE.md §6.3, cada um com `tenant_id`, FKs compostas,
+model `BelongsToTenant` + `TenantOwned` e testes de isolamento.

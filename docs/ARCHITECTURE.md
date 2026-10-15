@@ -1,83 +1,71 @@
 # Arquitetura — FauvoVet
 
-> Estado: **Fase 0 em andamento**. Este documento descreve o que **existe no código** e marca o que é planejado.
+> Estado: **Fase 0** — stack PHP/Laravel + MySQL (ADR-010). Este documento descreve o que **existe no código**.
 
-## Visão geral
-
-```text
-navegador ──HTTPS──▶ proxy reverso (nginx, planejado) ──▶ /fauvovet          → apps/web (Next.js)  [implementado]
-                                                     └──▶ /fauvovet/api/v1/* → apps/api (NestJS)  [implementado]
-                                                                                   │
-                                                                                   ▼
-                                                                 PostgreSQL 18 (RLS por tenant)
-```
-
-| Peça                                                                 | Local                 | Estado                            |
-| -------------------------------------------------------------------- | --------------------- | --------------------------------- |
-| Contratos tipados (zod, papéis, permissões, validações)              | `packages/contracts`  | Implementado                      |
-| API (auth, contexto, RBAC, tenancy, onboarding, auditoria, health)   | `apps/api`            | Implementado                      |
-| Migrações SQL versionadas com checksum                               | `apps/api/migrations` | Implementado (0001)               |
-| Web (login, onboarding, seleção de contexto, shell responsivo, tema) | `apps/web`            | Próximo incremento                |
-| Worker (filas, extração, indexação)                                  | `apps/worker`         | Não iniciado (Fase 2)             |
-| Redis/BullMQ                                                         | —                     | Não iniciado (quando houver jobs) |
-| Armazenamento de objetos privado                                     | —                     | Não iniciado (Fase 1, anexos)     |
-
-## Princípios aplicados no código
-
-1. **Tenant derivado da sessão, nunca do cliente.** `POST /auth/context` aceita um `membershipId`, que é validado contra
-   `app.my_memberships()` (vínculos do usuário autenticado). `tenant_id` enviado em corpo/query/cabeçalho é ignorado
-   (teste `tenant_id manipulado...`).
-2. **RLS como barreira final.** O papel `fauvovet_app` não é dono das tabelas, não é superuser e não tem `BYPASSRLS`.
-   Toda consulta de domínio roda em `DbService.withContext()`, que abre transação e define
-   `set_config('app.tenant_id', ..., true)` — **local à transação**, sem vazamento entre requisições do pool.
-3. **Funções `SECURITY DEFINER` mínimas** para o que precede a escolha de contexto (login, resolução de sessão,
-   listagem dos próprios vínculos). Todas com `search_path` fixo e `EXECUTE` revogado de `PUBLIC`.
-4. **Negar por padrão.** `SessionGuard` global: toda rota exige sessão, exceto `@Public()`. Rotas com
-   `@RequirePermission()` exigem contexto ativo e permissão do papel (matriz em `packages/contracts/src/roles.ts`).
-5. **Base path configurável.** API em `${BASE_PATH}/api/v1` (padrão `/fauvovet/api/v1`); cookie com `Path=${BASE_PATH}`.
-   Hospedar na raiz ou em subdomínio = `BASE_PATH=` vazio, sem alterar código.
-6. **Erros padronizados** `{ error: { code, message, details?, requestId } }`, sem stack. Logs de acesso JSON com
-   `requestId` e tenant **pseudonimizado** (hash), sem query string, corpo ou cookies.
-
-## Fluxo de requisição (API)
+## Visão geral (produção na Locaweb, sem SSH)
 
 ```text
-requestContextMiddleware (requestId, log) → helmet → json(100kb) → cookieParser
-  → SessionGuard: Origin (mutações) → @Public? → cookie fv_session → app.auth_resolve_session(sha256(token))
-                  → CSRF (X-CSRF-Token == token da sessão, mutações) → @RequirePermission (contexto + RBAC)
-  → Controller → parseBody(zod) → Service → DbService.withContext({tenantId, userId}) → SQL parametrizado (RLS)
-  → AllExceptionsFilter
+navegador ──HTTPS──▶ Apache (hospedagem) ──▶ public_html/fauvovet/index.php ──▶ app-fauvovet/ (Laravel, fora da web)
+                                         └─▶ public_html/fauvovet/build/*     (CSS/JS compilados localmente)
+                                                                                     │ TCP
+                                                                                     ▼
+                                                                      MySQL do painel (5.7+ compatível)
 ```
 
-## Web (`apps/web`)
+| Peça                                    | Onde                                                                        | Estado                |
+| --------------------------------------- | --------------------------------------------------------------------------- | --------------------- |
+| Aplicação Laravel 13 (PHP ≥ 8.3)        | `app/`, `routes/`, `config/`, `resources/views/`                            | Implementado          |
+| Isolamento multi-tenant em camadas      | `app/Tenancy/`, `app/Http/Middleware/ResolveTenant.php`                     | Implementado          |
+| Telas (Blade + Alpine CSP + Tailwind 4) | `resources/views`, `resources/js`, `resources/css`                          | Implementado (Fase 0) |
+| Migrações MySQL 5.7+                    | `database/migrations`                                                       | Implementado          |
+| Ferramentas de deploy sem SSH           | `app/Http/Controllers/DeployController.php`, `routes/deploy.php`, `deploy/` | Implementado          |
+| Empacotador para FileZilla              | `scripts/deploy-package.mjs`                                                | Implementado          |
+| Fila/agendador                          | driver `database` + cron do painel                                          | Não usado ainda       |
+| Busca clínica (Fase 2)                  | —                                                                           | Não iniciado          |
+
+## Ciclo de uma requisição
 
 ```text
-app/login, app/cadastro, app/contexto          telas públicas/pré-contexto (AuthFrame)
-app/(app)/layout.tsx                           SessionProvider + AppShell (sidebar desktop, topo + barra inferior mobile)
-app/(app)/painel | unidades | equipe | configuracoes/aparencia
-components/ui.tsx, icons.tsx                   design system próprio (botões, campos, alertas, estados vazios, skeleton)
-lib/api.ts                                     fetch mesma origem + X-CSRF-Token; erros padronizados → ApiRequestError
-lib/session.tsx                                /auth/me + /tenant, aplica tema do tenant (tokens CSS)
-e2e/                                           Playwright desktop (1366×900) + Pixel 7, axe WCAG AA, Web Vitals
+RequestContext (request id, zera contexto de clínica)
+ → [grupo web] cookies criptografados → sessão (banco) → CSRF (token + origem) → SecurityHeaders (CSP nonce)
+ → auth → ResolveTenant (sessão → vínculo ativo do usuário → clínica ativa; ANTES do route model binding)
+ → SubstituteBindings ({unit} já escopado) → RequirePermission (papel × permissão)
+ → Controller → Models com BelongsToTenant (escopo obrigatório)
+ → DB::beforeExecuting → TenantQueryFirewall (bloqueia SQL sem/de outro tenant) → MySQL (FKs compostas)
 ```
 
-`next.config.ts`: `basePath` (de `BASE_PATH`), `output: 'standalone'`, `distDir` configurável (`NEXT_DIST_DIR`),
-headers de segurança (CSP, nosniff, frame DENY, referrer, permissions-policy) e _rewrite_ `/api/*` → API.
+## Camadas de isolamento (resumo — detalhes em `docs/SECURITY.md`)
+
+1. **Contexto só do servidor:** `TenantContext` é preenchido a partir da sessão; `tenant_id` em formulário, query ou
+   cabeçalho nunca é lido.
+2. **Escopo obrigatório:** `BelongsToTenant` aplica `WHERE tenant_id = :ativo` em SELECT/UPDATE/DELETE, preenche
+   `tenant_id` no INSERT, recusa valor divergente e alteração de `tenant_id`. Sem contexto → `TenantContextMissing`.
+3. **Firewall de SQL:** inspeciona cada SQL antes de executar; tabela de clínica sem `tenant_id`, ou filtro com
+   outra clínica → `CrossTenantViolation` (403 genérico + log crítico sem dados).
+4. **Banco:** `UNIQUE (tenant_id, id)` e FKs compostas `(tenant_id, x_id)`.
+5. **Modo sistema** (`runAsSystem`) só para o que antecede a escolha de clínica (login, listar os próprios vínculos),
+   sempre com filtro explícito por usuário. `runForTenant` para criar clínica e seeds.
 
 ## Pastas
 
 ```text
-apps/api/src/
-  auth/        login, sessão, CSRF, guard global, seleção de contexto
-  tenancy/     tenant, tema, unidades, membros, auditoria (leitura)
-  onboarding/  cadastro de clínica/profissional (ALLOW_SELF_SIGNUP)
-  audit/       gravação append-only
-  db/          pool com contexto RLS, migrador, seed fictício
-  common/      erros, decorators, rate limit, request id
-  perf/        benchmark reproduzível (pnpm perf:check)
-apps/api/test/ integração (supertest + PostgreSQL real *_test) e isolation/
-packages/contracts/src/  schemas e tipos compartilhados web ⇄ API
-scripts/       CLI portátil em Node (bootstrap, dev, db-local, verify, docs:validate, secrets, smoke)
+app/Tenancy/          TenantContext, TenantScope, BelongsToTenant, TenantOwned, TenantQueryFirewall, Roles
+app/Http/Middleware/  RequestContext, SecurityHeaders, ResolveTenant, RequirePermission, PreventRequestForgery, DeployRateLimit
+app/Http/Controllers/ Auth (login/contexto), Onboarding, Dashboard, Unit, Team, Appearance, Deploy
+app/Services/         ContextService (vínculos e troca de clínica)
+app/Support/          Audit, Contrast (WCAG), BrazilianDocument (CPF/CNPJ), LayoutData, RequestId
+database/             migrations (MySQL 5.7+), seeders (dados fictícios)
+resources/views/      layouts (base/auth/app), components (UI acessível), páginas, errors (pt-BR)
+deploy/               index.php e .htaccess de produção, .env de produção (modelo), proteção de app-fauvovet
+scripts/              local-mysql, php, dev, bootstrap, verify, smoke, perf, e2e-server, deploy-package/token/remote, docs-validate, secrets-scan
+tests/                PHPUnit: Unit, Feature, Feature/Isolation (grupo tenant-isolation)
+e2e/                  Playwright (desktop + Pixel 7) contra o servidor em /fauvovet
 ```
 
-Decisões e alternativas: `docs/DECISIONS.md`. Modelo de dados: `docs/DATA_MODEL.md`.
+## Base path `/fauvovet`
+
+O subdiretório vem do servidor (`SCRIPT_NAME`): Laravel gera URLs e assets relativos a ele. `APP_URL` deve conter
+`/fauvovet`; o cookie usa `SESSION_PATH=/fauvovet`. Hospedar na raiz ou em subdomínio = ajustar `APP_URL`,
+`SESSION_PATH` e a pasta pública, sem alterar código. Localmente, `scripts/dev-router.php` reproduz o subdiretório.
+
+Decisões: `docs/DECISIONS.md`. Modelo de dados: `docs/DATA_MODEL.md`. Deploy: `docs/DEPLOY_LOCAWEB.md`.

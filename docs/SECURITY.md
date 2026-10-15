@@ -1,36 +1,58 @@
 # Segurança — FauvoVet
 
-> Não há aprovação jurídica/LGPD. Este documento lista controles **implementados** e **pendentes**.
+> Não há aprovação jurídica/LGPD. Este documento lista controles **implementados e testados** e o que está pendente.
+> **Gate de produção:** nenhum dado real de tutor/paciente antes de HTTPS ativo + `SESSION_SECURE_COOKIE=true`.
 
-## Implementado (Fase 0)
+## Isolamento entre clínicas sem RLS (ADR-010)
 
-| Controle                                                                                                 | Onde                                     | Teste                                         |
-| -------------------------------------------------------------------------------------------------------- | ---------------------------------------- | --------------------------------------------- |
-| RLS por tenant (`USING` + `WITH CHECK`), papel da app sem BYPASSRLS/posse                                | `migrations/0001_foundation.sql`         | `tenant-isolation.test.ts`                    |
-| Contexto RLS local à transação (sem vazamento no pool)                                                   | `db/db.service.ts`                       | `contexto é local à transação`                |
-| FKs compostas (tenant_id, id)                                                                            | `membership_units`, `user_sessions`      | `FK composta impede...`                       |
-| Tenant derivado da sessão; IDs/`tenant_id` manipulados ignorados ou 404                                  | `auth.service.ts`, `tenancy.service.ts`  | `tenant_id manipulado...`, `ID previsível...` |
-| Argon2id, bloqueio por falhas, mensagem uniforme, tempo equalizado                                       | `auth/`                                  | `auth.test.ts`                                |
-| Cookie `HttpOnly`/`SameSite=Lax`/`Secure` (prod obrigatório)/`Path=BASE_PATH`; só hash do token no banco | `auth.controller.ts`, `config/env.ts`    | `define cookie HttpOnly...`, `env.test.ts`    |
-| CSRF por sessão + verificação de `Origin`                                                                | `session.guard.ts`                       | `CSRF e origem`                               |
-| RBAC negar-por-padrão no backend                                                                         | `contracts/roles.ts`, `session.guard.ts` | `rbac.test.ts`                                |
-| Rate limit (login, onboarding) — memória, instância única                                                | `common/rate-limit.ts`                   | `rate-limit.test.ts`                          |
-| Helmet (CSP `default-src 'none'` na API), sem `x-powered-by`, corpo ≤ 100 kB                             | `app.factory.ts`                         | manual                                        |
-| Auditoria append-only (trigger + sem GRANT de UPDATE/DELETE)                                             | migração                                 | `auditoria é append-only`                     |
-| Logs sem corpo/query/cookies, tenant pseudonimizado                                                      | `common/request-context.ts`              | revisão                                       |
-| Guardas: testes só em banco local `*_test`; seed/migrate recusam host não local fora de produção         | `config/env.ts`, CLIs                    | `env.test.ts`                                 |
-| Varredura de segredos local + `.gitignore` restritivo                                                    | `scripts/secrets-scan.mjs`               | `pnpm security:secrets`                       |
+O MySQL não tem Row-Level Security. O isolamento é feito por **cinco barreiras independentes**; cada uma tem testes
+próprios em `tests/Feature/Isolation/TenantIsolationTest.php` (grupo `tenant-isolation`):
+
+| #   | Barreira                                                 | Onde                              | O que impede                                                                                                | Teste                                                                                       |
+| --- | -------------------------------------------------------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| 1   | Clínica ativa só da sessão, revalidada a cada requisição | `ResolveTenant`, `ContextService` | `tenant_id` manipulado em formulário/URL/cabeçalho; vínculo desativado/clínica suspensa continuar acessando | `tenant_id_manipulado…`, `vinculo_desativado…`, `clinica_suspensa…`                         |
+| 2   | Escopo obrigatório que falha fechado                     | `BelongsToTenant`, `TenantScope`  | ler/alterar/criar dados de outra clínica via Eloquent; consulta sem clínica ativa                           | `sem_clinica_ativa…`, `criar_registro_em_outra_clinica…`, `tenant_id_nao_pode_ser_alterado` |
+| 3   | Firewall de SQL antes da execução                        | `TenantQueryFirewall`             | query builder/SQL bruto sem `tenant_id`, `withoutGlobalScopes()`, filtro com ID de outra clínica            | `firewall_bloqueia_*`                                                                       |
+| 4   | Integridade no banco                                     | FKs compostas `(tenant_id, x_id)` | relacionar dados de clínicas diferentes mesmo com bug na aplicação                                          | `fk_composta_impede…`                                                                       |
+| 5   | Testes de arquitetura                                    | —                                 | nova tabela com `tenant_id` fora do firewall; model de clínica sem `TenantOwned`                            | `todas_as_tabelas…`, `todo_model…`                                                          |
+
+ID previsível de outra clínica na URL → **404** (não revela existência). Estado "por requisição" é zerado no início
+de cada requisição e o memo de layout é amarrado à clínica/vínculo (vazamento encontrado e corrigido em teste).
+
+**Risco aceito (documentado):** diferente do RLS, o banco não conhece a clínica ativa; o firewall é heurístico
+(inspeção do SQL + parâmetros). Código novo deve usar Eloquent com `BelongsToTenant`; SQL bruto em tabela de clínica
+só com revisão e teste de isolamento.
+
+## Demais controles implementados
+
+| Controle                                                                                                                                        | Onde                                           | Evidência                                    |
+| ----------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | -------------------------------------------- |
+| Senhas Argon2id (rehash automático), bloqueio após falhas, mensagem e tempo uniformes                                                           | `LoginController`                              | `AuthTest`                                   |
+| Rate limit: login (IP e e-mail), cadastro (IP), deploy (IP, em arquivo)                                                                         | `AppServiceProvider`, `DeployRateLimit`        | `AuthTest`, `DeployAndHeadersTest`           |
+| Sessão no servidor, regenerada no login e na troca de clínica; logout invalida                                                                  | Laravel + `ContextService`                     | `AuthTest`                                   |
+| Cookie de sessão criptografado, `HttpOnly`, `SameSite=Lax`, `Path=/fauvovet`, `Secure` em HTTPS; sem `XSRF-TOKEN`                               | config + `PreventRequestForgery`               | E2E `cookie de sessão…`                      |
+| CSRF (token + verificação de origem do Laravel 13)                                                                                              | `PreventRequestForgery`                        | E2E `POST sem token CSRF… (419)`             |
+| CSP com nonce, sem `unsafe-inline`/`unsafe-eval` (Alpine build CSP); `X-Frame-Options: DENY`; nosniff; Referrer/Permissions/COOP; HSTS em HTTPS | `SecurityHeaders`                              | `DeployAndHeadersTest`, E2E sem erros de CSP |
+| Páginas autenticadas com `Cache-Control: no-store`                                                                                              | `SecurityHeaders`                              | `DeployAndHeadersTest`                       |
+| Tema da clínica só `#RRGGBB` com contraste AA (sem injeção de CSS)                                                                              | `AppearanceController`, `Contrast`             | `RbacTest`                                   |
+| RBAC negar-por-padrão no backend (8 papéis)                                                                                                     | `Roles`, `RequirePermission`                   | `RbacTest`, `SupportTest`                    |
+| Auditoria somente inclusão; IP pseudonimizado (HMAC); e-mails de falha só como impressão digital                                                | `Audit`, `AuditEvent`                          | `TenantIsolationTest`                        |
+| Erros em pt-BR sem detalhes técnicos com `APP_DEBUG=false`                                                                                      | `resources/views/errors`                       | simulação de produção (guia HTML)            |
+| Rota de arquivos `storage/{path}` desligada                                                                                                     | `config/filesystems.php`                       | `route:list`                                 |
+| Ferramentas de deploy: desligadas por padrão, token (só SHA-256 no servidor), 404 quando negadas                                                | `DeployController`                             | `DeployAndHeadersTest`                       |
+| Produção: código fora de `public_html`; `.htaccess` nega dotfiles e PHP que não seja `index.php`                                                | `deploy/`                                      | pacote + smoke                               |
+| Testes/seed recusam banco que não seja local `*_test`; seed recusa produção                                                                     | `TestCase`, `DatabaseSeeder`, `e2e-server.mjs` | —                                            |
+| Varredura de segredos e `composer audit` no gate                                                                                                | `scripts/secrets-scan.mjs`, `pnpm verify`      | CI                                           |
 
 ## Pendente (com fase)
 
-- MFA para `tenant_owner`/`platform_admin`; recuperação de senha; gestão de sessões/dispositivos (Fase 1).
-- Rate limit distribuído (Redis) antes de múltiplas réplicas.
-- Auditoria de **visualização** de prontuário (quando existir prontuário — Fase 1).
-- Criptografia de anexos em repouso, URLs assinadas curtas, antivírus em upload (Fase 1–2).
-- Backups criptografados com restauração testada; RPO/RTO (antes da operação comercial).
-- Revisão LGPD/CFMV por profissional (CLAUDE.md §8.2) — **obrigatória antes de comercializar**.
-- `pnpm audit` e gitleaks na CI.
+- **HTTPS no domínio** e `SESSION_SECURE_COOKIE=true` (bloqueante para dados reais).
+- MFA para titular/plataforma; recuperação de senha por e-mail; gestão de sessões (Fase 1).
+- Backups: a hospedagem do outro projeto não tinha backup automático — definir rotina (dump via painel/agendado) e
+  testar restauração antes de dados reais.
+- Auditoria de visualização de prontuário (quando houver prontuário).
+- Revisão LGPD/CFMV por profissional (CLAUDE.md §8.2) antes de comercializar.
 
 ## Reporte de vulnerabilidades
 
-Abra uma _security advisory_ privada no GitHub do repositório (não use issues públicas para falhas de segurança).
+Use _security advisory_ privada no GitHub do repositório (não abra issue pública).

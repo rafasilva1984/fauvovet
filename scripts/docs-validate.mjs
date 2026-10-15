@@ -89,16 +89,14 @@ for (const f of all) {
     err(rel, 'não usar scripts/CSS remotos (deve funcionar offline)');
   if (f !== 'TEMPLATE.html') {
     if (/class="todo"|\bTODO\b/.test(html)) err(rel, 'contém TODO pendente — preencha o guia');
-    for (const s of ['PASS', 'Rollback', 'Commit'])
-      if (!new RegExp(s, 'i').test(html)) err(rel, `não menciona "${s}"`);
+    for (const s of ['PASS', 'Rollback', 'Commit']) if (!new RegExp(s, 'i').test(html)) err(rel, `não menciona "${s}"`);
   }
 }
 
 const hasImplementation = ['apps', 'packages'].some(
   (d) => existsSync(join(ROOT, d)) && readdirSync(join(ROOT, d)).length > 0,
 );
-if (hasImplementation && guides.length === 0)
-  err('docs/changes', 'há implementação mas nenhum guia HTML de mudança');
+if (hasImplementation && guides.length === 0) err('docs/changes', 'há implementação mas nenhum guia HTML de mudança');
 
 const progressPath = join(ROOT, 'docs', 'PROGRESS.md');
 if (!existsSync(progressPath)) err('docs/PROGRESS.md', 'ausente');
@@ -107,8 +105,7 @@ else if (guides.length) {
   const latest = [...guides].sort().at(-1);
   if (!progress.includes(`changes/${latest}`))
     err('docs/PROGRESS.md', `não referencia o guia mais recente (changes/${latest})`);
-  for (const g of guides)
-    if (!progress.includes(g)) err('docs/PROGRESS.md', `não lista o guia ${g} no histórico`);
+  for (const g of guides) if (!progress.includes(g)) err('docs/PROGRESS.md', `não lista o guia ${g} no histórico`);
 }
 
 if (errors.length) {
@@ -116,6 +113,4 @@ if (errors.length) {
   console.error(`\ndocs:validate falhou com ${errors.length} problema(s).`);
   process.exit(1);
 }
-console.log(
-  `✔ docs:validate: ${guides.length} guia(s) de mudança + TEMPLATE válidos; PROGRESS.md atualizado.`,
-);
+console.log(`✔ docs:validate: ${guides.length} guia(s) de mudança + TEMPLATE válidos; PROGRESS.md atualizado.`);
