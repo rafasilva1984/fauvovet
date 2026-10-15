@@ -10,8 +10,8 @@ em seguida a web (login, onboarding, contexto, shell responsivo, tema).
 
 ## Situação atual
 
-- **Branch/remote:** `main` → `origin` (https://github.com/rafasilva1984/fauvovet). Último commit sincronizado:
-  `7d303af` (fundação + API). Incremento web: ver histórico.
+- **Branch/remote:** `main` → `origin` (https://github.com/rafasilva1984/fauvovet). Último commit de código sincronizado:
+  `4a9ade7` (web). Working tree limpa após este registro.
 - **Implementado e testado:**
   - API: auth (login/logout/me), sessão HttpOnly + CSRF + Origin, bloqueio por falhas, seleção de tenant/unidade,
     RBAC (8 papéis), onboarding PF/PJ, unidades (listar/obter/criar), tema por tenant (contraste AA), membros,
@@ -45,13 +45,13 @@ WSL2 Ubuntu 26.04, Node 24.21.0, pnpm 12.4.2, Git 2.53.0, mise 2026.9.11, gh 2.1
 - Docker Compose pendente de ambiente com Docker para teste.
 - Licença MIT aplicada por recomendação do CLAUDE.md (ADR-006) — reversível pelo proprietário.
 - `embedded-postgres` é empacotamento beta (PostgreSQL 18.4 estável) — só dev/CI.
-- E2E adicionado à CI neste incremento; primeira execução na CI ainda a confirmar.
+- E2E roda na CI desde `4a9ade7` (run 38786064647: **success**).
 - CSP da web com `'unsafe-inline'` em scripts (ADR-009) — revisar antes de produção.
 
 ## Próxima ação exata
 
 1. `git pull --ff-only && pnpm db:start`.
-2. Conferir a CI (`gh run list --limit 3`); se o E2E falhar só na CI, baixar o artefato `playwright-report`.
+2. Conferir a CI do último push (`gh run list --limit 3`).
 3. Fase 1, primeira fatia: gestão de equipe (convite por link com expiração, edição de papéis, desativação) com
    auditoria e testes de isolamento; depois migração `0002` de responsáveis/pacientes (RLS + FKs compostas).
 4. Novo guia HTML em `docs/changes/`, atualizar este checkpoint, `pnpm verify --e2e`, commit, push.
