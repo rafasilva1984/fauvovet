@@ -16,6 +16,20 @@
 | E-mail transacional; armazenamento privado de objetos         | não verificado   |
 | Protocolo de transferência (SFTP/FTPS) para FileZilla         | não verificado   |
 
+## Decisão pendente: banco de dados (MySQL do painel × PostgreSQL)
+
+O FauvoVet **não roda em MySQL** sem reescrever a camada de isolamento:
+
+- O isolamento entre clínicas é garantido no banco por **Row-Level Security** (ADR-003), que o MySQL não tem; em MySQL
+  ele dependeria só do código da aplicação (um filtro esquecido = vazamento entre clínicas).
+- A busca clínica (Fase 2) usa `tsvector` em português, `unaccent` e `pg_trgm`, recursos do PostgreSQL.
+- Também usamos funções `SECURITY DEFINER`, FKs compostas, `jsonb`, `text[]` e trigger de auditoria append-only.
+
+**Recomendação:** instalar PostgreSQL 18 no próprio servidor (pacote do sistema ou Docker), escutando só em
+`127.0.0.1`, se houver root/SSH. 4 GB comportam a fase inicial (medido localmente: API ~200 MB de RSS; PostgreSQL e
+Next.js a dimensionar no servidor). Sem root: PostgreSQL gerenciado em região Brasil (avaliar LGPD/latência) ou trocar
+para VPS. O MySQL do painel pode existir, mas não será usado pelo FauvoVet.
+
 ## Requisitos do que já existe
 
 - API Node.js 24 **persistente** (`apps/api`, `node dist/main.js`) + PostgreSQL 18 com dois papéis
