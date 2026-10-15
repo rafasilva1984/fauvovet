@@ -4,7 +4,7 @@
 > **Versão da especificação:** 1.1 — 15/10/2026  
 > **Idioma do produto:** Português do Brasil (`pt-BR`)  
 > **Moeda e fuso inicial:** BRL; fuso horário configurável por unidade, padrão `America/Sao_Paulo`  
-> **Endereço inicial pretendido:** `https://dradeboragakdino.com.br/fauvovet`  
+> **Endereço inicial pretendido:** `https://dradeboragaldino.com.br/fauvovet`  
 > **Hospedagem inicialmente prevista:** Locaweb, sujeita à validação do plano contratado  
 > **Repositório oficial (público):** https://github.com/rafasilva1984/fauvovet  
 > **Ambientes de desenvolvimento:** Windows com WSL2/Ubuntu ou Git Bash; portabilidade para Linux/macOS  
@@ -566,7 +566,7 @@ Fontes orientadoras:
 O endereço esperado **inicialmente** é:
 
 ```text
-https://dradeboragakdino.com.br/fauvovet
+https://dradeboragaldino.com.br/fauvovet
 ```
 
 - O caminho `/fauvovet` é **base path** da aplicação, não identificador de tenant.
@@ -822,7 +822,7 @@ Ao abrir este projeto, executar a seguinte sequência, sem tentar implementar to
 - `README.md` e `CONTRIBUTING.md` devem ensinar: pré-requisitos, clonagem, configuração sem dados privados, instalação, execução local, testes, build, arquitetura, suporte WSL/Git Bash, deploy e contribuição por PR.
 - Nunca colocar no GitHub: pacientes reais, nomes/contatos de tutores, prontuários, imagens clínicas identificáveis, tokens, chaves privadas, URLs secretas, dumps do banco, backups, `.env` com valores reais, arquivos importados privados, credenciais Locaweb/FileZilla ou logs sensíveis. Criar `.gitignore`, verificações de segredo e fixtures totalmente sintéticas antes do primeiro push.
 - Garantir por configuração que usuários e clínicas externas não herdem logos, assinaturas, dados médicos ou branding privado da clínica original. Branding inicial neutro do FauvoVet e customização por tenant.
-- Implantação self-hosted deve permitir configurações próprias via variáveis de ambiente e provisionamento seguro, sem caminhos ou domínios hardcoded. O domínio `dradeboragakdino.com.br/fauvovet` é o destino **da primeira instalação**, não uma dependência obrigatória de outras instalações.
+- Implantação self-hosted deve permitir configurações próprias via variáveis de ambiente e provisionamento seguro, sem caminhos ou domínios hardcoded. O domínio `dradeboragaldino.com.br/fauvovet` é o destino **da primeira instalação**, não uma dependência obrigatória de outras instalações.
 - Prever localização (`pt-BR` inicialmente), fuso por unidade, moeda configurável quando pertinente, limites de armazenamento e URL/basePath por ambiente, evitando pressupostos sobre SO, diretórios ou DNS.
 
 ### 14.2 Política de branches, revisão e sincronização

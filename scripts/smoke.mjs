@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Smoke NÃO destrutivo contra um ambiente (local ou produção). Não cria nem altera dados.
-// Uso: SMOKE_URL=https://dradeboragakdino.com.br/fauvovet pnpm smoke
+// Uso: SMOKE_URL=https://dradeboragaldino.com.br/fauvovet pnpm smoke
 //      SMOKE_EMAIL=... SMOKE_PASSWORD=... para testar também login/logout (conta sem dados clínicos reais).
 const base = (process.env.SMOKE_URL ?? 'http://127.0.0.1:8000/fauvovet').replace(/\/$/, '');
 const checks = [];

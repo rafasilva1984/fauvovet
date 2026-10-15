@@ -120,8 +120,8 @@ public_html\fauvovet\  ───────────────────
   (7 arquivos: index.php, .htaccess, build\…)
 
 LEIA-ME.txt e MANIFEST.sha256  → NÃO precisam ser enviados (são só para conferência)</pre>
-      <p class="note">Por que duas pastas? Assim o navegador só alcança a "porta de entrada" (<code>public_html/fauvovet</code>). O código e o arquivo de senhas ficam em <code>app-fauvovet</code>, fora da área pública. Mesmo que alguém digite <code>dradeboragakdino.com.br/fauvovet/.env</code>, não há nada lá para baixar.</p>
-      <p>No fim, o endereço do sistema será <strong><code>https://dradeboragakdino.com.br/fauvovet</code></strong>. Qualquer site que já exista no domínio continua funcionando normalmente.</p>
+      <p class="note">Por que duas pastas? Assim o navegador só alcança a "porta de entrada" (<code>public_html/fauvovet</code>). O código e o arquivo de senhas ficam em <code>app-fauvovet</code>, fora da área pública. Mesmo que alguém digite <code>dradeboragaldino.com.br/fauvovet/.env</code>, não há nada lá para baixar.</p>
+      <p>No fim, o endereço do sistema será <strong><code>https://dradeboragaldino.com.br/fauvovet</code></strong>. Qualquer site que já exista no domínio continua funcionando normalmente.</p>
     </section>
 
     <section id="s2">
@@ -161,8 +161,8 @@ LEIA-ME.txt e MANIFEST.sha256  → NÃO precisam ser enviados (são só para con
         <tr><td>③</td><td>Nome do banco</td><td>Painel → Banco de dados</td><td><code>login_1</code></td></tr>
         <tr><td>④</td><td>Usuário do banco</td><td>Painel → Banco de dados (muitas vezes igual ao nome)</td><td><code>login_1</code></td></tr>
         <tr><td>⑤</td><td>Senha do banco</td><td>A que você definiu ao criar</td><td><small>(só no gerenciador de senhas)</small></td></tr>
-        <tr><td>⑥</td><td>Host do FTP</td><td>Painel → Arquivos e FTP (etapa B4)</td><td><code>ftp.dradeboragakdino.com.br</code></td></tr>
-        <tr><td>⑦</td><td>Usuário do FTP</td><td>Painel → Arquivos e FTP</td><td><code>dradeboragakdino1</code></td></tr>
+        <tr><td>⑥</td><td>Host do FTP</td><td>Painel → Arquivos e FTP (etapa B4)</td><td><code>ftp.dradeboragaldino.com.br</code></td></tr>
+        <tr><td>⑦</td><td>Usuário do FTP</td><td>Painel → Arquivos e FTP</td><td><code>dradeboragaldino1</code></td></tr>
         <tr><td>⑧</td><td>Senha do FTP</td><td>Painel → Arquivos e FTP</td><td><small>(só no gerenciador de senhas)</small></td></tr>
         <tr><td>⑨</td><td>HTTPS ativo?</td><td>Etapa B5</td><td>sim / não</td></tr>
         <tr><td>⑩</td><td>TOKEN de deploy</td><td>Etapa C1</td><td><small>(só no gerenciador de senhas)</small></td></tr>
@@ -227,7 +227,7 @@ LEIA-ME.txt e MANIFEST.sha256  → NÃO precisam ser enviados (são só para con
       <h4><span class="where w-panel">PAINEL LOCAWEB</span> B1. Entrar no painel</h4>
       <ol class="steps">
         <li>No navegador, abra <code>https://painelhospedagem.locaweb.com.br</code> e entre com o seu usuário e senha.</li>
-        <li>Na lista de hospedagens, encontre <strong>dradeboragakdino.com.br</strong> e clique em <strong>Administrar</strong>.</li>
+        <li>Na lista de hospedagens, encontre <strong>dradeboragaldino.com.br</strong> e clique em <strong>Administrar</strong>.</li>
       </ol>
 
       <h4><span class="where w-panel">PAINEL LOCAWEB</span> B2. Escolher a versão do PHP (8.3 ou maior)</h4>
@@ -237,7 +237,7 @@ LEIA-ME.txt e MANIFEST.sha256  → NÃO precisam ser enviados (são só para con
         <li>Escolha <strong>8.3</strong>, <strong>8.4</strong> ou <strong>8.5</strong>, a maior que aparecer. <strong>Não</strong> escolha 8.2 ou menor: o sistema não funciona nelas.</li>
         <li>Clique em <strong>Aplicar versão</strong>.</li>
       </ol>
-      <p class="warn">A versão do PHP vale para o domínio inteiro. Se já existe outro site em <code>dradeboragakdino.com.br</code> (por exemplo, um WordPress), confira depois se ele continua abrindo. WordPress atualizado funciona em PHP 8.3.</p>
+      <p class="warn">A versão do PHP vale para o domínio inteiro. Se já existe outro site em <code>dradeboragaldino.com.br</code> (por exemplo, um WordPress), confira depois se ele continua abrindo. WordPress atualizado funciona em PHP 8.3.</p>
       <p><strong>Resultado esperado:</strong> o quadro passa a mostrar a nova versão (pode levar alguns minutos).</p>
 
       <h4><span class="where w-panel">PAINEL LOCAWEB</span> B3. Anotar os dados do banco MySQL</h4>
@@ -258,7 +258,7 @@ LEIA-ME.txt e MANIFEST.sha256  → NÃO precisam ser enviados (são só para con
 
       <h4><span class="where w-web">NAVEGADOR</span> B5. Verificar se o HTTPS (cadeado) está ativo</h4>
       <ol class="steps">
-        <li>Abra uma aba nova e digite exatamente: <code>https://dradeboragakdino.com.br</code></li>
+        <li>Abra uma aba nova e digite exatamente: <code>https://dradeboragaldino.com.br</code></li>
         <li>Olhe a barra de endereço:
           <ul>
             <li><strong>Cadeado</strong> e a página abre normalmente → HTTPS <strong>ativo</strong>. Anote "sim" em ⑨.</li>
@@ -303,7 +303,7 @@ Linha para o .env do SERVIDOR:
       <table>
         <tr><th>Linha no arquivo</th><th>O que colocar</th></tr>
         <tr><td><code>APP_KEY=</code></td><td>A chave ⑫, inteira, com <code>base64:</code></td></tr>
-        <tr><td><code>APP_URL=</code></td><td>Com HTTPS: <code>https://dradeboragakdino.com.br/fauvovet</code> (já vem assim no modelo)</td></tr>
+        <tr><td><code>APP_URL=</code></td><td>Com HTTPS: <code>https://dradeboragaldino.com.br/fauvovet</code> (já vem assim no modelo)</td></tr>
         <tr><td><code>DB_HOST=</code></td><td>Host do banco ①</td></tr>
         <tr><td><code>DB_PORT=</code></td><td>Porta ② (normalmente <code>3306</code>, já vem assim)</td></tr>
         <tr><td><code>DB_DATABASE=</code></td><td>Nome do banco ③</td></tr>
@@ -316,7 +316,7 @@ Linha para o .env do SERVIDOR:
       <p>As demais linhas (<code>APP_ENV=production</code>, <code>APP_DEBUG=false</code>, <code>SESSION_…</code>, <code>HASH_DRIVER=argon2id</code> etc.) ficam <strong>como estão</strong>.</p>
 
       <p class="warn"><strong>Se NÃO houver HTTPS</strong> (somente teste, sem dados reais), troque também:<br>
-        <code>APP_URL=http://dradeboragakdino.com.br/fauvovet</code> (com <code>http</code>, sem o "s")<br>
+        <code>APP_URL=http://dradeboragaldino.com.br/fauvovet</code> (com <code>http</code>, sem o "s")<br>
         <code>SESSION_SECURE_COOKIE=false</code><br>
         Quando o HTTPS for ativado, volte as duas linhas para <code>https://…</code> e <code>true</code>.</p>
 
@@ -324,7 +324,7 @@ Linha para o .env do SERVIDOR:
 <pre><code>APP_ENV=production
 APP_DEBUG=false
 APP_KEY=base64:EXEMPLOexemploEXEMPLOexemploEXEMPLOexem=
-APP_URL=https://dradeboragakdino.com.br/fauvovet
+APP_URL=https://dradeboragaldino.com.br/fauvovet
 ...
 DB_CONNECTION=mysql
 DB_HOST=exemplo123.mysql.dbaas.com.br
@@ -403,7 +403,7 @@ DEPLOY_TOKEN_SHA256=4f1c00000000000000000000000000000000000000000000000000000000
       <p><strong>Resultado esperado:</strong> entrando em <code>/public_html/fauvovet</code> no lado direito, você vê <code>.htaccess</code>, <code>index.php</code>, <code>build</code>, <code>favicon.ico</code> e <code>robots.txt</code>.</p>
 
       <h4><span class="where w-web">NAVEGADOR</span> E6. Primeira olhada (ainda não vai funcionar por completo)</h4>
-      <p>Abra <code>https://dradeboragakdino.com.br/fauvovet/up</code>. Pode aparecer uma página de erro "500": é <strong>normal neste momento</strong>, porque as tabelas do banco ainda não existem. A etapa F resolve. O importante é <strong>não</strong> aparecer "404 Not Found" da Locaweb; se aparecer, a pasta <code>fauvovet</code> não está dentro de <code>public_html</code>.</p>
+      <p>Abra <code>https://dradeboragaldino.com.br/fauvovet/up</code>. Pode aparecer uma página de erro "500": é <strong>normal neste momento</strong>, porque as tabelas do banco ainda não existem. A etapa F resolve. O importante é <strong>não</strong> aparecer "404 Not Found" da Locaweb; se aparecer, a pasta <code>fauvovet</code> não está dentro de <code>public_html</code>.</p>
 
       <!-- ===================== ETAPA F ===================== -->
       <h3>Etapa F — Instalar o banco e otimizar (do seu computador, pela internet)</h3>
@@ -417,7 +417,7 @@ DEPLOY_TOKEN_SHA256=4f1c00000000000000000000000000000000000000000000000000000000
 <pre><code>export FAUVOVET_ALLOW_HTTP=1</code></pre>
 
       <h4><span class="where w-term">TERMINAL UBUNTU</span> F2. Diagnóstico (só lê, não altera nada)</h4>
-<pre><code>pnpm deploy:remote https://dradeboragakdino.com.br/fauvovet diagnostico</code></pre>
+<pre><code>pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet diagnostico</code></pre>
       <p><strong>Resultado esperado</strong> (os valores exatos variam):</p>
 <pre><code>HTTP 200
 {
@@ -440,12 +440,12 @@ DEPLOY_TOKEN_SHA256=4f1c00000000000000000000000000000000000000000000000000000000
       <p>Confira linha por linha as marcadas com "←". Se alguma estiver diferente, procure na <a href="#s9">seção 9</a> antes de continuar.</p>
 
       <h4><span class="where w-term">TERMINAL UBUNTU</span> F3. Criar as tabelas no banco (migrar)</h4>
-<pre><code>pnpm deploy:remote https://dradeboragakdino.com.br/fauvovet migrar</code></pre>
+<pre><code>pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet migrar</code></pre>
       <p><strong>Resultado esperado:</strong> <code>HTTP 200</code>, <code>"exit_code": 0</code> e um texto com as duas migrações marcadas como <code>DONE</code> (<code>…create_identity_tables</code> e <code>…create_tenancy_tables</code>).</p>
       <p class="note">O banco começa vazio: nenhum dado fictício do seu computador é enviado. Rodar "migrar" de novo depois não faz mal; ele responde que não há nada a fazer.</p>
 
       <h4><span class="where w-term">TERMINAL UBUNTU</span> F4. Otimizar</h4>
-<pre><code>pnpm deploy:remote https://dradeboragakdino.com.br/fauvovet otimizar</code></pre>
+<pre><code>pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet otimizar</code></pre>
       <p><strong>Resultado esperado:</strong> <code>HTTP 200</code> e todos os itens com <code>0</code>:</p>
 <pre><code>{ "results": { "config:clear": 0, "route:clear": 0, "view:clear": 0,
                "config:cache": 0, "route:cache": 0, "view:cache": 0 } }</code></pre>
@@ -456,10 +456,10 @@ DEPLOY_TOKEN_SHA256=4f1c00000000000000000000000000000000000000000000000000000000
 
       <h4><span class="where w-web">NAVEGADOR</span> G1. Cadastrar a clínica do titular</h4>
       <ol class="steps">
-        <li>Abra <code>https://dradeboragakdino.com.br/fauvovet/cadastro</code>.</li>
+        <li>Abra <code>https://dradeboragaldino.com.br/fauvovet/cadastro</code>.</li>
         <li>Preencha os dados da clínica ou profissional e da pessoa titular (nome, e-mail, senha com <strong>pelo menos 12 caracteres</strong>). Essa será a conta de administrador da clínica.</li>
         <li>Clique para criar. O sistema entra automaticamente e mostra o <strong>Painel</strong>.</li>
-        <li>Clique em <strong>Sair</strong> e entre de novo por <code>https://dradeboragakdino.com.br/fauvovet/login</code>, para confirmar que o login funciona.</li>
+        <li>Clique em <strong>Sair</strong> e entre de novo por <code>https://dradeboragaldino.com.br/fauvovet/login</code>, para confirmar que o login funciona.</li>
       </ol>
       <p class="warn">Por enquanto, <strong>não cadastre</strong> tutores ou pacientes reais: esses módulos ainda não existem nesta versão (estão na Fase 1). Sem HTTPS, não cadastre nenhum dado real.</p>
 
@@ -481,13 +481,13 @@ DEPLOY_TOOLS_ENABLED=false</code></pre>
         <li>No lado direito, vá em <code>/app-fauvovet/bootstrap/cache</code>.</li>
         <li>Clique com o botão direito em <code>config.php</code> → <strong>Excluir</strong> → confirme. Apague <strong>só esse arquivo</strong>.</li>
       </ol>
-      <p><strong>Resultado esperado:</strong> abrindo <code>https://dradeboragakdino.com.br/fauvovet/cadastro</code>, o cadastro de nova clínica não está mais disponível. O sistema continua funcionando normalmente.</p>
+      <p><strong>Resultado esperado:</strong> abrindo <code>https://dradeboragaldino.com.br/fauvovet/cadastro</code>, o cadastro de nova clínica não está mais disponível. O sistema continua funcionando normalmente.</p>
 
       <!-- ===================== ETAPA H ===================== -->
       <h3>Etapa H — Teste final e limpeza</h3>
 
       <h4><span class="where w-term">TERMINAL UBUNTU</span> H1. Teste automático contra o site no ar</h4>
-<pre><code>SMOKE_URL=https://dradeboragakdino.com.br/fauvovet pnpm smoke</code></pre>
+<pre><code>SMOKE_URL=https://dradeboragaldino.com.br/fauvovet pnpm smoke</code></pre>
       <p><strong>Resultado esperado:</strong> 5 linhas começando com <code>PASS</code>:</p>
 <pre><code>PASS  Página de login (200, CSP com nonce, X-Frame-Options)
 PASS  Rota protegida sem sessão → redireciona para login
@@ -505,14 +505,14 @@ PASS  Health (/up)</code></pre>
         <li>Esvazie a <strong>Lixeira</strong>.</li>
         <li>Mantenha o TOKEN, a APP_KEY e as senhas só no gerenciador de senhas.</li>
       </ol>
-      <p class="ok"><strong>Pronto.</strong> O FauvoVet está no ar em <code>https://dradeboragakdino.com.br/fauvovet</code>. Me avise o resultado da etapa H1 (e, se tiver, o que apareceu em F2) para eu registrar no checkpoint.</p>
+      <p class="ok"><strong>Pronto.</strong> O FauvoVet está no ar em <code>https://dradeboragaldino.com.br/fauvovet</code>. Me avise o resultado da etapa H1 (e, se tiver, o que apareceu em F2) para eu registrar no checkpoint.</p>
     </section>
 
     <section id="s5">
       <h2>5. Como testar se deu certo</h2>
       <h3>Automático</h3>
       <p>Etapa H1 (<code>pnpm smoke</code>): 5 × <code>PASS</code>. Opcionalmente, teste também entrar e sair automaticamente, usando a conta criada em G1:</p>
-<pre><code> SMOKE_EMAIL='seu-email@exemplo.com' SMOKE_PASSWORD='sua senha' SMOKE_URL=https://dradeboragakdino.com.br/fauvovet pnpm smoke</code></pre>
+<pre><code> SMOKE_EMAIL='seu-email@exemplo.com' SMOKE_PASSWORD='sua senha' SMOKE_URL=https://dradeboragaldino.com.br/fauvovet pnpm smoke</code></pre>
       <p><small>O espaço no início evita que a senha fique no histórico do terminal. Deve aparecer uma sexta linha: <code>PASS Login + painel + logout</code>.</small></p>
       <h3>Manual, no navegador do computador</h3>
       <ol class="steps">
@@ -523,7 +523,7 @@ PASS  Health (/up)</code></pre>
         <li><code>/fauvovet/.env</code> e <code>/fauvovet/../app-fauvovet/.env</code> <strong>não</strong> mostram conteúdo (erro 403 ou 404).</li>
       </ol>
       <h3>Manual, no celular</h3>
-      <p>Abra <code>https://dradeboragakdino.com.br/fauvovet/login</code> no celular, entre, abra o menu (botão no topo) e navegue entre Painel, Unidades e Equipe. Nada pode exigir rolagem para os lados.</p>
+      <p>Abra <code>https://dradeboragaldino.com.br/fauvovet/login</code> no celular, entre, abra o menu (botão no topo) e navegue entre Painel, Unidades e Equipe. Nada pode exigir rolagem para os lados.</p>
       <h3>Isolamento entre clínicas</h3>
       <p>Já está provado automaticamente no seu computador (19 testes de isolamento + E2E, na etapa A4). No servidor, como o cadastro público foi desligado na etapa G, não há segunda clínica para testar. Não crie clínicas falsas em produção só para isso.</p>
     </section>
@@ -546,7 +546,7 @@ PASS  Health (/up)</code></pre>
         <li><span class="where w-fz">FILEZILLA</span> Lado esquerdo <code>public_html\fauvovet</code>, lado direito <code>/public_html/fauvovet</code>. Envie tudo (sobrescrever). Os arquivos antigos de <code>build/assets</code> podem ficar; apague-os só depois de validar a nova versão.</li>
         <li><span class="where w-term">TERMINAL</span> <code> export FAUVOVET_DEPLOY_TOKEN='…'</code> → <code>diagnostico</code> (confira <code>pending_migrations</code>) → <code>migrar</code> → <code>otimizar</code>, como na etapa F.</li>
         <li><span class="where w-fz">FILEZILLA</span> <code>DEPLOY_TOOLS_ENABLED=false</code> no <code>.env</code> → enviar de volta → apagar <code>bootstrap/cache/config.php</code>.</li>
-        <li><span class="where w-term">TERMINAL</span> <code>SMOKE_URL=https://dradeboragakdino.com.br/fauvovet pnpm smoke</code> → <code>unset FAUVOVET_DEPLOY_TOKEN</code> → apagar <code>C:\fauvovet-deploy</code>.</li>
+        <li><span class="where w-term">TERMINAL</span> <code>SMOKE_URL=https://dradeboragaldino.com.br/fauvovet pnpm smoke</code> → <code>unset FAUVOVET_DEPLOY_TOKEN</code> → apagar <code>C:\fauvovet-deploy</code>.</li>
       </ol>
       <p class="note">Guarde o nome de cada pacote publicado (por exemplo <code>fauvovet-9bb7d11</code>). A pasta <code>.deploy/</code> do seu computador mantém os pacotes antigos, e isso é o que permite voltar atrás (seção 8).</p>
     </section>

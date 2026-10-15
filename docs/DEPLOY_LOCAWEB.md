@@ -1,26 +1,36 @@
 # Deploy na Locaweb — FauvoVet
 
-> **Estado: pronto para o primeiro deploy de TESTE; ainda não publicado.** Todo o fluxo abaixo foi ensaiado localmente
-> numa simulação fiel (pacote real, `APP_ENV=production`, migração e caches via HTTP — ver guia HTML da mudança), mas
-> **não** no servidor da Locaweb. Nenhum dado real antes de HTTPS ativo (ver `docs/SECURITY.md`).
+> **Estado: PUBLICADO (teste) em 15/10/2026** em `http://dradeboragaldino.com.br/fauvovet` pelo proprietário, seguindo o
+> tutorial. `pnpm smoke` contra o servidor real: **5/5 PASS** (respostas de 143–245 ms). **HTTPS ainda NÃO é válido**:
+> o certificado servido é o genérico da Locaweb (`*.websiteseguro.com`), que não cobre o domínio. **Proibido cadastrar
+> dados reais** até instalar um certificado para `dradeboragaldino.com.br` (ver "HTTPS" abaixo).
 
 ## Ambiente informado/pendente
 
-| Item                              | Valor                                                                                                                                |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Plano                             | **Hospedagem Dedicada 4 GB**, só painel Locaweb (informado em 15/10/2026)                                                            |
-| SSH / Composer / Node no servidor | **Não** (informado). Build e `vendor/` são feitos localmente                                                                         |
-| Banco                             | **MySQL do painel** (instalação feita pelo proprietário em 15/10/2026). Versão/host: **pendente** — veja no painel ou no diagnóstico |
-| Domínio                           | `dradeboragakdino.com.br` já apontado para a hospedagem (informado). Aplicação em `/fauvovet`                                        |
-| HTTPS do domínio                  | **pendente de verificação** (bloqueante para dados reais)                                                                            |
-| Versão do PHP                     | **pendente** — o pacote exige **PHP ≥ 8.3** (testado em 8.3 na CI e 8.5 localmente). Selecionar 8.3+ no painel                       |
-| Protocolo do FileZilla            | usar **SFTP** se o painel oferecer; senão **FTPS** (FTP explícito sobre TLS). Nunca FTP puro                                         |
-| Cron                              | não necessário nesta versão                                                                                                          |
+| Item                              | Valor                                                                                                                                    |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Plano                             | **Hospedagem Dedicada 4 GB**, só painel Locaweb (informado em 15/10/2026)                                                                |
+| SSH / Composer / Node no servidor | **Não** (informado). Build e `vendor/` são feitos localmente                                                                             |
+| Banco                             | **MySQL do painel** (instalação feita pelo proprietário em 15/10/2026). Versão/host: **pendente** — veja no painel ou no diagnóstico     |
+| Domínio                           | `dradeboragaldino.com.br` (corrigido de "gakdino" em 15/10/2026) apontado para a hospedagem (informado). Aplicação em `/fauvovet`        |
+| HTTPS do domínio                  | **inválido** (verificado em 15/10/2026): certificado `*.websiteseguro.com` (GlobalSign) não cobre o domínio. Bloqueante para dados reais |
+| Versão do PHP                     | **pendente** — o pacote exige **PHP ≥ 8.3** (testado em 8.3 na CI e 8.5 localmente). Selecionar 8.3+ no painel                           |
+| Protocolo do FileZilla            | usar **SFTP** se o painel oferecer; senão **FTPS** (FTP explícito sobre TLS). Nunca FTP puro                                             |
+| Cron                              | não necessário nesta versão                                                                                                              |
 
 > **Tutorial completo, para quem nunca fez deploy:**
 > [`docs/changes/2026-10-15-tutorial-deploy-locaweb.html`](changes/2026-10-15-tutorial-deploy-locaweb.html). Abra-o no
 > navegador (no Windows: `\\wsl.localhost\Ubuntu\home\rafa_silva\code\fauvovet\docs\changes\`). Este arquivo
 > é só o resumo de referência.
+
+## HTTPS (pendente — bloqueia dados reais)
+
+1. Painel Locaweb → hospedagem → procurar **Certificado SSL** / **SSL gratuito** / **HTTPS** para `dradeboragaldino.com.br`
+   (e `www.`), ativar e aguardar emissão.
+2. Conferir: `https://dradeboragaldino.com.br/fauvovet/login` abre com cadeado, sem aviso.
+3. No `.env` do servidor: `APP_URL=https://dradeboragaldino.com.br/fauvovet` e `SESSION_SECURE_COOKIE=true`; apagar
+   `bootstrap/cache/config.php`.
+4. `SMOKE_URL=https://dradeboragaldino.com.br/fauvovet pnpm smoke` → 5/5 PASS (com HTTPS o smoke exige cookie `Secure`).
 
 ## O que vai para onde
 

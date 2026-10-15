@@ -136,10 +136,10 @@ pnpm deploy:package        # .deploy/fauvovet-&lt;versão&gt;/{app-fauvovet, pub
 pnpm deploy:token          # token (gerenciador de senhas) + DEPLOY_TOKEN_SHA256 (.env do servidor)
 # FileZilla (SFTP/FTPS): app-fauvovet/ → raiz do FTP ; public_html/fauvovet/ → public_html/fauvovet/
 export FAUVOVET_DEPLOY_TOKEN='...'
-pnpm deploy:remote https://dradeboragakdino.com.br/fauvovet diagnostico
-pnpm deploy:remote https://dradeboragakdino.com.br/fauvovet migrar
-pnpm deploy:remote https://dradeboragakdino.com.br/fauvovet otimizar
-SMOKE_URL=https://dradeboragakdino.com.br/fauvovet pnpm smoke</code></pre>
+pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet diagnostico
+pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet migrar
+pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet otimizar
+SMOKE_URL=https://dradeboragaldino.com.br/fauvovet pnpm smoke</code></pre>
       <p><strong>Ensaio realizado</strong> (simulação fiel em <code>.data/prodsim</code>: pacote real, <code>index.php</code> de produção apontando para <code>../../app-fauvovet</code>, <code>APP_ENV=production</code>, <code>APP_DEBUG=false</code>, banco vazio): diagnóstico 200 (PHP 8.5.4, nenhuma extensão faltando, 2 migrações pendentes) → migrar 200 → otimizar (config/route/view cache = 0) → cadastro 302 para o painel → <code>pnpm smoke</code> 6/6 PASS → nenhum arquivo de log de erro. Limitação: o servidor do ensaio não lê <code>.htaccess</code>; as regras do Apache serão verificadas no primeiro deploy real.</p>
       <p class="warn">Sem HTTPS: apenas teste com dados fictícios; <code>SESSION_SECURE_COOKIE=true</code> e certificado ativo são obrigatórios antes de qualquer dado real.</p>
     </section>

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Chama as ferramentas de deploy do servidor (sem SSH). O token vem da variável de ambiente
 // FAUVOVET_DEPLOY_TOKEN da sua sessão de terminal (nunca de arquivo).
-// Uso: FAUVOVET_DEPLOY_TOKEN=... pnpm deploy:remote https://dradeboragakdino.com.br/fauvovet diagnostico|migrar|otimizar
+// Uso: FAUVOVET_DEPLOY_TOKEN=... pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet diagnostico|migrar|otimizar
 const [url, action] = process.argv.slice(2);
 const token = process.env.FAUVOVET_DEPLOY_TOKEN;
 const actions = { diagnostico: 'GET', migrar: 'POST', otimizar: 'POST' };
