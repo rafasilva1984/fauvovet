@@ -1,0 +1,10 @@
+node_modules
+dist
+.next
+.data
+coverage
+pnpm-lock.yaml
+docs/changes/*.html
+CLAUDE.md
+playwright-report
+test-results

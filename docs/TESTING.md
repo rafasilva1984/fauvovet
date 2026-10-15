@@ -1,29 +1,66 @@
 # FauvoVet — Estratégia e evidências de testes
 
-> **Estado:** documento inicial; o produto e seus scripts de teste ainda não foram implementados neste pacote. Não declarar comandos como disponíveis antes de confirmá-los no repositório.
-
 ## Ambientes
 
-- Desenvolvimento preferencial: WSL2/Ubuntu, Node.js + pnpm + Docker Desktop integrado quando requerido.
-- Terminal alternativo: Git Bash no Windows; documentar dependências e diferenças verificadas.
-- Testes: banco e volumes distintos de produção, fixtures inteiramente sintéticas e pelo menos dois tenants (A e B).
+| Ambiente                                | Estado         | Observações                                                                                                                 |
+| --------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| WSL2 Ubuntu 26.04 (kernel 6.18, x86_64) | **Verificado** | Node 24.21.0, pnpm 12.4.2, Git 2.53.0, mise 2026.9.11; sem sudo; Docker Desktop instalado no Windows mas sem integração WSL |
+| CI GitHub Actions `ubuntu-latest`       | Configurado    | Mesmo fluxo: `pnpm bootstrap` + `pnpm verify`                                                                               |
+| Git Bash (Windows)                      | **NOT RUN**    | Scripts em Node puro e binário PostgreSQL Windows previstos, mas não executados                                             |
+| macOS                                   | NOT RUN        | —                                                                                                                           |
 
-## Gates desejados (implementar gradualmente)
+Bancos: `fauvovet_dev` (desenvolvimento, seed fictício) e `fauvovet_test` (schema recriado a cada `test:integration`),
+no PostgreSQL 18.4 local em `127.0.0.1:54329`. Papéis: `fauvovet_migrator` (dono) e `fauvovet_app` (RLS aplicada).
 
-1. Lint/format/types e build.
-2. Unitários e integração de API/banco.
-3. Isolamento cross-tenant inclusive pesquisa e documentos.
-4. E2E: agendamento, pacientes, prontuário, templates, busca e mobile.
-5. Performance: baseline documentado, consultas e latência p50/p95/p99, frontend Core Web Vitals.
-6. Segurança: vazamento de segredo, autenticação, autorização, uploads, dependências.
-7. Verificação de documentação HTML e `docs/PROGRESS.md`.
+## Comandos reais disponíveis
+
+| Comando                      | Escopo                                                                                                               |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `pnpm test`                  | Unitários: `packages/contracts` (permissões, CPF/CNPJ, contraste, schemas) e `apps/api/src/**/*.test.ts`             |
+| `pnpm test:integration`      | `apps/api/test/**` — supertest contra a API real + PostgreSQL real                                                   |
+| `pnpm test:tenant-isolation` | `apps/api/test/isolation/**` — API e RLS com tenants A e B                                                           |
+| `pnpm perf:check`            | Baseline p50/p95/p99 (`.perf/api-baseline.json`, não versionado)                                                     |
+| `pnpm docs:validate`         | Guias HTML (estrutura, 10 seções, sem TODO, offline) + referência no PROGRESS                                        |
+| `pnpm security:secrets`      | Padrões de segredo e arquivos proibidos                                                                              |
+| `pnpm verify`                | Gate: contratos → prettier → eslint → tsc → unit → integração → docs → segredos → build (`--e2e` quando existir web) |
+
+## Guardas de segurança dos testes
+
+- `NODE_ENV=test` exige banco cujo nome termina em `_test` em host local (`assertTestDatabase`).
+- `db:migrate`/`db:seed` recusam host não local fora de `NODE_ENV=production`; seed recusa produção sempre.
+- Todos os dados são fictícios (domínios `.test`, CNPJ gerado por dígito verificador).
+
+## Matriz de cobertura atual (CLAUDE.md §16.2)
+
+| #   | Área                     | Estado                                                                                                  |
+| --- | ------------------------ | ------------------------------------------------------------------------------------------------------- |
+| 1   | Qualidade de código      | PASS (lint, tipos, prettier, build); auditoria de dependências NOT RUN                                  |
+| 2   | Domínio clínico          | NOT RUN (não existe ainda)                                                                              |
+| 3   | Segurança multi-tenant   | PASS — 15 testes (IDs previsíveis, tenant_id manipulado, troca de contexto, RLS SQL, FK composta, pool) |
+| 4   | Busca avançada           | NOT RUN (Fase 2)                                                                                        |
+| 5   | Documentos               | NOT RUN (Fase 1–2)                                                                                      |
+| 6   | Interface desktop/mobile | NOT RUN (web no próximo incremento)                                                                     |
+| 7   | Integração               | PASS parcial — API+banco, sessão, expiração/revogação; filas/cache inexistentes                         |
+| 8   | Performance              | Baseline coletada (API); web vitals NOT RUN                                                             |
+| 9   | Resiliência e segurança  | PASS parcial — rate limit, bloqueio, limites de corpo; backup/restore NOT RUN                           |
+| 10  | Documentação             | PASS (`docs:validate`)                                                                                  |
 
 ## Evidências por incremento
 
-| Data | Escopo | Comando real | Ambiente | Resultado (PASS/FAIL/NOT RUN) | Evidência/causa |
-|---|---|---|---|---|---|
-| 2026-10-15 | Pacote inicial de documentação | Nenhum teste de aplicação | Não se aplica | NOT RUN | A aplicação ainda não existe neste pacote |
+| Data       | Escopo                         | Comando real      | Ambiente | Resultado       | Evidência/causa                                                   |
+| ---------- | ------------------------------ | ----------------- | -------- | --------------- | ----------------------------------------------------------------- |
+| 2026-10-15 | Pacote inicial de documentação | —                 | —        | NOT RUN         | Aplicação não existia                                             |
+| 2026-10-15 | Fundação + API multi-tenant    | `pnpm verify`     | WSL2     | PASS            | contracts 12, api unit 5, integração 42 (isolamento 15); build OK |
+| 2026-10-15 | Fundação + API multi-tenant    | `pnpm perf:check` | WSL2     | PASS (baseline) | p95: health 2,3 ms; me 6,3 ms; units 7,4 ms; tenant 5,6 ms        |
+
+## Troubleshooting
+
+- **PostgreSQL não sobe:** ver `.data/pg.log`; porta ocupada → mudar `LOCAL_PG_PORT` e URLs do `.env`.
+- **`Ignored build scripts`:** revisar `allowBuilds` em `pnpm-workspace.yaml`.
+- **Docker no WSL:** opcional; habilitar em Docker Desktop › Settings › Resources › WSL integration.
+- **Git Bash:** se `pnpm db:start` falhar, use WSL2 e registre o erro aqui.
 
 ## Antes do deploy
 
-Somente publicar após testes locais efetivos, revisão de segredos, build verificado, documentação da mudança, plano de backup/rollback e smoke do artefato. FileZilla apenas transfere artefatos compatíveis com a hospedagem.
+`pnpm verify` + build + smoke do artefato (`SMOKE_URL=... pnpm smoke`) + backup e plano de migração/rollback + revisão de
+segurança. FileZilla apenas transfere artefatos compatíveis com a hospedagem (ver `docs/DEPLOY_LOCAWEB.md`).

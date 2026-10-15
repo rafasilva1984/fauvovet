@@ -1,0 +1,45 @@
+{
+  "name": "fauvovet",
+  "version": "0.1.0",
+  "private": true,
+  "description": "FauvoVet — plataforma SaaS multi-tenant para medicina veterinária",
+  "license": "MIT",
+  "packageManager": "pnpm@12.4.2",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "bootstrap": "node scripts/bootstrap.mjs",
+    "dev": "node scripts/dev.mjs",
+    "build": "pnpm -r --workspace-concurrency=1 build",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "test:integration": "pnpm --filter @fauvovet/api test:integration",
+    "test:tenant-isolation": "pnpm --filter @fauvovet/api test:tenant-isolation",
+    "test:e2e": "pnpm --filter @fauvovet/web test:e2e",
+    "db:start": "node scripts/db-local.mjs start",
+    "db:stop": "node scripts/db-local.mjs stop",
+    "db:status": "node scripts/db-local.mjs status",
+    "db:setup": "node scripts/db-local.mjs setup",
+    "db:migrate": "pnpm --filter @fauvovet/api db:migrate",
+    "db:seed": "pnpm --filter @fauvovet/api db:seed",
+    "docs:validate": "node scripts/docs-validate.mjs",
+    "security:secrets": "node scripts/secrets-scan.mjs",
+    "perf:check": "pnpm --filter @fauvovet/api perf:check",
+    "verify": "node scripts/verify.mjs",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "embedded-postgres": "18.4.0-beta.17",
+    "eslint": "^10.12.0",
+    "globals": "^17.13.0",
+    "pg": "^8.23.1",
+    "prettier": "^3.9.10",
+    "typescript": "6.0.3",
+    "typescript-eslint": "^8.71.2"
+  }
+}

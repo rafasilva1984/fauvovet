@@ -1,0 +1,38 @@
+# Dependências e builds
+node_modules/
+dist/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+.turbo/
+
+# Ambiente e segredos — NUNCA versionar
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Dados locais (PostgreSQL embutido, uploads, dumps, backups)
+.data/
+uploads/
+*.dump
+*.sql.gz
+*.backup
+
+# Testes
+playwright-report/
+test-results/
+blob-report/
+.perf/
+
+# Sistema/editor
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/*
+!.vscode/extensions.json

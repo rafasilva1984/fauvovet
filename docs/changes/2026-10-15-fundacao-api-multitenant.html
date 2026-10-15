@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FauvoVet — Fundação: monorepo, banco com RLS e API multi-tenant</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #1a2935; background: #f4f7f8; line-height: 1.65; }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 20px 80px; }
+    header { border-radius: 20px; padding: 32px; color: white; background: linear-gradient(120deg, #0b4652, #1a7375); }
+    header p { color: #e1f5f0; margin-bottom: 0; }
+    h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.2; margin: 0; }
+    h2 { font-size: 1.2rem; margin: 0 0 12px; }
+    section { margin-top: 20px; background: #fff; padding: 24px; border: 1px solid #dee7e8; border-radius: 14px; }
+    p, li { overflow-wrap: anywhere; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    pre { overflow-x: auto; border-radius: 8px; padding: 14px; color: #e9fbff; background: #172b32; }
+    .tag { display: inline-block; font-size: 0.8rem; font-weight: 700; border: 1px solid #f5cf83; background: #fff8e4; color: #7a4b12; border-radius: 30px; padding: 3px 10px; }
+    .note { border-left: 4px solid #338b96; padding-left: 12px; }
+    .todo { color: #9e3d26; font-weight: 650; }
+    table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+    th, td { padding: 10px; border-bottom: 1px solid #e0e7e8; text-align: left; }
+    small { color: #52646d; }
+    .pass { color: #116b3a; font-weight: 700; }
+    .notrun { color: #8a5a00; font-weight: 700; }
+    .warn { border-left: 4px solid #c27c0e; background: #fff8e4; padding: 10px 12px; border-radius: 6px; }
+    h3 { font-size: 1rem; margin: 18px 0 8px; }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e4eef0; background: #0f1a1e; }
+      section { background: #15242a; border-color: #23373e; }
+      th, td { border-color: #23373e; }
+      .warn { background: #2a2210; }
+      small { color: #9fb3ba; }
+      .pass { color: #5fd28f; } .notrun { color: #f0b54a; } .todo { color: #ff9b85; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="tag">INCREMENTO IMPLEMENTADO — FASE 0</span>
+      <h1>Fundação: monorepo, PostgreSQL com RLS e API multi-tenant</h1>
+      <p>ID: <strong>2026-10-15-fundacao-api-multitenant</strong> · Data: <strong>15/10/2026</strong> · Versão: <strong>0.1.0</strong> · Módulo: <strong>A. Administração SaaS e tenants</strong> · Estado: <strong>implementado e testado localmente (API); web pendente</strong></p>
+    </header>
+
+    <section>
+      <h2>1. Objetivo e contexto</h2>
+      <p>Criar a base executável do FauvoVet com <strong>isolamento rígido entre clínicas desde o primeiro commit</strong>: autenticação segura, seleção explícita de clínica/unidade, permissões negadas por padrão no backend e Row-Level Security no PostgreSQL, comprovados com dois tenants fictícios.</p>
+      <p><strong>Critério de aceite:</strong> API e banco sobem localmente com um comando; um usuário do tenant A não consegue ler, listar, criar ou alterar dados do tenant B por API (IDs previsíveis, <code>tenant_id</code> manipulado) nem por SQL direto com o papel da aplicação; <code>pnpm verify</code> passa.</p>
+    </section>
+
+    <section>
+      <h2>2. O que mudou</h2>
+      <p><strong>Antes:</strong> repositório apenas com <code>CLAUDE.md</code> e documentos iniciais. <strong>Depois:</strong></p>
+      <ul>
+        <li><strong>Monorepo pnpm</strong>: <code>package.json</code>, <code>pnpm-workspace.yaml</code> (scripts de instalação permitidos só para <code>@embedded-postgres/*</code>), <code>mise.toml</code>, <code>.nvmrc</code>, <code>tsconfig.base.json</code>, <code>eslint.config.mjs</code>, Prettier, <code>.gitattributes</code> (LF), <code>.gitignore</code>, <code>.env.example</code>, <code>LICENSE</code> (MIT).</li>
+        <li><code>packages/contracts</code>: papéis e matriz de permissões, schemas zod (login, contexto, onboarding, unidade, tema), validação CPF/CNPJ, contraste WCAG.</li>
+        <li><code>apps/api</code> (NestJS 12): rotas em <code>/fauvovet/api/v1</code>:
+          <table><thead><tr><th>Rota</th><th>Acesso</th></tr></thead><tbody>
+            <tr><td><code>GET /health</code></td><td>público</td></tr>
+            <tr><td><code>POST /auth/login</code>, <code>POST /onboarding</code></td><td>público (rate limit)</td></tr>
+            <tr><td><code>GET /auth/me</code>, <code>POST /auth/context</code>, <code>POST /auth/logout</code></td><td>sessão (+CSRF em POST)</td></tr>
+            <tr><td><code>GET /tenant</code>, <code>GET /units</code>, <code>GET /units/:id</code></td><td>todos os papéis do tenant</td></tr>
+            <tr><td><code>POST /units</code></td><td>titular, gestão</td></tr>
+            <tr><td><code>GET /members</code>, <code>GET /audit</code></td><td>titular, gestão</td></tr>
+            <tr><td><code>PUT /tenant/theme</code></td><td>titular</td></tr>
+          </tbody></table>
+        </li>
+        <li><strong>Migração</strong> <code>apps/api/migrations/0001_foundation.sql</code>: <code>tenants</code>, <code>units</code>, <code>users</code>, <code>memberships</code>, <code>membership_units</code>, <code>user_sessions</code>, <code>tenant_themes</code>, <code>audit_events</code> (append-only), políticas RLS, funções <code>SECURITY DEFINER</code> mínimas.</li>
+        <li><strong>Scripts</strong> (<code>scripts/*.mjs</code>, Node puro): <code>bootstrap</code>, <code>dev</code>, <code>db-local</code> (start/stop/status/setup), <code>verify</code>, <code>docs-validate</code>, <code>secrets-scan</code>, <code>smoke</code>; <code>pnpm perf:check</code> na API.</li>
+        <li><strong>CI</strong>: <code>.github/workflows/ci.yml</code> executa <code>pnpm bootstrap</code> + <code>pnpm verify</code>.</li>
+        <li><strong>Docs</strong>: ARCHITECTURE, DECISIONS (ADR-001…008), DATA_MODEL, FEATURE_PARITY, ROADMAP, SECURITY, IDEAS, DEPLOY_LOCAWEB, TESTING, PROGRESS, README, CONTRIBUTING.</li>
+      </ul>
+      <p><strong>Dependências principais:</strong> TypeScript 6.0.3, NestJS 12.1, pg 8.23, @node-rs/argon2 2.2, zod 4.6, helmet 8.3, cookie-parser 1.4, vitest 5.0, supertest 7.3, unplugin-swc 2.0, embedded-postgres 18.4.0-beta.17 (PostgreSQL 18.4), ESLint 10, typescript-eslint 8.71, Prettier 3.9.</p>
+    </section>
+
+    <section>
+      <h2>3. Pré-requisitos (WSL2 e Git Bash)</h2>
+      <ul>
+        <li>Node.js <strong>24.x</strong> (verificado: v24.21.0) e pnpm <strong>12.4.2</strong> — via <code>mise install</code> ou <code>corepack enable</code>.</li>
+        <li>Git 2.4x+ (verificado: 2.53.0).</li>
+        <li><strong>Não</strong> é necessário Docker nem <code>sudo</code>: o PostgreSQL 18 local vem como binário npm e roda em <code>.data/pg</code>, porta <code>54329</code>, apenas em <code>127.0.0.1</code>.</li>
+        <li>Portas livres: <code>54329</code> (PostgreSQL), <code>4000</code> (API).</li>
+        <li>Variáveis: todas em <code>.env.example</code>, com valores <strong>fictícios de desenvolvimento</strong> (prefixo <code>dev-only-</code>). O bootstrap copia para <code>.env</code> sem sobrescrever.</li>
+      </ul>
+      <p class="warn"><strong>Git Bash (Windows):</strong> os scripts usam apenas Node e resolvem o binário <code>@embedded-postgres/windows-x64</code>, mas este fluxo <strong>ainda não foi executado no Git Bash</strong> (NOT RUN). Se falhar, use o WSL2 e registre o erro em <code>docs/TESTING.md</code>.</p>
+    </section>
+
+    <section>
+      <h2>4. Passo a passo para aplicar a mudança</h2>
+      <h3>Instalação nova (WSL2/Linux; Git Bash: mesmos comandos)</h3>
+      <pre><code>git clone https://github.com/rafasilva1984/fauvovet.git
+cd fauvovet
+mise install            # opcional: instala Node 24 e pnpm 12.4.2 conforme mise.toml
+pnpm bootstrap          # .env fictício → pnpm install → contratos → PostgreSQL local (setup) → build API → migrate → seed</code></pre>
+      <p>Resultado esperado ao final: <code>Seed fictício aplicado: 2 tenants, 3 unidades, 6 usuários.</code> e <code>Ambiente pronto.</code></p>
+      <h3>Subir a API</h3>
+      <pre><code>pnpm dev
+# em outro terminal:
+curl -s http://127.0.0.1:4000/fauvovet/api/v1/health
+# {"status":"ok","database":"up",...}</code></pre>
+      <h3>Atualizar instalação existente</h3>
+      <pre><code>git pull --ff-only
+pnpm install --frozen-lockfile
+pnpm --filter @fauvovet/contracts build &amp;&amp; pnpm --filter @fauvovet/api build
+pnpm db:start &amp;&amp; pnpm db:migrate     # migrações já aplicadas são ignoradas (checksum conferido)</code></pre>
+      <h3>Usando PostgreSQL próprio (Docker/nativo)</h3>
+      <p>Crie os papéis <code>fauvovet_migrator</code> (dono dos bancos) e <code>fauvovet_app</code> (<code>NOSUPERUSER NOBYPASSRLS</code>) e os bancos <code>fauvovet_dev</code>/<code>fauvovet_test</code> como em <code>scripts/db-local.mjs › setup</code>, ajuste as URLs no <code>.env</code> e rode <code>pnpm bootstrap --external-db</code>.</p>
+    </section>
+
+    <section>
+      <h2>5. Como testar</h2>
+      <h3>Automático</h3>
+      <pre><code>pnpm db:start
+pnpm verify                  # gate completo (resumo PASS/FAIL/NOT RUN no final)
+pnpm test:tenant-isolation   # somente a suíte de isolamento (15 testes)</code></pre>
+      <p>Os testes de integração <strong>recriam o schema do banco <code>fauvovet_test</code></strong> a cada execução e recusam qualquer banco que não seja local e terminado em <code>_test</code>.</p>
+      <h3>Manual (dados fictícios; senha = <code>SEED_PASSWORD</code> do <code>.env</code>)</h3>
+      <pre><code>B=http://127.0.0.1:4000/fauvovet/api/v1
+# 1. Login como recepção do tenant A (contexto escolhido explicitamente)
+curl -s -c /tmp/fv.jar -H 'content-type: application/json' \
+  -d '{"email":"carla.recepcao@aurora.exemplo.test","password":"fauvovet-demo-2026"}' $B/auth/login
+# → memberships[0].units com 2 unidades, "context": null, "csrfToken": "..."
+# 2. Sem contexto, rotas de tenant respondem 409 context_required
+curl -s -b /tmp/fv.jar $B/units
+# 3. Selecionar contexto (substitua MEMBERSHIP e CSRF pelos valores do passo 1)
+curl -s -b /tmp/fv.jar -H 'content-type: application/json' -H "x-csrf-token: CSRF" \
+  -d '{"membershipId":"MEMBERSHIP"}' $B/auth/context
+# 4. Recepção lista unidades (200) mas não membros (403)
+curl -s -b /tmp/fv.jar $B/units ; curl -s -b /tmp/fv.jar $B/members
+# 5. Unidade do tenant B por ID previsível → 404
+curl -s -b /tmp/fv.jar $B/units/0b000000-0000-4000-8000-0000000000b1</code></pre>
+      <h3>Falhas que DEVEM ser rejeitadas (cobertas por teste)</h3>
+      <ul>
+        <li>POST sem <code>X-CSRF-Token</code>, com token de outra sessão ou com <code>Origin</code> de outro site → 403.</li>
+        <li>Vínculo de outro usuário ou unidade de outro tenant em <code>/auth/context</code> → 403.</li>
+        <li><code>tenantId</code> no corpo/query/cabeçalho → ignorado; dado criado no tenant da sessão.</li>
+        <li>SQL com o papel <code>fauvovet_app</code>: sem contexto vê 0 linhas; INSERT/UPDATE para outro tenant bloqueado por RLS; FK composta impede cruzar tenants; <code>DELETE</code> em auditoria negado.</li>
+        <li>Senha errada 3× (configurável) → 429 <code>account_locked</code>; tema com contraste &lt; 4.5:1 → 422.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>6. Performance e usabilidade</h2>
+      <p><strong>Medido</strong> com <code>pnpm perf:check</code> (200 iterações após 20 de aquecimento, HTTP local em processo, banco de desenvolvimento com seed fictício, log de acesso desligado). Máquina: WSL2 Ubuntu 26.04, 20 vCPUs, 7,6 GB RAM, Node 24.21.0, PostgreSQL 18.4 local.</p>
+      <table><thead><tr><th>Rota</th><th>p50</th><th>p95</th><th>p99</th></tr></thead><tbody>
+        <tr><td>GET /health</td><td>1,81 ms</td><td>2,34 ms</td><td>4,08 ms</td></tr>
+        <tr><td>GET /auth/me</td><td>4,46 ms</td><td>6,25 ms</td><td>7,63 ms</td></tr>
+        <tr><td>GET /units</td><td>4,58 ms</td><td>7,37 ms</td><td>9,27 ms</td></tr>
+        <tr><td>GET /tenant</td><td>4,58 ms</td><td>5,61 ms</td><td>6,57 ms</td></tr>
+      </tbody></table>
+      <p>RSS do processo da API durante o benchmark: ~198 MB. Login (Argon2id) não entra no benchmark por ser intencionalmente custoso. Esta é a <strong>baseline</strong>; nenhum limite de regressão foi imposto ainda. Volume de dados mínimo (3 unidades) — não representativo de carga real.</p>
+      <p><strong>Mobile/UX:</strong> NOT RUN — não há interface web neste incremento.</p>
+    </section>
+
+    <section>
+      <h2>7. Publicação na Locaweb / FileZilla (se aplicável)</h2>
+      <p class="warn"><strong>Não publicável neste incremento.</strong> O plano Locaweb não foi verificado (<code>docs/DEPLOY_LOCAWEB.md</code>) e a API exige Node.js persistente + PostgreSQL 18 com dois papéis — incompatível com hospedagem só de arquivos. Nada deve ser enviado por FileZilla agora. Quando houver VPS: build (<code>pnpm build</code>), migração com backup prévio, proxy <code>/fauvovet/api/</code> → API sem reescrita, <code>COOKIE_SECURE=true</code>, <code>TRUST_PROXY=true</code>, segredos apenas no servidor.</p>
+    </section>
+
+    <section>
+      <h2>8. Backup e rollback</h2>
+      <ul>
+        <li><strong>Código:</strong> <code>git revert &lt;commit&gt;</code> deste incremento (nunca <code>reset --hard</code>/force-push em branch compartilhada).</li>
+        <li><strong>Banco local de desenvolvimento:</strong> os dados são fictícios e recriáveis. Para recomeçar: <code>pnpm db:stop</code>, mover a pasta <code>.data/pg</code> para fora do projeto (ex.: <code>.data/pg.bak</code>) e rodar <code>pnpm bootstrap</code>. Mover em vez de apagar preserva a cópia até você confirmar.</li>
+        <li><strong>Migrações:</strong> <em>forward-only</em>. A 0001 é a primeira; reverter em ambiente com dados reais exigiria migração corretiva + backup restaurável. Não há produção.</li>
+        <li>O <code>.env</code> existente nunca é sobrescrito pelo bootstrap.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>9. Troubleshooting</h2>
+      <table><thead><tr><th>Sintoma</th><th>Causa / ação</th></tr></thead><tbody>
+        <tr><td><code>Ignored build scripts: @embedded-postgres/...</code></td><td>pnpm bloqueia scripts por padrão; já liberado em <code>pnpm-workspace.yaml › allowBuilds</code>. Rode <code>pnpm install</code> novamente.</td></tr>
+        <tr><td><code>Falha ao iniciar PostgreSQL</code></td><td>Veja <code>.data/pg.log</code>. Porta 54329 ocupada? Altere <code>LOCAL_PG_PORT</code> <em>e</em> as URLs no <code>.env</code>.</td></tr>
+        <tr><td>verify: <code>PostgreSQL de teste inacessível</code></td><td>Rode <code>pnpm db:start</code> (ou <code>pnpm db:status</code>).</td></tr>
+        <tr><td><code>Testes recusados: banco "..." não termina com _test</code></td><td>Guarda de segurança; confira <code>TEST_DATABASE_URL</code>.</td></tr>
+        <tr><td><code>Migração ... foi alterada após aplicada</code></td><td>Não edite migrações aplicadas; crie <code>0002_...sql</code>.</td></tr>
+        <tr><td>429 <code>account_locked</code> no dev</td><td><code>pnpm db:seed</code> zera contadores dos usuários fictícios.</td></tr>
+        <tr><td>Docker indisponível no WSL</td><td>Não é necessário. Integração Docker Desktop ⇄ WSL é opcional (Settings › Resources › WSL integration).</td></tr>
+      </tbody></table>
+      <p><strong>Limitações conhecidas:</strong> rate limit em memória (instância única); sem MFA/recuperação de senha; Docker Compose ainda não fornecido; Git Bash não verificado.</p>
+    </section>
+
+    <section>
+      <h2>10. Evidências e rastreabilidade</h2>
+      <table><thead><tr><th>Validação</th><th>Status</th><th>Evidência/observação</th></tr></thead>
+      <tbody>
+        <tr><td>Testes unitários</td><td class="pass">PASS</td><td>contracts 12/12; api 5/5 (<code>pnpm test</code>)</td></tr>
+        <tr><td>Integração / multi-tenant</td><td class="pass">PASS</td><td>42/42 em 3 arquivos, incluindo 15 de isolamento (<code>pnpm test:integration</code>, PostgreSQL 18.4 real)</td></tr>
+        <tr><td>Lint / tipos / formatação</td><td class="pass">PASS</td><td><code>pnpm verify</code></td></tr>
+        <tr><td>E2E desktop/mobile</td><td class="notrun">NOT RUN</td><td>sem interface web neste incremento</td></tr>
+        <tr><td>Performance</td><td class="pass">PASS (baseline)</td><td>seção 6; sem limites impostos</td></tr>
+        <tr><td>Build / smoke local</td><td class="pass">PASS</td><td><code>pnpm build</code>; smoke manual via curl (health, login, 409 sem contexto)</td></tr>
+        <tr><td>Git Bash</td><td class="notrun">NOT RUN</td><td>ambiente não disponível nesta sessão</td></tr>
+        <tr><td>Documentação e Git remoto</td><td class="pass">PASS</td><td><code>pnpm docs:validate</code>; commit e push registrados em <code>docs/PROGRESS.md</code></td></tr>
+      </tbody></table>
+      <p class="note"><strong>Commit:</strong> “feat: fundação do monorepo, banco com RLS e API multi-tenant” na branch <code>main</code> (hash registrado em <code>docs/PROGRESS.md</code> após o push, para evitar ciclo de commits). <strong>Próxima ação:</strong> incremento web — login, onboarding, seleção de contexto, shell responsivo e tema por tenant, com E2E Playwright.</p>
+    </section>
+  </main>
+</body>
+</html>
