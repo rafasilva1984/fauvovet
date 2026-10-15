@@ -70,3 +70,19 @@ reversíveis salvo indicação.
 
 - Unicidade global permitiria descobrir se um CPF/CNPJ já é cliente do FauvoVet (enumeração entre tenants). Validamos
   apenas dígitos verificadores. Deduplicação comercial fica para o painel Superadmin auditado.
+
+## ADR-009 — Web: Next.js 16 App Router, sessão no cliente, tokens CSS próprios (2026-10-15)
+
+- **Decisão:** `apps/web` com Next.js 16.4 + React 19 + Tailwind CSS 4. Páginas autenticadas são _client components_
+  que consultam `GET /auth/me` e `/tenant`; a autorização real permanece na API (a UI apenas esconde o que o papel não
+  pode). `basePath` vem de `BASE_PATH` em tempo de build; `/api/*` é reescrito para `API_INTERNAL_URL` (também fixado
+  no build). Em produção o proxy reverso deve rotear `/fauvovet/api/` direto à API.
+- **Design system:** tokens CSS (`--fv-*`) mapeados no `@theme` do Tailwind; o tenant só altera primária/secundária
+  (com cor de texto calculada para contraste AA) e modo claro/escuro/automático. Componentes próprios acessíveis
+  (`components/ui.tsx`) e ícones SVG próprios — **shadcn/Radix adiados** até haver componentes complexos (diálogos,
+  menus, combobox) que justifiquem a dependência.
+- **Tipografia:** pilha de fontes do sistema (sem download de fontes externas: privacidade, offline, performance).
+- **CSP** na web: `script-src 'self' 'unsafe-inline'` (necessário para a hidratação do Next sem nonce). Evoluir para
+  CSP com nonce via `proxy.ts` quando houver renderização dinâmica — registrado em `docs/IDEAS.md`.
+- **Custo/risco:** checagem de sessão no cliente causa um _skeleton_ breve na primeira carga; sem SSR de dados sensíveis
+  (bom para cache/CDN, nada clínico em HTML estático).

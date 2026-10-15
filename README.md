@@ -3,9 +3,10 @@
 Plataforma SaaS multi-tenant, open-source (MIT), para medicina veterinária e gestão de negócios pet — em
 **Português do Brasil**.
 
-> **Estado atual: Fase 0 (fundação) em andamento.** Já existe uma API real com login, sessão segura, seleção de
-> clínica/unidade, RBAC inicial, onboarding, unidades, tema por tenant e auditoria, protegida por Row-Level Security e
-> testada com dois tenants. **Ainda não há** interface web, prontuário, agenda ou busca clínica. Veja
+> **Estado atual: Fase 0 (fundação) em andamento.** Já existem API e interface web reais com login, sessão segura,
+> seleção de clínica/unidade, RBAC inicial, cadastro de clínica, unidades, equipe (leitura), aparência por tenant e
+> auditoria, protegidas por Row-Level Security e testadas com dois tenants (inclusive E2E desktop/mobile). **Ainda não
+> há** prontuário, agenda, pacientes ou busca clínica. Veja
 > [`docs/PROGRESS.md`](docs/PROGRESS.md) e [`docs/FEATURE_PARITY.md`](docs/FEATURE_PARITY.md).
 
 ## Pré-requisitos
@@ -26,7 +27,7 @@ Ambientes: **WSL2/Ubuntu** (verificado), Linux (CI Ubuntu). Git Bash/macOS: supo
 git clone https://github.com/rafasilva1984/fauvovet.git
 cd fauvovet
 pnpm bootstrap          # cria .env fictício, instala, inicia PostgreSQL local, migra e cria 2 tenants de teste
-pnpm dev                # API em http://127.0.0.1:4000/fauvovet/api/v1/health
+pnpm dev                # web em http://localhost:3000/fauvovet · API em http://127.0.0.1:4000/fauvovet/api/v1/health
 ```
 
 Usuários fictícios criados pelo seed (senha = `SEED_PASSWORD` do `.env`): `ana.titular@aurora.exemplo.test`
@@ -41,7 +42,7 @@ Já tem PostgreSQL próprio (Docker/nativo)? Ajuste as URLs no `.env`, crie os p
 | Comando                                    | O que faz                                                                                 |
 | ------------------------------------------ | ----------------------------------------------------------------------------------------- |
 | `pnpm bootstrap`                           | Verifica ambiente, cria `.env` (sem sobrescrever), instala, prepara banco, migra e popula |
-| `pnpm dev`                                 | Inicia PostgreSQL local e API em modo watch                                               |
+| `pnpm dev`                                 | Inicia PostgreSQL local, API (watch) e web (Next.js dev)                                  |
 | `pnpm db:start` / `db:stop` / `db:status`  | Controla o PostgreSQL local em `.data/pg` (127.0.0.1:54329)                               |
 | `pnpm db:setup`                            | Cria papéis `fauvovet_migrator`/`fauvovet_app` e bancos `_dev`/`_test`                    |
 | `pnpm db:migrate` / `db:seed`              | Migrações versionadas / dados 100% fictícios (recusa banco não local)                     |
@@ -49,14 +50,15 @@ Já tem PostgreSQL próprio (Docker/nativo)? Ajuste as URLs no `.env`, crie os p
 | `pnpm test`                                | Testes unitários                                                                          |
 | `pnpm test:integration`                    | Integração com PostgreSQL real (banco `*_test` recriado a cada execução)                  |
 | `pnpm test:tenant-isolation`               | Suíte de isolamento entre tenants (API + RLS)                                             |
+| `pnpm test:e2e`                            | Playwright desktop + Pixel 7 (API :4100 e web :3100 próprias, banco `_test` recriado)     |
 | `pnpm perf:check`                          | Baseline de latência p50/p95/p99 (relatório em `.perf/`)                                  |
 | `pnpm docs:validate`                       | Valida guias HTML de mudança e checkpoint                                                 |
 | `pnpm security:secrets`                    | Varredura de segredos nos arquivos do Git                                                 |
-| `pnpm verify`                              | **Gate obrigatório**: tudo acima + build                                                  |
+| `pnpm verify [--e2e]`                      | **Gate obrigatório**: tudo acima + build (E2E com `--e2e`)                                |
 | `pnpm build`                               | Build de produção                                                                         |
 | `pnpm smoke`                               | Smoke não destrutivo contra um ambiente (`SMOKE_URL`)                                     |
 
-Ainda não disponíveis: `pnpm test:e2e` (chega com a web).
+Primeira execução do E2E: `pnpm --filter @fauvovet/web exec playwright install chromium`.
 
 ## Documentação
 

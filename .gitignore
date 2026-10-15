@@ -36,3 +36,5 @@ Thumbs.db
 .idea/
 .vscode/*
 !.vscode/extensions.json
+.next-e2e/
+apps/web/next-env.d.ts

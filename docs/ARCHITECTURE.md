@@ -5,7 +5,7 @@
 ## Visão geral
 
 ```text
-navegador ──HTTPS──▶ proxy reverso (nginx, planejado) ──▶ /fauvovet          → apps/web (Next.js)  [incremento 2]
+navegador ──HTTPS──▶ proxy reverso (nginx, planejado) ──▶ /fauvovet          → apps/web (Next.js)  [implementado]
                                                      └──▶ /fauvovet/api/v1/* → apps/api (NestJS)  [implementado]
                                                                                    │
                                                                                    ▼
@@ -48,6 +48,21 @@ requestContextMiddleware (requestId, log) → helmet → json(100kb) → cookieP
   → Controller → parseBody(zod) → Service → DbService.withContext({tenantId, userId}) → SQL parametrizado (RLS)
   → AllExceptionsFilter
 ```
+
+## Web (`apps/web`)
+
+```text
+app/login, app/cadastro, app/contexto          telas públicas/pré-contexto (AuthFrame)
+app/(app)/layout.tsx                           SessionProvider + AppShell (sidebar desktop, topo + barra inferior mobile)
+app/(app)/painel | unidades | equipe | configuracoes/aparencia
+components/ui.tsx, icons.tsx                   design system próprio (botões, campos, alertas, estados vazios, skeleton)
+lib/api.ts                                     fetch mesma origem + X-CSRF-Token; erros padronizados → ApiRequestError
+lib/session.tsx                                /auth/me + /tenant, aplica tema do tenant (tokens CSS)
+e2e/                                           Playwright desktop (1366×900) + Pixel 7, axe WCAG AA, Web Vitals
+```
+
+`next.config.ts`: `basePath` (de `BASE_PATH`), `output: 'standalone'`, `distDir` configurável (`NEXT_DIST_DIR`),
+headers de segurança (CSP, nosniff, frame DENY, referrer, permissions-policy) e _rewrite_ `/api/*` → API.
 
 ## Pastas
 

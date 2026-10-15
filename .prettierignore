@@ -8,3 +8,5 @@ docs/changes/*.html
 CLAUDE.md
 playwright-report
 test-results
+.next-e2e
+apps/web/next-env.d.ts

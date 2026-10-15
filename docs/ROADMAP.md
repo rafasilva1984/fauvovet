@@ -9,8 +9,8 @@ Ordem conforme CLAUDE.md §11. Atualizado em 2026-10-15.
 - [x] API: login/logout, sessão segura, CSRF, seleção de tenant/unidade, RBAC inicial, onboarding, unidades, tema, auditoria, health.
 - [x] RLS + suíte de isolamento com dois tenants (HTTP e banco).
 - [x] Scripts: `bootstrap`, `dev`, `db:*`, `verify`, `docs:validate`, `security:secrets`, `perf:check`, `smoke`.
-- [ ] **Web**: design system inicial (tokens + tema por tenant), login, onboarding, seleção de contexto, shell responsivo, painel por função. ← próximo
-- [ ] E2E Playwright desktop + mobile.
+- [x] Web: design system inicial (tokens + tema por tenant), login, cadastro, seleção de contexto, shell responsivo, painel por função, unidades, equipe, aparência.
+- [x] E2E Playwright desktop + mobile, axe WCAG AA (claro/escuro), Web Vitals de laboratório.
 - [ ] Docker Compose (dev e VPS) testado em ambiente com Docker.
 - [ ] Política mínima de backup documentada e testada (restore).
 

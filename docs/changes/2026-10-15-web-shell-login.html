@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FauvoVet — Web: login, contexto, shell responsivo e tema por tenant</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #1a2935; background: #f4f7f8; line-height: 1.65; }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 20px 80px; }
+    header { border-radius: 20px; padding: 32px; color: white; background: linear-gradient(120deg, #0b4652, #1a7375); }
+    header p { color: #e1f5f0; margin-bottom: 0; }
+    h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.2; margin: 0; }
+    h2 { font-size: 1.2rem; margin: 0 0 12px; }
+    section { margin-top: 20px; background: #fff; padding: 24px; border: 1px solid #dee7e8; border-radius: 14px; }
+    p, li { overflow-wrap: anywhere; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    pre { overflow-x: auto; border-radius: 8px; padding: 14px; color: #e9fbff; background: #172b32; }
+    .tag { display: inline-block; font-size: 0.8rem; font-weight: 700; border: 1px solid #f5cf83; background: #fff8e4; color: #7a4b12; border-radius: 30px; padding: 3px 10px; }
+    .note { border-left: 4px solid #338b96; padding-left: 12px; }
+    .todo { color: #9e3d26; font-weight: 650; }
+    table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+    th, td { padding: 10px; border-bottom: 1px solid #e0e7e8; text-align: left; }
+    small { color: #52646d; }
+    .pass { color: #116b3a; font-weight: 700; }
+    .notrun { color: #8a5a00; font-weight: 700; }
+    .warn { border-left: 4px solid #c27c0e; background: #fff8e4; padding: 10px 12px; border-radius: 6px; }
+    h3 { font-size: 1rem; margin: 18px 0 8px; }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e4eef0; background: #0f1a1e; }
+      section { background: #15242a; border-color: #23373e; }
+      th, td { border-color: #23373e; }
+      .warn { background: #2a2210; }
+      small { color: #9fb3ba; }
+      .pass { color: #5fd28f; } .notrun { color: #f0b54a; } .todo { color: #ff9b85; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="tag">INCREMENTO IMPLEMENTADO — FASE 0</span>
+      <h1>Web: login, cadastro, seleção de clínica, shell responsivo e aparência por tenant</h1>
+      <p>ID: <strong>2026-10-15-web-shell-login</strong> · Data: <strong>15/10/2026</strong> · Versão: <strong>0.1.0</strong> · Módulo: <strong>A. Administração SaaS e tenants · §7 UX/UI · §4.1 Branding</strong> · Estado: <strong>implementado e testado localmente</strong></p>
+    </header>
+
+    <section>
+      <h2>1. Objetivo e contexto</h2>
+      <p>Entregar o fluxo de referência 1 do CLAUDE.md §7.3 — <strong>entrar → selecionar clínica/unidade → painel contextual</strong> — com interface real, responsiva e acessível sobre a API do incremento anterior, mais cadastro de nova clínica, unidades, equipe (leitura) e personalização visual por tenant.</p>
+      <p><strong>Critério de aceite:</strong> jornadas funcionam em desktop e em celular (Pixel 7), um tenant não vê dados de outro na interface, a navegação reflete o papel (e a API nega o resto), as telas passam o axe WCAG 2.2 AA em claro e escuro, e <code>pnpm verify --e2e</code> passa.</p>
+    </section>
+
+    <section>
+      <h2>2. O que mudou</h2>
+      <p><strong>Antes:</strong> apenas API. <strong>Depois:</strong> novo pacote <code>apps/web</code> (Next.js 16.4, React 19.3, Tailwind CSS 4.3).</p>
+      <table><thead><tr><th>Rota (sob <code>/fauvovet</code>)</th><th>Conteúdo</th></tr></thead><tbody>
+        <tr><td><code>/login</code></td><td>E-mail/senha, mostrar senha, erro uniforme, link para cadastro</td></tr>
+        <tr><td><code>/cadastro</code></td><td>Onboarding PF/PJ com validação compartilhada (zod de <code>@fauvovet/contracts</code>), login automático ao concluir</td></tr>
+        <tr><td><code>/contexto</code></td><td>Escolha de clínica e unidade (papéis exibidos); sem vínculo → orientação</td></tr>
+        <tr><td><code>/painel</code></td><td>Painel por função (gestão/clínico/recepção/financeiro/operação) com contagens reais, atalhos e atividade recente (auditoria) para gestão</td></tr>
+        <tr><td><code>/unidades</code></td><td>Lista + criação (titular/gestão)</td></tr>
+        <tr><td><code>/equipe</code></td><td>Membros e papéis (titular/gestão), somente leitura</td></tr>
+        <tr><td><code>/configuracoes/aparencia</code></td><td>Cores primária/secundária com cálculo de contraste ao vivo, modo claro/escuro/automático, pré-visualização, restaurar padrão</td></tr>
+      </tbody></table>
+      <ul>
+        <li><strong>Design system:</strong> <code>app/globals.css</code> (tokens <code>--fv-*</code>, tema claro/escuro), <code>components/ui.tsx</code>, <code>components/icons.tsx</code> (ícones e marca próprios), <code>components/app-shell.tsx</code> (sidebar no desktop; topo + barra inferior + folha de conta no celular), <code>components/auth-frame.tsx</code>.</li>
+        <li><strong>Sessão:</strong> <code>lib/session.tsx</code> e <code>lib/api.ts</code> (cookie HttpOnly + <code>X-CSRF-Token</code>); <code>lib/theme.ts</code> aplica o tema do tenant.</li>
+        <li><strong>Configuração:</strong> <code>next.config.ts</code> — <code>basePath</code> de <code>BASE_PATH</code>, <code>output: standalone</code>, <code>distDir</code> via <code>NEXT_DIST_DIR</code>, CSP e cabeçalhos de segurança, rewrite <code>/api/*</code> → <code>API_INTERNAL_URL</code>.</li>
+        <li><strong>Scripts:</strong> <code>scripts/web-run.mjs</code> (Next com <code>.env</code> da raiz e <code>NODE_ENV</code> correto), <code>scripts/e2e-api.mjs</code> (API de E2E com banco <code>_test</code> recriado) e <code>apps/web/e2e/servers.ts</code> (sobe/derruba API e web de E2E); <code>pnpm dev</code> agora sobe também a web.</li>
+        <li><strong>Testes:</strong> <code>apps/web/lib/api.test.ts</code> (4 unitários) e <code>apps/web/e2e/*.spec.ts</code> (11 cenários × 2 projetos = 22).</li>
+        <li><strong>Correções encontradas pelos testes:</strong> asterisco de campo obrigatório entrava no nome acessível; <code>aria-labelledby</code> da seção “Nova unidade” apontava para si mesma; <code>next build</code> falhava ao herdar <code>NODE_ENV=development</code> do <code>.env</code>.</li>
+        <li><strong>Dependências novas:</strong> next 16.4.0, react/react-dom 19.3.1, tailwindcss + @tailwindcss/postcss 4.3.3, postcss, @playwright/test 1.64.1, @axe-core/playwright (dev). Nenhuma alteração de banco/migração.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>3. Pré-requisitos (WSL2 e Git Bash)</h2>
+      <ul>
+        <li>Os mesmos do incremento anterior (Node 24, pnpm 12.4.2, PostgreSQL local via <code>pnpm db:start</code>).</li>
+        <li>Portas: <code>3000</code> (web dev), <code>4000</code> (API dev); E2E usa <code>127.0.0.1:3100</code>/<code>127.0.0.1:4100</code> e o banco <code>fauvovet_test</code>.</li>
+        <li>Navegador de teste (uma vez, ~120 MB, sem sudo no WSL verificado): <code>pnpm --filter @fauvovet/web exec playwright install chromium</code>.</li>
+        <li>Variáveis novas usadas (já em <code>.env.example</code>): <code>WEB_PORT</code>, <code>API_INTERNAL_URL</code>. Opcionais: <code>E2E_WEB_PORT</code>, <code>E2E_API_PORT</code>, <code>E2E_PASSWORD</code>, <code>NEXT_DIST_DIR</code>.</li>
+      </ul>
+      <p class="warn"><strong>Git Bash:</strong> NOT RUN. Em distros Linux mínimas o Chromium pode exigir bibliotecas do sistema (<code>playwright install-deps</code> precisa de sudo); no WSL Ubuntu 26.04 desta verificação não foi necessário.</p>
+    </section>
+
+    <section>
+      <h2>4. Passo a passo para aplicar a mudança</h2>
+      <h3>Instalação existente (vinda do incremento anterior)</h3>
+      <pre><code>git pull --ff-only
+pnpm install --frozen-lockfile
+pnpm --filter @fauvovet/web exec playwright install chromium   # só para E2E
+pnpm dev</code></pre>
+      <p>Resultado esperado: <code>Web: http://localhost:3000/fauvovet · API: http://127.0.0.1:4000/fauvovet/api/v1/health</code>. Abra <code>http://localhost:3000/fauvovet</code> → redireciona para <code>/login</code>.</p>
+      <h3>Instalação nova</h3>
+      <pre><code>git clone https://github.com/rafasilva1984/fauvovet.git &amp;&amp; cd fauvovet
+pnpm bootstrap
+pnpm dev</code></pre>
+      <h3>Build de produção da web</h3>
+      <pre><code>BASE_PATH=/fauvovet API_INTERNAL_URL=http://127.0.0.1:4000 pnpm --filter @fauvovet/web build
+pnpm --filter @fauvovet/web start   # serve em WEB_PORT</code></pre>
+      <p class="note"><code>BASE_PATH</code> e <code>API_INTERNAL_URL</code> são fixados no <strong>build</strong>; mude-os e refaça o build para outro destino.</p>
+    </section>
+
+    <section>
+      <h2>5. Como testar</h2>
+      <h3>Automático</h3>
+      <pre><code>pnpm db:start
+pnpm verify --e2e      # gate completo incluindo E2E
+pnpm test:e2e          # apenas E2E (constrói web em .next-e2e e sobe API/web próprias)</code></pre>
+      <h3>Manual (senha dos usuários fictícios = <code>SEED_PASSWORD</code> do <code>.env</code>)</h3>
+      <ol>
+        <li><code>ana.titular@aurora.exemplo.test</code> → tela de contexto (2 unidades) → escolha “Aurora — Centro” → painel “Gestão da clínica”, contagens, atalhos e atividade recente.</li>
+        <li>Unidades → crie “Aurora — Norte”, cidade fictícia, UF <code>mg</code> → aparece na lista com UF “MG”; repetir o nome → mensagem de conflito.</li>
+        <li>Aparência → digite <code>#808080</code> na primária → aviso “abaixo do mínimo” e botão desabilitado; <code>#1d4e89</code> → salvar → recarregar mantém a cor. “Restaurar padrão FauvoVet” e salvar.</li>
+        <li><code>bruno.vet@…</code> → menu mostra só Painel e Unidades; acessar <code>/fauvovet/equipe</code> direto mostra aviso de permissão (API responde 403).</li>
+        <li><code>diana.titular@horizonte.exemplo.test</code> → entra direto (1 unidade) → Unidades mostra só “Atendimento domiciliar”, nada de “Aurora”.</li>
+        <li><code>eva.plantonista@exemplo.test</code> → escolha Aurora → “Trocar clínica/unidade” → Vet Horizonte → dados mudam por completo.</li>
+        <li>No celular (ou DevTools, 412×915): barra inferior, menu da conta no ícone ☰, “Sair” → volta ao login; voltar para <code>/painel</code> redireciona ao login.</li>
+        <li><code>/fauvovet/cadastro</code> → “Profissional autônomo (CPF)”, CPF <code>529.982.247-25</code> (fictício válido), senha curta → erro; senha com 12+ → entra no painel do novo ambiente.</li>
+      </ol>
+      <h3>Falhas que devem ser rejeitadas</h3>
+      <ul>
+        <li>Senha incorreta → “E-mail ou senha incorretos.” (mesma mensagem para e-mail inexistente).</li>
+        <li>Rotas autenticadas sem sessão → redirecionam ao login; a API retorna 401.</li>
+        <li>Itens ocultos na UI continuam negados pela API (testado no incremento anterior em <code>rbac.test.ts</code>).</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>6. Performance e usabilidade</h2>
+      <p><strong>Medido</strong> no teste <code>Web Vitals de laboratório</code> (build de produção local, Chromium headless, mesma máquina WSL2 do incremento anterior; sem throttling de rede/CPU — <em>não</em> representa rede móvel real):</p>
+      <table><thead><tr><th>Projeto</th><th>Tela</th><th>LCP</th><th>CLS</th><th>JS transferido</th></tr></thead><tbody>
+        <tr><td>desktop</td><td>/login</td><td>52–88 ms</td><td>0</td><td>244 KB</td></tr>
+        <tr><td>desktop</td><td>/painel</td><td>116–176 ms</td><td>0</td><td>249 KB</td></tr>
+        <tr><td>mobile (Pixel 7)</td><td>/login</td><td>40–56 ms</td><td>0</td><td>244 KB</td></tr>
+        <tr><td>mobile (Pixel 7)</td><td>/painel</td><td>96–148 ms</td><td>0</td><td>244 KB</td></tr>
+      </tbody></table>
+      <p>Faixas = duas execuções. JS = soma de <code>encodedBodySize</code> dos scripts (inclui runtime React/Next). INP: NOT RUN. Teste com rede 3G simulada: NOT RUN (pendente). Sem metas impostas; o teste só falha se CLS ≥ 0,1.</p>
+      <p><strong>Usabilidade/acessibilidade verificadas:</strong> axe WCAG 2.0/2.1/2.2 A/AA sem violações em login, cadastro, painel, unidades e aparência (claro) e login/painel (escuro); alvos de toque ≥ 44 px; link “Pular para o conteúdo”; foco visível; <code>aria-current</code> na navegação; mensagens com <code>role=alert/status</code>; <code>prefers-reduced-motion</code> respeitado. Inspeção visual por screenshots em 1366×860 e Pixel 7.</p>
+    </section>
+
+    <section>
+      <h2>7. Publicação na Locaweb / FileZilla (se aplicável)</h2>
+      <p class="warn"><strong>Não publicável ainda.</strong> Plano Locaweb não verificado. A web pode ser servida como Node (<code>output: standalone</code>) atrás de proxy reverso; <strong>não é um site estático para FTP</strong>, pois depende da API e do PostgreSQL. Quando houver VPS: build com <code>BASE_PATH=/fauvovet</code>, nginx roteando <code>/fauvovet/api/</code> à API e <code>/fauvovet</code> à web, <code>COOKIE_SECURE=true</code>, <code>PUBLIC_ORIGIN</code> com o domínio HTTPS. Nada deve ser enviado por FileZilla neste momento.</p>
+    </section>
+
+    <section>
+      <h2>8. Backup e rollback</h2>
+      <ul>
+        <li>Sem migrações nem mudanças de dados neste incremento: rollback = <code>git revert &lt;commit&gt;</code> deste incremento (a API continua funcionando sozinha).</li>
+        <li>Artefatos locais gerados (<code>apps/web/.next</code>, <code>.next-e2e</code>, <code>test-results</code>, <code>playwright-report</code>, <code>.perf</code>) são ignorados pelo Git e recriáveis.</li>
+        <li>O E2E recria o schema do banco <code>fauvovet_test</code>; o banco <code>fauvovet_dev</code> não é tocado.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>9. Troubleshooting</h2>
+      <table><thead><tr><th>Sintoma</th><th>Causa / ação</th></tr></thead><tbody>
+        <tr><td><code>Cannot read properties of null (reading 'useContext')</code> no <code>next build</code></td><td>Build com <code>NODE_ENV=development</code>. Use <code>pnpm --filter @fauvovet/web build</code> (o script força <code>production</code>).</td></tr>
+        <tr><td>E2E: <code>…:4100 … is already used</code></td><td>Processo de uma execução interrompida ficou vivo. <code>ss -ltnp | grep 4100</code> e encerre o PID.</td></tr>
+        <tr><td>E2E demora minutos para começar (WSL2)</td><td>Com <code>networkingMode=mirrored</code>, conectar em porta fechada de <code>127.0.0.1</code> não é recusado e fica pendurado. Por isso <code>e2e/servers.ts</code> sobe os servidores com sondagens de 1 s em vez do <code>webServer</code> do Playwright (de 5 min 18 s para ~33 s).</td></tr>
+        <tr><td>E2E: <code>Executable doesn't exist</code></td><td>Rode <code>pnpm --filter @fauvovet/web exec playwright install chromium</code>.</td></tr>
+        <tr><td>Login funciona mas toda mutação dá 403 <code>csrf_failed</code></td><td><code>PUBLIC_ORIGIN</code> diferente da URL aberta no navegador (ex.: 127.0.0.1 vs localhost).</td></tr>
+        <tr><td>Console do navegador mostra 401 em <code>/auth/me</code> na tela de login</td><td>Esperado: verificação de sessão sem cookie (aparece 2× no dev por StrictMode).</td></tr>
+        <tr><td>Web em outro caminho/servidor chama API errada</td><td><code>BASE_PATH</code>/<code>API_INTERNAL_URL</code> são de build; refaça o build.</td></tr>
+      </tbody></table>
+      <p><strong>Limitações:</strong> sem recuperação de senha, convite, edição de membros, logo/favicon do tenant; CSP com <code>'unsafe-inline'</code> em scripts (ADR-009); <code>pnpm dev</code> encerrado por SIGTERM pode deixar <code>tsc --watch</code> órfão (Ctrl+C funciona).</p>
+    </section>
+
+    <section>
+      <h2>10. Evidências e rastreabilidade</h2>
+      <table><thead><tr><th>Validação</th><th>Status</th><th>Evidência/observação</th></tr></thead>
+      <tbody>
+        <tr><td>Testes unitários</td><td class="pass">PASS</td><td>contracts 12, api 5, web 4</td></tr>
+        <tr><td>Integração / multi-tenant</td><td class="pass">PASS</td><td>42/42 (15 de isolamento), inalterados</td></tr>
+        <tr><td>E2E desktop/mobile</td><td class="pass">PASS</td><td>22/22 em ~33 s (<code>pnpm test:e2e</code>; Desktop Chrome 1366×900 e Pixel 7), incluindo isolamento na UI e axe AA claro/escuro</td></tr>
+        <tr><td>Performance</td><td class="pass">PASS (baseline)</td><td>seção 6; API: baseline do incremento anterior</td></tr>
+        <tr><td>Build / smoke local</td><td class="pass">PASS</td><td><code>pnpm build</code>; <code>pnpm smoke</code> via web dev: health, página de login, 401 sem sessão, login+me+logout pelo proxy</td></tr>
+        <tr><td>Git Bash</td><td class="notrun">NOT RUN</td><td>ambiente indisponível nesta sessão</td></tr>
+        <tr><td>Documentação e Git remoto</td><td class="pass">PASS</td><td><code>pnpm docs:validate</code>; commit/push registrados em <code>docs/PROGRESS.md</code></td></tr>
+      </tbody></table>
+      <p class="note"><strong>Commit:</strong> “feat(web): login, contexto, shell responsivo e aparência por tenant” na <code>main</code> (hash no <code>docs/PROGRESS.md</code>). Guia anterior: <a href="2026-10-15-fundacao-api-multitenant.html">fundação + API</a>. <strong>Próxima ação:</strong> Fase 1 — gestão de usuários (convite, papéis) e cadastro de responsáveis/pacientes com RLS e testes de isolamento.</p>
+    </section>
+  </main>
+</body>
+</html>
