@@ -12,7 +12,7 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
 
 ## Situação atual
 
-- **Branch/remote:** `main` → `origin`. Último commit sincronizado antes da reescrita: `e5648f9`. Reescrita: ver histórico.
+- **Branch/remote:** `main` → `origin`. Reescrita sincronizada em `34ee508`; CI (PHP 8.3) run 38796096959: **success** (bootstrap + verify --e2e).
 - **Implementado e testado (local):** login seguro (Argon2id, bloqueio, rate limit, mensagem uniforme), sessão no
   servidor, CSRF, CSP com nonce, escolha de clínica/unidade, RBAC (8 papéis), cadastro de clínica PF/PJ, unidades
   (lista/criação/detalhe), equipe (leitura), aparência por clínica (AA), auditoria somente inclusão, páginas de erro
