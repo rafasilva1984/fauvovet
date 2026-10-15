@@ -17,53 +17,42 @@
 | Protocolo do FileZilla            | usar **SFTP** se o painel oferecer; senão **FTPS** (FTP explícito sobre TLS). Nunca FTP puro                                         |
 | Cron                              | não necessário nesta versão                                                                                                          |
 
-## O que vai para o servidor (gerado por `pnpm deploy:package`)
+> **Tutorial completo, para quem nunca fez deploy:**
+> [`docs/changes/2026-10-15-tutorial-deploy-locaweb.html`](changes/2026-10-15-tutorial-deploy-locaweb.html). Abra-o no
+> navegador (no Windows: `\\wsl.localhost\Ubuntu\home\rafa_silva\code\fauvovet\docs\changes\`). Este arquivo
+> é só o resumo de referência.
+
+## O que vai para onde
 
 ```text
-.deploy/fauvovet-<versão>/
-├── app-fauvovet/            → raiz do FTP, AO LADO de public_html/ (fora da web)
-│   ├── app/ bootstrap/ config/ database/migrations/ lang/ resources/views/ routes/ storage/ vendor/ artisan
-│   ├── .htaccess            (nega tudo, caso um dia fique em pasta pública por engano)
-│   └── .env.production.example
-├── public_html/fauvovet/    → dentro de public_html/
-│   ├── index.php            (aponta para ../../app-fauvovet)
-│   ├── .htaccess            (rewrite, nega dotfiles e qualquer outro .php)
-│   └── build/ favicon.ico robots.txt
-├── MANIFEST.sha256          (conferência)
-└── LEIA-ME.txt
+Pacote (C:\fauvovet-deploy\ após pnpm deploy:copiar)      Servidor (lado direito do FileZilla)
+app-fauvovet\                                     →     /app-fauvovet/            (raiz do FTP, ao lado de public_html; PRIVADO)
+public_html\fauvovet\  (index.php, .htaccess, build) →  /public_html/fauvovet/    (PÚBLICO)
+LEIA-ME.txt, MANIFEST.sha256                      →     não enviar
 ```
 
-## Primeiro deploy (passo a passo)
+O `.env` fica em `/app-fauvovet/.env`. Ele é criado na primeira instalação por `pnpm deploy:copiar --primeira-instalacao`
+e preenchido no Bloco de Notas: `APP_KEY`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`,
+`DEPLOY_TOKEN_SHA256` e, durante a instalação, `DEPLOY_TOOLS_ENABLED=true` + `FAUVOVET_ALLOW_SELF_SIGNUP=true`.
 
-**Na sua máquina (WSL), na pasta do projeto:**
+## Resumo do primeiro deploy (detalhes no tutorial)
 
-1. `git pull --ff-only && pnpm verify --e2e` — tudo precisa estar `PASS`.
-2. `pnpm deploy:package` — anote a pasta gerada em `.deploy/`.
-3. `pnpm deploy:token` — guarde o **TOKEN** no gerenciador de senhas; copie a linha `DEPLOY_TOKEN_SHA256=...`.
-4. `node scripts/php.mjs artisan key:generate --show` — chave **exclusiva** de produção (guarde no gerenciador de senhas).
-
-**No painel da Locaweb:** 5. Selecione PHP **8.3 ou superior** para o domínio. 6. Anote host, porta, nome do banco, usuário e senha do MySQL criado.
-
-**No FileZilla (SFTP/FTPS):** 7. Envie `app-fauvovet/` para a **raiz do FTP** (mesmo nível de `public_html/`). 8. Envie o conteúdo de `public_html/fauvovet/` para `public_html/fauvovet/` (inclusive o `.htaccess` — ative
-"Mostrar arquivos ocultos" no FileZilla). 9. No servidor, copie `app-fauvovet/.env.production.example` para `app-fauvovet/.env` e edite **no servidor**:
-`APP_KEY` (passo 4), `DB_*` (passo 6), `DEPLOY_TOKEN_SHA256` (passo 3), `DEPLOY_TOOLS_ENABLED=true`,
-`FAUVOVET_ALLOW_SELF_SIGNUP=true` (temporário, para criar a primeira clínica) e, **se ainda não houver HTTPS**,
-`APP_URL=http://...` e `SESSION_SECURE_COOKIE=false` (somente para teste, sem dados reais).
-
-**Na sua máquina (terminal), com o token só na sessão do terminal:** 10. `export FAUVOVET_DEPLOY_TOKEN='<token do passo 3>'` 11. `pnpm deploy:remote https://dradeboragakdino.com.br/fauvovet diagnostico` — confira `php`, `extensions_missing: []`,
-`database.ok: true`, `pending_migrations: 2`, avisos. (Sem HTTPS, o script exige `FAUVOVET_ALLOW_HTTP=1`.) 12. `pnpm deploy:remote https://dradeboragakdino.com.br/fauvovet migrar` → `exit_code: 0`. 13. `pnpm deploy:remote https://dradeboragakdino.com.br/fauvovet otimizar` → todos `0`. 14. Abra `https://dradeboragakdino.com.br/fauvovet/cadastro` e crie a clínica do titular. 15. No `.env` do servidor: `FAUVOVET_ALLOW_SELF_SIGNUP=false` e `DEPLOY_TOOLS_ENABLED=false`; depois apague
-`app-fauvovet/bootstrap/cache/config.php` pelo FileZilla (o cache de configuração guarda os valores antigos). 16. `SMOKE_URL=https://dradeboragakdino.com.br/fauvovet pnpm smoke` — tudo `PASS`. 17. `unset FAUVOVET_DEPLOY_TOKEN`.
+| Etapa | Onde                | O quê                                                                                                                             |
+| ----- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| A     | Terminal Ubuntu     | `git pull --ff-only` → `pnpm db:start` → `pnpm verify --e2e` → `pnpm deploy:package` → `pnpm deploy:copiar --primeira-instalacao` |
+| B     | Painel Locaweb      | PHP ≥ 8.3 (Resumo de Uso › Versão do PHP); anotar dados do MySQL (Banco de dados) e do FTP (Arquivos e FTP); conferir HTTPS       |
+| C     | Terminal Ubuntu     | `pnpm deploy:token` (TOKEN + `DEPLOY_TOKEN_SHA256`) e `node scripts/php.mjs artisan key:generate --show` (APP_KEY)                |
+| D     | Bloco de Notas      | preencher `C:\fauvovet-deploy\app-fauvovet\.env`                                                                                  |
+| E     | FileZilla           | SFTP (porta 22) ou FTPS explícito (porta 21); mostrar ocultos; enviar as duas pastas                                              |
+| F     | Terminal Ubuntu     | ` export FAUVOVET_DEPLOY_TOKEN='…'` → `pnpm deploy:remote <URL> diagnostico` → `migrar` → `otimizar`                              |
+| G     | Navegador/FileZilla | criar a clínica em `/fauvovet/cadastro`; `.env` com os dois flags em `false`; apagar `bootstrap/cache/config.php`                 |
+| H     | Terminal/Windows    | `SMOKE_URL=<URL> pnpm smoke` (5 PASS) → `unset FAUVOVET_DEPLOY_TOKEN` → apagar `C:\fauvovet-deploy`                               |
 
 ## Atualizações
 
-1. `pnpm verify --e2e` → `pnpm deploy:package`.
-2. **Backup** do banco pelo painel antes, se houver migração nova (o diagnóstico mostra `pending_migrations`).
-3. FileZilla: reenvie `app-fauvovet/` **sem** sobrescrever `.env` e `storage/`; reenvie `public_html/fauvovet/`.
-   Remova assets antigos de `build/assets/` só depois de validar.
-4. No `.env` do servidor, `DEPLOY_TOOLS_ENABLED=true` e apague `bootstrap/cache/config.php`; rode `migrar` e
-   `otimizar`; volte `DEPLOY_TOOLS_ENABLED=false` e apague `bootstrap/cache/config.php` de novo (a aplicação funciona
-   sem o cache de configuração; ele é recriado no próximo `otimizar`).
-5. `pnpm smoke`.
+Tutorial, seção 7. Em resumo: backup do banco → flag de deploy ligado (com token novo) → reenviar `app-fauvovet` **sem**
+`storage/` e sem `.env` → reenviar `public_html/fauvovet` → `migrar` + `otimizar` → flag desligado → apagar
+`bootstrap/cache/config.php` → `pnpm smoke`.
 
 > Por que apagar `bootstrap/cache/config.php`? Depois do `otimizar`, o Laravel lê a configuração do cache e ignora
 > edições no `.env` até o cache ser apagado. Sem SSH, isso é feito pelo FileZilla.

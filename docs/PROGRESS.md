@@ -1,6 +1,6 @@
 # FauvoVet — Checkpoint e ponto de retomada
 
-> **Atualizado em:** 2026-10-15 16:45 (America/Sao_Paulo) · **Fase:** 0 — Fundação (em andamento)
+> **Atualizado em:** 2026-10-15 19:40 (America/Sao_Paulo) · **Fase:** 0 — Fundação (em andamento)
 > **Regra:** atualizar a cada incremento, bloqueio e antes de encerrar qualquer sessão.
 
 ## Mudança de rumo nesta sessão
@@ -12,7 +12,7 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
 
 ## Situação atual
 
-- **Branch/remote:** `main` → `origin`. Reescrita sincronizada em `34ee508`; CI (PHP 8.3) run 38796096959: **success** (bootstrap + verify --e2e).
+- **Branch/remote:** `main` → `origin`. Reescrita sincronizada em `34ee508`; checkpoint em `9bb7d11`; CI (PHP 8.3) run 38796096959: **success** (bootstrap + verify --e2e).
 - **Implementado e testado (local):** login seguro (Argon2id, bloqueio, rate limit, mensagem uniforme), sessão no
   servidor, CSRF, CSP com nonce, escolha de clínica/unidade, RBAC (8 papéis), cadastro de clínica PF/PJ, unidades
   (lista/criação/detalhe), equipe (leitura), aparência por clínica (AA), auditoria somente inclusão, páginas de erro
@@ -21,7 +21,10 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
   arquitetura (`docs/SECURITY.md`).
 - **Não implementado:** prontuário, pacientes, agenda, busca; MFA, recuperação de senha, convites; backup automático.
 - **Não publicado:** nenhum arquivo foi enviado à Locaweb.
-- **Último guia HTML:** [`docs/changes/2026-10-15-reescrita-php-mysql.html`](changes/2026-10-15-reescrita-php-mysql.html)
+- **Tutorial de deploy didático:** o proprietário achou o passo a passo de `DEPLOY_LOCAWEB.md` difícil de seguir (faltava
+  configuração do banco e o que copiar para onde). Reescrito como guia completo, etapas A–H, com glossário, mapa de pastas,
+  folha de anotações e troubleshooting; novo comando `pnpm deploy:copiar` (pacote → `C:\fauvovet-deploy`, fora do OneDrive).
+- **Último guia HTML:** [`docs/changes/2026-10-15-tutorial-deploy-locaweb.html`](changes/2026-10-15-tutorial-deploy-locaweb.html)
 
 ## Ambiente (verificado)
 
@@ -39,10 +42,9 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 
 ## Pendências que dependem do proprietário (bloqueiam o deploy)
 
-1. Versão do PHP selecionada no painel (precisa ser **≥ 8.3**).
-2. Host, porta, nome do banco e usuário do MySQL criado no painel (a senha fica só no `.env` do servidor).
-3. O domínio tem **HTTPS** ativo? (obrigatório antes de dados reais).
-4. Protocolo disponível para o FileZilla (SFTP ou FTPS).
+O proprietário executa o tutorial [`2026-10-15-tutorial-deploy-locaweb.html`](changes/2026-10-15-tutorial-deploy-locaweb.html)
+(a folha de anotações cobre PHP ≥ 8.3, dados do MySQL, HTTPS e SFTP/FTPS; senhas ficam só no `.env` do servidor) e
+informa o resultado das etapas F2 (diagnóstico) e H1 (smoke).
 
 ## Riscos
 
@@ -53,10 +55,10 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 
 ## Próxima ação exata
 
-1. Receber os 4 itens acima.
-2. `git pull --ff-only && pnpm db:start && pnpm verify --e2e && pnpm deploy:package`.
-3. Seguir `docs/DEPLOY_LOCAWEB.md` › Primeiro deploy (passos 1–17), registrar resultados aqui e num novo guia HTML.
-4. Depois: Fase 1 — gestão de equipe (convites/papéis) e migração de responsáveis/pacientes.
+1. Proprietário: seguir `docs/changes/2026-10-15-tutorial-deploy-locaweb.html` (etapas A–H).
+2. Com o retorno de F2/H1: registrar o deploy aqui e corrigir o que o servidor real revelar (`.htaccess` no Apache,
+   `open_basedir`, permissões, versão do MySQL).
+3. Depois: Fase 1 — gestão de equipe (convites/papéis) e migração de responsáveis/pacientes.
 
 ## Histórico de incrementos
 
@@ -66,3 +68,4 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 | 2026-10-15 | Fundação: monorepo, RLS, API multi-tenant                                             | [2026-10-15-fundacao-api-multitenant.html](changes/2026-10-15-fundacao-api-multitenant.html) | verify PASS (unit 17, integração 42)  | `7d303af` (main)                   | PASS (push confirmado) | Web: login/contexto/shell             |
 | 2026-10-15 | Web: login, cadastro, contexto, shell responsivo, painel, unidades, equipe, aparência | [2026-10-15-web-shell-login.html](changes/2026-10-15-web-shell-login.html)                   | unit 21, integração 42, E2E 22        | main — hash na próxima atualização | push nesta sessão      | E2E na CI; Fase 1 (equipe, pacientes) |
 | 2026-10-15 | **Reescrita PHP/Laravel + MySQL** (hospedagem sem SSH)                                | [2026-10-15-reescrita-php-mysql.html](changes/2026-10-15-reescrita-php-mysql.html)           | verify --e2e 9/9 (PHPUnit 55, E2E 28) | main — hash na próxima atualização | push nesta sessão      | 1º deploy na Locaweb                  |
+| 2026-10-15 | Tutorial didático de deploy na Locaweb + `pnpm deploy:copiar`                         | [2026-10-15-tutorial-deploy-locaweb.html](changes/2026-10-15-tutorial-deploy-locaweb.html)   | verify PASS; deploy:copiar 5 cenários | main — hash na próxima atualização | push nesta sessão      | Proprietário executa o deploy         |

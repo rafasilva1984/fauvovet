@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FauvoVet — Tutorial completo: colocar o sistema no ar na Locaweb</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #1a2935; background: #f4f7f8; line-height: 1.65; font-size: 17px; }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 16px 80px; }
+    header { border-radius: 20px; padding: 32px; color: white; background: linear-gradient(120deg, #0b4652, #1a7375); }
+    header p { color: #e1f5f0; margin-bottom: 0; }
+    h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.2; margin: 0; }
+    h2 { font-size: 1.3rem; margin: 0 0 12px; }
+    h3 { font-size: 1.12rem; margin: 28px 0 8px; padding-top: 16px; border-top: 1px dashed #c9d6d8; }
+    h4 { font-size: 1rem; margin: 18px 0 6px; }
+    section { margin-top: 20px; background: #fff; padding: 24px; border: 1px solid #dee7e8; border-radius: 14px; }
+    p, li { overflow-wrap: anywhere; }
+    code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { background: #eaf1f2; padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+    pre code { background: none; padding: 0; }
+    kbd { border: 1px solid #b8c6c9; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: #fff; font-size: 0.9em; }
+    pre { overflow-x: auto; border-radius: 8px; padding: 14px; color: #e9fbff; background: #172b32; font-size: 0.9rem; line-height: 1.5; }
+    .tag { display: inline-block; font-size: 0.8rem; font-weight: 700; border: 1px solid #f5cf83; background: #fff8e4; color: #7a4b12; border-radius: 30px; padding: 3px 10px; }
+    .where { display: inline-block; font-size: 0.78rem; font-weight: 700; border-radius: 30px; padding: 2px 10px; margin-right: 6px; vertical-align: middle; }
+    .w-term { background: #1f3b44; color: #d9fbff; }
+    .w-web { background: #e1effd; color: #0f3e72; }
+    .w-fz { background: #fde8e1; color: #7a2a0f; }
+    .w-np { background: #ece5fb; color: #42237a; }
+    .w-panel { background: #e2f6e8; color: #145c2e; }
+    .note { border-left: 4px solid #338b96; background: #eef7f8; padding: 10px 12px; border-radius: 6px; }
+    .warn { border-left: 4px solid #c27c0e; background: #fff8e4; padding: 10px 12px; border-radius: 6px; }
+    .stop { border-left: 4px solid #b3261e; background: #fdecea; padding: 10px 12px; border-radius: 6px; }
+    .ok { border-left: 4px solid #1d7a45; background: #e8f6ee; padding: 10px 12px; border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid #e0e7e8; text-align: left; vertical-align: top; }
+    small { color: #52646d; }
+    .pass { color: #116b3a; font-weight: 700; }
+    .notrun { color: #8a5a00; font-weight: 700; }
+    ol.steps > li { margin-bottom: 12px; }
+    .map { font-size: 0.85rem; }
+    nav ol { columns: 2; column-gap: 32px; }
+    @media (max-width: 640px) { nav ol { columns: 1; } body { font-size: 16px; } section { padding: 18px; } header { padding: 22px; } }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e4eef0; background: #0f1a1e; }
+      section { background: #15242a; border-color: #23373e; }
+      th, td { border-color: #23373e; }
+      code { background: #213840; }
+      kbd { background: #1d3138; border-color: #3b5760; }
+      .warn { background: #2a2210; } .note { background: #12303a; } .stop { background: #3a1614; } .ok { background: #12301f; }
+      small { color: #9fb3ba; }
+      h3 { border-color: #2c454c; }
+      .pass { color: #5fd28f; } .notrun { color: #f0b54a; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="tag">GUIA DE IMPLANTAÇÃO — PRIMEIRA PUBLICAÇÃO NA LOCAWEB</span>
+      <h1>Como colocar o FauvoVet no ar na Locaweb, passo a passo, sem pular nada</h1>
+      <p>ID: <strong>2026-10-15-tutorial-deploy-locaweb</strong> · Data: <strong>15/10/2026</strong> · Versão do sistema: <strong>0.2.x</strong> · Módulo: <strong>§9 Hospedagem</strong> · Estado: <strong>procedimento ensaiado localmente numa simulação de produção; ainda não executado no servidor da Locaweb</strong></p>
+    </header>
+
+    <nav class="section" aria-label="Sumário">
+      <section>
+        <h2>Sumário</h2>
+        <ol>
+          <li><a href="#s1">Visão geral: o que vamos fazer</a></li>
+          <li><a href="#s2">O que mudou nesta entrega</a></li>
+          <li><a href="#s3">O que você precisa ter antes de começar</a></li>
+          <li><a href="#s4">Passo a passo (etapas A a H)</a></li>
+          <li><a href="#s5">Como testar se deu certo</a></li>
+          <li><a href="#s6">Performance e uso no celular</a></li>
+          <li><a href="#s7">Como publicar uma versão nova no futuro</a></li>
+          <li><a href="#s8">Como voltar atrás (rollback)</a></li>
+          <li><a href="#s9">Se algo der errado</a></li>
+          <li><a href="#s10">Evidências e status</a></li>
+        </ol>
+      </section>
+    </nav>
+
+    <section id="s1">
+      <h2>1. Visão geral: o que vamos fazer</h2>
+      <p>O FauvoVet é um sistema em <strong>PHP</strong> (a linguagem que a Locaweb executa) com banco de dados <strong>MySQL</strong>. Na sua hospedagem não há terminal (SSH), então <strong>todo o preparo é feito no seu computador</strong> e o servidor só recebe arquivos prontos. O caminho completo é este:</p>
+      <ol>
+        <li><strong>No seu computador:</strong> conferir que tudo funciona e gerar um "pacote" com os arquivos prontos.</li>
+        <li><strong>No painel da Locaweb:</strong> escolher a versão do PHP e anotar os dados do banco e do FTP.</li>
+        <li><strong>No seu computador:</strong> preencher um arquivo de configuração chamado <code>.env</code> (é nele que ficam a senha do banco e outras chaves).</li>
+        <li><strong>No FileZilla:</strong> enviar duas pastas para o servidor, cada uma para o seu lugar.</li>
+        <li><strong>No seu computador:</strong> rodar três comandos que pedem ao servidor para criar as tabelas do banco e se otimizar.</li>
+        <li><strong>No navegador:</strong> cadastrar a primeira clínica e entrar no sistema.</li>
+        <li><strong>No FileZilla:</strong> desligar as ferramentas de instalação (por segurança).</li>
+        <li><strong>No seu computador:</strong> rodar um teste automático contra o site no ar.</li>
+      </ol>
+
+      <h3>Palavras que vão aparecer (glossário)</h3>
+      <table>
+        <tr><th>Termo</th><th>O que significa aqui</th></tr>
+        <tr><td><strong>Terminal Ubuntu</strong></td><td>A janela preta do Linux (WSL) que roda dentro do seu Windows. Abra pelo Menu Iniciar digitando <kbd>Ubuntu</kbd>. É onde você digita os comandos que começam com <code>pnpm</code>, <code>cd</code> etc. Para colar um comando nela, clique com o <strong>botão direito</strong> do mouse dentro da janela (ou <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd>) e aperte <kbd>Enter</kbd>.</td></tr>
+        <tr><td><strong>Painel da Locaweb</strong></td><td>O site <code>painelhospedagem.locaweb.com.br</code>, onde você administra a hospedagem.</td></tr>
+        <tr><td><strong>FTP / SFTP / FTPS</strong></td><td>A forma de copiar arquivos do seu computador para o servidor. SFTP e FTPS são as versões <strong>criptografadas</strong>; FTP puro manda a senha "aberta" e não deve ser usado.</td></tr>
+        <tr><td><strong>FileZilla</strong></td><td>O programa do Windows que faz essa cópia. A tela dele tem dois lados: <strong>esquerda = seu computador</strong>, <strong>direita = servidor</strong>.</td></tr>
+        <tr><td><strong>Raiz do FTP</strong></td><td>A primeira pasta que aparece do lado direito do FileZilla quando você conecta (o caminho mostra <code>/</code>). Dentro dela existe a pasta <code>public_html</code>.</td></tr>
+        <tr><td><strong><code>public_html</code></strong></td><td>A pasta que a internet enxerga. Tudo que está dentro dela pode ser aberto pelo navegador. Por isso o código e as senhas do FauvoVet <strong>não</strong> ficam dentro dela.</td></tr>
+        <tr><td><strong><code>.env</code></strong></td><td>Arquivo de texto com as configurações secretas (senha do banco, chave de criptografia). O nome começa com ponto e não tem extensão. <strong>Nunca</strong> vai para o GitHub.</td></tr>
+        <tr><td><strong>Pacote</strong></td><td>A pasta gerada pelo comando <code>pnpm deploy:package</code>, com tudo pronto para enviar.</td></tr>
+      </table>
+
+      <h3>Mapa: qual pasta vai para onde</h3>
+      <p>O pacote tem duas pastas. Cada uma vai para um lugar diferente no servidor:</p>
+<pre class="map">SEU COMPUTADOR  (C:\fauvovet-deploy\)          SERVIDOR LOCAWEB  (lado direito do FileZilla)
+─────────────────────────────────────          ─────────────────────────────────────────────
+                                               /                        ← raiz do FTP
+app-fauvovet\          ───────────────────►    ├── app-fauvovet/        ← código + .env (PRIVADO)
+  (≈ 6.600 arquivos, 48 MB)                    │
+                                               └── public_html/         ← já existe; NÃO apague nada dela
+public_html\fauvovet\  ───────────────────►        └── fauvovet/        ← só a "porta de entrada" (PÚBLICO)
+  (7 arquivos: index.php, .htaccess, build\…)
+
+LEIA-ME.txt e MANIFEST.sha256  → NÃO precisam ser enviados (são só para conferência)</pre>
+      <p class="note">Por que duas pastas? Assim o navegador só alcança a "porta de entrada" (<code>public_html/fauvovet</code>). O código e o arquivo de senhas ficam em <code>app-fauvovet</code>, fora da área pública. Mesmo que alguém digite <code>dradeboragakdino.com.br/fauvovet/.env</code>, não há nada lá para baixar.</p>
+      <p>No fim, o endereço do sistema será <strong><code>https://dradeboragakdino.com.br/fauvovet</code></strong>. Qualquer site que já exista no domínio continua funcionando normalmente.</p>
+    </section>
+
+    <section id="s2">
+      <h2>2. O que mudou nesta entrega</h2>
+      <ul>
+        <li><strong>Este tutorial</strong> substitui o passo a passo resumido de <code>docs/DEPLOY_LOCAWEB.md</code>, que pulava etapas. O arquivo <code>.md</code> agora é só um resumo de referência e aponta para cá.</li>
+        <li><strong>Novo comando <code>pnpm deploy:copiar</code></strong> (<code>scripts/deploy-copy-windows.mjs</code>). Ele copia o pacote mais recente para <code>C:\fauvovet-deploy</code>, onde o FileZilla encontra os arquivos facilmente.
+          <ul>
+            <li>Usei essa pasta, e não a Área de Trabalho, porque a sua Área de Trabalho é sincronizada com o <strong>OneDrive</strong>: o <code>.env</code> com as senhas iria para a nuvem.</li>
+            <li>Com <code>--primeira-instalacao</code>, ele já cria o <code>.env</code> a partir do modelo para você preencher.</li>
+            <li>Ele recusa copiar um pacote com alterações não commitadas.</li>
+            <li>Ele não apaga uma pasta que não seja de um pacote do FauvoVet, nem uma que ainda contenha um <code>.env</code>.</li>
+          </ul>
+        </li>
+        <li>Não houve mudança no sistema em si: telas, banco e migrações estão iguais a <a href="2026-10-15-reescrita-php-mysql.html">2026-10-15-reescrita-php-mysql.html</a>.</li>
+      </ul>
+    </section>
+
+    <section id="s3">
+      <h2>3. O que você precisa ter antes de começar</h2>
+      <ol class="steps">
+        <li><strong>O projeto funcionando no seu computador</strong> (já está: é a pasta <code>~/code/fauvovet</code> no Ubuntu).</li>
+        <li><strong>O login do painel da Locaweb</strong> (usuário e senha).</li>
+        <li><strong>O banco MySQL já criado no painel</strong> (você criou em 15/10/2026). Na Locaweb ele pode levar <strong>até 1 hora</strong> para ficar pronto depois de criado.</li>
+        <li><strong>A senha que você definiu para esse banco.</strong> Se esqueceu, dá para trocar no painel, na tela do banco.</li>
+        <li><strong>O FileZilla instalado no Windows.</strong> Baixe em <code>https://filezilla-project.org</code> → "Download FileZilla <strong>Client</strong>". Durante a instalação, <strong>recuse</strong> programas extras oferecidos (antivírus, navegadores etc.) e não instale a versão "Pro".</li>
+        <li><strong>Um lugar seguro para guardar senhas</strong>, de preferência um gerenciador de senhas como Bitwarden, 1Password ou o do navegador. Você vai gerar duas chaves novas que precisam ser guardadas.</li>
+        <li><strong>Cerca de 1 hora livre</strong>, sendo uns 15 a 30 minutos só de envio de arquivos.</li>
+      </ol>
+
+      <h3>Folha de anotações (preencha durante as etapas)</h3>
+      <p>Copie esta tabela para o seu gerenciador de senhas ou para um papel guardado com você. <strong>Não</strong> salve senhas em arquivos dentro da pasta do projeto, nem mande por chat ou e-mail.</p>
+      <table>
+        <tr><th>#</th><th>Item</th><th>De onde vem</th><th>Exemplo do formato (fictício)</th></tr>
+        <tr><td>①</td><td>Host do banco</td><td>Painel → Banco de dados (etapa B3)</td><td><code>exemplo123.mysql.dbaas.com.br</code></td></tr>
+        <tr><td>②</td><td>Porta do banco</td><td>Painel (se não aparecer, é <code>3306</code>)</td><td><code>3306</code></td></tr>
+        <tr><td>③</td><td>Nome do banco</td><td>Painel → Banco de dados</td><td><code>login_1</code></td></tr>
+        <tr><td>④</td><td>Usuário do banco</td><td>Painel → Banco de dados (muitas vezes igual ao nome)</td><td><code>login_1</code></td></tr>
+        <tr><td>⑤</td><td>Senha do banco</td><td>A que você definiu ao criar</td><td><small>(só no gerenciador de senhas)</small></td></tr>
+        <tr><td>⑥</td><td>Host do FTP</td><td>Painel → Arquivos e FTP (etapa B4)</td><td><code>ftp.dradeboragakdino.com.br</code></td></tr>
+        <tr><td>⑦</td><td>Usuário do FTP</td><td>Painel → Arquivos e FTP</td><td><code>dradeboragakdino1</code></td></tr>
+        <tr><td>⑧</td><td>Senha do FTP</td><td>Painel → Arquivos e FTP</td><td><small>(só no gerenciador de senhas)</small></td></tr>
+        <tr><td>⑨</td><td>HTTPS ativo?</td><td>Etapa B5</td><td>sim / não</td></tr>
+        <tr><td>⑩</td><td>TOKEN de deploy</td><td>Etapa C1</td><td><small>(só no gerenciador de senhas)</small></td></tr>
+        <tr><td>⑪</td><td>Linha <code>DEPLOY_TOKEN_SHA256=…</code></td><td>Etapa C1</td><td><small>(vai só para o .env)</small></td></tr>
+        <tr><td>⑫</td><td>APP_KEY de produção</td><td>Etapa C2</td><td><small>(só no gerenciador de senhas)</small></td></tr>
+      </table>
+    </section>
+
+    <section id="s4">
+      <h2>4. Passo a passo (etapas A a H)</h2>
+      <p>Cada passo diz <strong>onde</strong> ele é feito:
+        <span class="where w-term">TERMINAL UBUNTU</span>
+        <span class="where w-panel">PAINEL LOCAWEB</span>
+        <span class="where w-np">BLOCO DE NOTAS</span>
+        <span class="where w-fz">FILEZILLA</span>
+        <span class="where w-web">NAVEGADOR</span></p>
+      <p class="warn">Faça na ordem. Se algum passo não mostrar o "resultado esperado", <strong>pare</strong> e procure o sintoma na <a href="#s9">seção 9</a>; não pule para o próximo.</p>
+
+      <!-- ===================== ETAPA A ===================== -->
+      <h3>Etapa A — Preparar o pacote no seu computador</h3>
+
+      <h4><span class="where w-term">TERMINAL UBUNTU</span> A1. Abrir o terminal na pasta do projeto</h4>
+      <ol class="steps">
+        <li>Clique no Menu Iniciar do Windows, digite <kbd>Ubuntu</kbd> e abra o aplicativo.</li>
+        <li>Copie e cole o comando abaixo e aperte <kbd>Enter</kbd>:
+<pre><code>cd ~/code/fauvovet</code></pre>
+        </li>
+      </ol>
+      <p><strong>Resultado esperado:</strong> a linha do terminal passa a terminar com <code>~/code/fauvovet$</code>.</p>
+
+      <h4><span class="where w-term">TERMINAL UBUNTU</span> A2. Baixar a versão mais recente do GitHub</h4>
+<pre><code>git pull --ff-only</code></pre>
+      <p><strong>Resultado esperado:</strong> <code>Already up to date.</code> ou uma lista de arquivos atualizados. Se aparecer <code>error</code> ou <code>fatal</code>, pare e me envie a mensagem.</p>
+
+      <h4><span class="where w-term">TERMINAL UBUNTU</span> A3. Ligar o banco de dados local (usado pelos testes)</h4>
+<pre><code>pnpm db:start</code></pre>
+      <p><strong>Resultado esperado:</strong> uma mensagem dizendo que o MySQL local está no ar (porta 33079). Esse banco é <strong>só do seu computador</strong>, com dados fictícios. Ele não tem nenhuma ligação com o banco da Locaweb.</p>
+
+      <h4><span class="where w-term">TERMINAL UBUNTU</span> A4. Rodar todos os testes</h4>
+<pre><code>pnpm verify --e2e</code></pre>
+      <p>Leva alguns minutos. Pode abrir e fechar navegadores sozinho: isso é normal.</p>
+      <p><strong>Resultado esperado:</strong> no final, uma tabela em que <strong>todas</strong> as linhas dizem <code>PASS</code>. Se alguma disser <code>FAIL</code>, <strong>não publique</strong>; me envie o texto que apareceu.</p>
+
+      <h4><span class="where w-term">TERMINAL UBUNTU</span> A5. Gerar o pacote</h4>
+<pre><code>pnpm deploy:package</code></pre>
+      <p><strong>Resultado esperado:</strong> a última linha é parecida com <code>[fauvovet] Pacote pronto: .deploy/fauvovet-9bb7d11 (6582 arquivos).</code> O código depois de <code>fauvovet-</code> muda a cada versão.</p>
+      <p class="warn">Se o nome terminar em <code>-modificado</code>, há alterações não salvas no Git. Não publique esse pacote. Me avise, ou rode <code>git status</code> para ver quais arquivos mudaram.</p>
+
+      <h4><span class="where w-term">TERMINAL UBUNTU</span> A6. Copiar o pacote para uma pasta do Windows</h4>
+<pre><code>pnpm deploy:copiar --primeira-instalacao</code></pre>
+      <p>Leva alguns minutos (a cópia do Ubuntu para o disco C: é lenta). Espere a linha do terminal voltar.</p>
+      <p><strong>Resultado esperado:</strong></p>
+<pre><code>[fauvovet] Pacote fauvovet-xxxxxxx copiado de .deploy/fauvovet-xxxxxxx para C:\fauvovet-deploy
+[fauvovet] Arquivo para preencher: C:\fauvovet-deploy\app-fauvovet\.env</code></pre>
+      <p>Para conferir, abra o Explorador de Arquivos do Windows e vá em <code>C:\fauvovet-deploy</code>. Você verá as pastas <code>app-fauvovet</code> e <code>public_html</code>, e os arquivos <code>LEIA-ME.txt</code> e <code>MANIFEST.sha256</code>.</p>
+      <p class="note">O <code>--primeira-instalacao</code> criou o arquivo <code>C:\fauvovet-deploy\app-fauvovet\.env</code>, ainda com valores de exemplo. Você vai preenchê-lo na etapa D.</p>
+
+      <!-- ===================== ETAPA B ===================== -->
+      <h3>Etapa B — Painel da Locaweb: PHP, banco, FTP e HTTPS</h3>
+      <p class="note">Os nomes dos menus abaixo seguem a ajuda oficial da Locaweb; no seu plano podem estar com nomes um pouco diferentes. Se não achar algum, procure pela palavra-chave em <strong>negrito</strong>.</p>
+
+      <h4><span class="where w-panel">PAINEL LOCAWEB</span> B1. Entrar no painel</h4>
+      <ol class="steps">
+        <li>No navegador, abra <code>https://painelhospedagem.locaweb.com.br</code> e entre com o seu usuário e senha.</li>
+        <li>Na lista de hospedagens, encontre <strong>dradeboragakdino.com.br</strong> e clique em <strong>Administrar</strong>.</li>
+      </ol>
+
+      <h4><span class="where w-panel">PAINEL LOCAWEB</span> B2. Escolher a versão do PHP (8.3 ou maior)</h4>
+      <ol class="steps">
+        <li>Na página da hospedagem, procure no lado direito o quadro <strong>Resumo de Uso</strong> e, nele, <strong>Versão do PHP</strong>.</li>
+        <li>Clique no número da versão. Abre uma janela com as versões disponíveis.</li>
+        <li>Escolha <strong>8.3</strong>, <strong>8.4</strong> ou <strong>8.5</strong>, a maior que aparecer. <strong>Não</strong> escolha 8.2 ou menor: o sistema não funciona nelas.</li>
+        <li>Clique em <strong>Aplicar versão</strong>.</li>
+      </ol>
+      <p class="warn">A versão do PHP vale para o domínio inteiro. Se já existe outro site em <code>dradeboragakdino.com.br</code> (por exemplo, um WordPress), confira depois se ele continua abrindo. WordPress atualizado funciona em PHP 8.3.</p>
+      <p><strong>Resultado esperado:</strong> o quadro passa a mostrar a nova versão (pode levar alguns minutos).</p>
+
+      <h4><span class="where w-panel">PAINEL LOCAWEB</span> B3. Anotar os dados do banco MySQL</h4>
+      <ol class="steps">
+        <li>Ainda na página da hospedagem, entre em <strong>Banco de dados</strong>.</li>
+        <li>Clique no banco MySQL que você criou. Se o status ainda estiver "em instalação", espere (até 1 hora).</li>
+        <li>Anote na folha: <strong>① host</strong> (algo como <code>xxxx.mysql.dbaas.com.br</code>), <strong>② porta</strong> (se não aparecer, use <code>3306</code>), <strong>③ nome do banco</strong> e <strong>④ usuário</strong>.</li>
+        <li><strong>⑤ senha:</strong> é a que você definiu ao criar o banco. Se não lembra, use a opção de <strong>alterar senha</strong> do banco nessa mesma tela e guarde a nova no gerenciador de senhas.</li>
+      </ol>
+      <p class="warn">Use o <strong>host</strong> (nome), não o número IP, se o painel mostrar os dois. Não crie tabelas pelo phpMyAdmin: o próprio sistema cria tudo na etapa F.</p>
+
+      <h4><span class="where w-panel">PAINEL LOCAWEB</span> B4. Anotar os dados de FTP</h4>
+      <ol class="steps">
+        <li>Na página da hospedagem, abra a aba ou o quadro <strong>Arquivos e FTP</strong> (às vezes "Arquivos e Acesso FTP").</li>
+        <li>Anote <strong>⑥ Host</strong>, <strong>⑦ Usuário de FTP</strong> e <strong>⑧ Senha</strong>. Se não souber a senha, use <strong>Alterar senha</strong> ali.</li>
+        <li>Veja se a tela menciona <strong>SFTP</strong> ou <strong>porta 22</strong>. Se mencionar, você vai usar SFTP; se não, FTPS. A etapa E explica os dois.</li>
+      </ol>
+
+      <h4><span class="where w-web">NAVEGADOR</span> B5. Verificar se o HTTPS (cadeado) está ativo</h4>
+      <ol class="steps">
+        <li>Abra uma aba nova e digite exatamente: <code>https://dradeboragakdino.com.br</code></li>
+        <li>Olhe a barra de endereço:
+          <ul>
+            <li><strong>Cadeado</strong> e a página abre normalmente → HTTPS <strong>ativo</strong>. Anote "sim" em ⑨.</li>
+            <li>Aviso "Sua conexão não é particular", "Não seguro" ou erro → HTTPS <strong>não ativo</strong>. Anote "não" em ⑨.</li>
+          </ul>
+        </li>
+      </ol>
+      <p class="stop"><strong>Se o HTTPS não estiver ativo:</strong> procure no painel uma opção de <strong>Certificado SSL</strong> ou <strong>HTTPS</strong>, ative-a e espere ficar pronto antes de seguir. Esse é o caminho recomendado. Sem HTTPS, senhas e dados trafegam sem criptografia. Dá para continuar <strong>somente como teste</strong>, sem nenhum dado real; nesse caso siga as caixas "<em>se NÃO houver HTTPS</em>" das etapas D e F.</p>
+
+      <!-- ===================== ETAPA C ===================== -->
+      <h3>Etapa C — Gerar as duas chaves secretas (no seu computador)</h3>
+
+      <h4><span class="where w-term">TERMINAL UBUNTU</span> C1. Gerar o token de instalação</h4>
+      <p>Esse token é a "senha" que permite ao seu computador pedir ao servidor que crie as tabelas (etapa F). O servidor guarda só uma impressão digital dele, nunca o token.</p>
+<pre><code>pnpm deploy:token</code></pre>
+      <p><strong>Resultado esperado</strong> (os valores serão outros, aleatórios):</p>
+<pre><code>TOKEN (guarde no gerenciador de senhas; não cole em arquivos do projeto):
+  Xk3v…(43 caracteres)…Q9
+
+Linha para o .env do SERVIDOR:
+  DEPLOY_TOKEN_SHA256=4f1c…(64 caracteres)…a2</code></pre>
+      <ol class="steps">
+        <li>Selecione o texto do <strong>TOKEN</strong> com o mouse. No terminal Ubuntu, selecionar já copia; se não copiar, use <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd>. Guarde-o no gerenciador de senhas como item <strong>⑩</strong>.</li>
+        <li>Copie também a linha inteira <code>DEPLOY_TOKEN_SHA256=…</code> (item <strong>⑪</strong>). Ela vai para o <code>.env</code> na etapa D.</li>
+      </ol>
+      <p class="note">Se fechar o terminal antes de copiar, não tem problema: rode <code>pnpm deploy:token</code> de novo. Use sempre o TOKEN e a linha <strong>da mesma execução</strong>.</p>
+
+      <h4><span class="where w-term">TERMINAL UBUNTU</span> C2. Gerar a chave de criptografia do sistema (APP_KEY)</h4>
+<pre><code>node scripts/php.mjs artisan key:generate --show</code></pre>
+      <p><strong>Resultado esperado:</strong> uma linha só, começando com <code>base64:</code>. Por exemplo, <code>base64:AbCd…=</code>, com cerca de 51 caracteres. Copie a linha inteira, <strong>incluindo</strong> o <code>base64:</code>, e guarde como item <strong>⑫</strong>.</p>
+      <p class="stop">Essa chave criptografa as sessões e outros dados do sistema. <strong>Se ela for perdida ou trocada depois, todos os usuários são desconectados</strong>, e dados criptografados no futuro podem ficar ilegíveis. Guarde-a com cuidado e nunca reutilize a do seu <code>.env</code> local.</p>
+
+      <!-- ===================== ETAPA D ===================== -->
+      <h3>Etapa D — Preencher o arquivo de configuração <code>.env</code></h3>
+
+      <h4><span class="where w-term">TERMINAL UBUNTU</span> D1. Abrir o arquivo no Bloco de Notas</h4>
+<pre><code>notepad.exe 'C:\fauvovet-deploy\app-fauvovet\.env'</code></pre>
+      <p>O Bloco de Notas do Windows abre com o modelo. Se preferir, abra pelo Explorador de Arquivos: <code>C:\fauvovet-deploy\app-fauvovet</code>, clique com o botão direito em <code>.env</code> → <strong>Abrir com</strong> → <strong>Bloco de Notas</strong>.</p>
+
+      <h4><span class="where w-np">BLOCO DE NOTAS</span> D2. Trocar as linhas abaixo</h4>
+      <p>Procure cada linha (<kbd>Ctrl</kbd>+<kbd>F</kbd> ajuda) e troque <strong>só o que vem depois do <code>=</code></strong>. Não deixe espaços antes nem depois do <code>=</code>, e apague os sinais <code>&lt;</code> e <code>&gt;</code> do modelo.</p>
+      <table>
+        <tr><th>Linha no arquivo</th><th>O que colocar</th></tr>
+        <tr><td><code>APP_KEY=</code></td><td>A chave ⑫, inteira, com <code>base64:</code></td></tr>
+        <tr><td><code>APP_URL=</code></td><td>Com HTTPS: <code>https://dradeboragakdino.com.br/fauvovet</code> (já vem assim no modelo)</td></tr>
+        <tr><td><code>DB_HOST=</code></td><td>Host do banco ①</td></tr>
+        <tr><td><code>DB_PORT=</code></td><td>Porta ② (normalmente <code>3306</code>, já vem assim)</td></tr>
+        <tr><td><code>DB_DATABASE=</code></td><td>Nome do banco ③</td></tr>
+        <tr><td><code>DB_USERNAME=</code></td><td>Usuário do banco ④</td></tr>
+        <tr><td><code>DB_PASSWORD=</code></td><td>Senha do banco ⑤. Se a senha tiver espaço, <code>#</code>, aspas ou <code>$</code>, coloque-a entre aspas duplas: <code>DB_PASSWORD="minha#senha"</code></td></tr>
+        <tr><td><code>FAUVOVET_ALLOW_SELF_SIGNUP=</code></td><td><code>true</code> <small>(temporário: permite criar a primeira clínica; volta para <code>false</code> na etapa G)</small></td></tr>
+        <tr><td><code>DEPLOY_TOOLS_ENABLED=</code></td><td><code>true</code> <small>(temporário: liga as ferramentas de instalação; volta para <code>false</code> na etapa G)</small></td></tr>
+        <tr><td><code>DEPLOY_TOKEN_SHA256=</code></td><td>Os 64 caracteres da linha ⑪ (só o que vem depois do <code>=</code>)</td></tr>
+      </table>
+      <p>As demais linhas (<code>APP_ENV=production</code>, <code>APP_DEBUG=false</code>, <code>SESSION_…</code>, <code>HASH_DRIVER=argon2id</code> etc.) ficam <strong>como estão</strong>.</p>
+
+      <p class="warn"><strong>Se NÃO houver HTTPS</strong> (somente teste, sem dados reais), troque também:<br>
+        <code>APP_URL=http://dradeboragakdino.com.br/fauvovet</code> (com <code>http</code>, sem o "s")<br>
+        <code>SESSION_SECURE_COOKIE=false</code><br>
+        Quando o HTTPS for ativado, volte as duas linhas para <code>https://…</code> e <code>true</code>.</p>
+
+      <p>Ao final, o trecho principal do arquivo deve ficar parecido com isto (valores fictícios):</p>
+<pre><code>APP_ENV=production
+APP_DEBUG=false
+APP_KEY=base64:EXEMPLOexemploEXEMPLOexemploEXEMPLOexem=
+APP_URL=https://dradeboragakdino.com.br/fauvovet
+...
+DB_CONNECTION=mysql
+DB_HOST=exemplo123.mysql.dbaas.com.br
+DB_PORT=3306
+DB_DATABASE=login_1
+DB_USERNAME=login_1
+DB_PASSWORD="sua senha aqui"
+...
+SESSION_PATH=/fauvovet
+SESSION_SECURE_COOKIE=true
+...
+FAUVOVET_ALLOW_SELF_SIGNUP=true
+...
+DEPLOY_TOOLS_ENABLED=true
+DEPLOY_TOKEN_SHA256=4f1c0000000000000000000000000000000000000000000000000000000000a2</code></pre>
+
+      <h4><span class="where w-np">BLOCO DE NOTAS</span> D3. Salvar sem mudar o nome</h4>
+      <ol class="steps">
+        <li>Aperte <kbd>Ctrl</kbd>+<kbd>S</kbd> e feche o Bloco de Notas.</li>
+        <li>No Explorador de Arquivos, em <code>C:\fauvovet-deploy\app-fauvovet</code>, confira que o arquivo se chama exatamente <code>.env</code>, e <strong>não</strong> <code>.env.txt</code>. Para ver extensões: menu <strong>Exibir</strong> → <strong>Mostrar</strong> → <strong>Extensões de nomes de arquivos</strong>. Se virou <code>.env.txt</code>, renomeie para <code>.env</code> e confirme o aviso.</li>
+      </ol>
+
+      <!-- ===================== ETAPA E ===================== -->
+      <h3>Etapa E — Enviar os arquivos pelo FileZilla</h3>
+
+      <h4><span class="where w-fz">FILEZILLA</span> E1. Cadastrar a conexão (só na primeira vez)</h4>
+      <ol class="steps">
+        <li>Abra o FileZilla. Menu <strong>Arquivo</strong> → <strong>Gerenciador de Sites…</strong> (ou <kbd>Ctrl</kbd>+<kbd>S</kbd>).</li>
+        <li>Clique em <strong>Novo site</strong> e dê o nome <code>Locaweb FauvoVet</code>.</li>
+        <li>Preencha, <strong>primeiro tentando SFTP</strong>:
+          <table>
+            <tr><th>Campo</th><th>Valor</th></tr>
+            <tr><td>Protocolo</td><td><strong>SFTP - SSH File Transfer Protocol</strong></td></tr>
+            <tr><td>Host</td><td>Host do FTP ⑥</td></tr>
+            <tr><td>Porta</td><td><code>22</code></td></tr>
+            <tr><td>Tipo de logon</td><td><strong>Normal</strong> (ou "Perguntar pela senha", para não salvar a senha no FileZilla)</td></tr>
+            <tr><td>Usuário</td><td>Usuário de FTP ⑦</td></tr>
+            <tr><td>Senha</td><td>Senha de FTP ⑧</td></tr>
+          </table>
+        </li>
+        <li>Clique em <strong>Conectar</strong>. Na primeira vez aparece "Chave do host desconhecida": marque <strong>Sempre confiar neste host</strong> e clique <strong>OK</strong>.</li>
+        <li><strong>Se não conectar com SFTP</strong> (erro de conexão recusada ou tempo esgotado): volte ao Gerenciador de Sites e troque para:
+          <ul>
+            <li>Protocolo <strong>FTP - Protocolo de Transferência de Arquivos</strong>;</li>
+            <li>Criptografia <strong>Requer FTP explícito sobre TLS</strong>;</li>
+            <li>Porta <code>21</code>.</li>
+          </ul>
+          Conecte e aceite o certificado (marque "Sempre confiar…"). <strong>Nunca</strong> escolha "Usar somente FTP simples (inseguro)".</li>
+      </ol>
+      <p><strong>Resultado esperado:</strong> o lado direito mostra as pastas do servidor, entre elas <code>public_html</code>. O campo <strong>Endereço remoto</strong>, em cima do lado direito, mostra <code>/</code>: você está na <strong>raiz do FTP</strong>.</p>
+
+      <h4><span class="where w-fz">FILEZILLA</span> E2. Mostrar arquivos ocultos</h4>
+      <p>Menu <strong>Servidor</strong> → marque <strong>Forçar exibição de arquivos ocultos</strong>. Sem isso, os arquivos <code>.env</code> e <code>.htaccess</code> enviados não aparecem na lista, e você não consegue conferir nem editar.</p>
+
+      <h4><span class="where w-fz">FILEZILLA</span> E3. Abrir o pacote do lado esquerdo</h4>
+      <p>No campo <strong>Endereço local</strong>, em cima do lado esquerdo, apague o que estiver escrito, digite <code>C:\fauvovet-deploy\</code> e aperte <kbd>Enter</kbd>. Você verá <code>app-fauvovet</code> e <code>public_html</code>.</p>
+
+      <h4><span class="where w-fz">FILEZILLA</span> E4. Enviar <code>app-fauvovet</code> para a RAIZ do FTP</h4>
+      <ol class="steps">
+        <li>Confira que o lado <strong>direito</strong> está na raiz (Endereço remoto = <code>/</code>), mostrando <code>public_html</code>. <strong>Não entre</strong> em <code>public_html</code> agora.</li>
+        <li>No lado <strong>esquerdo</strong>, clique com o botão direito na pasta <code>app-fauvovet</code> → <strong>Enviar</strong>. Ou arraste a pasta para um espaço vazio do lado direito.</li>
+        <li>Espere. São cerca de <strong>6.600 arquivos (48 MB)</strong>, o que leva de 10 a 30 minutos. O andamento aparece na parte de baixo da janela.</li>
+        <li>Quando terminar, olhe as abas na parte de baixo: <strong>Transferências falhas</strong> deve estar com <strong>(0)</strong>. Se houver falhas, clique com o botão direito dentro dessa aba → <strong>Limpar tudo e reenviar</strong> (ou "Redefinir e recolocar na fila") e processe a fila de novo.</li>
+      </ol>
+      <p><strong>Resultado esperado:</strong> no lado direito, na raiz, aparecem lado a lado <code>app-fauvovet</code> e <code>public_html</code>. Entre em <code>app-fauvovet</code> e confira que existem <code>.env</code>, <code>.htaccess</code>, <code>app</code>, <code>vendor</code>, <code>storage</code> etc.</p>
+      <p class="stop">Se a Locaweb <strong>não deixar</strong> criar pastas na raiz (erro de permissão ao enviar), <strong>não</strong> coloque <code>app-fauvovet</code> dentro de <code>public_html</code>. Pare e me avise, porque é preciso ajustar o caminho no <code>index.php</code>.</p>
+
+      <h4><span class="where w-fz">FILEZILLA</span> E5. Enviar a "porta de entrada" para dentro de <code>public_html</code></h4>
+      <ol class="steps">
+        <li>No lado <strong>direito</strong>, dê dois cliques em <code>public_html</code> para entrar nela. O Endereço remoto passa a mostrar <code>/public_html</code>.</li>
+        <li>No lado <strong>esquerdo</strong>, dê dois cliques em <code>public_html</code> (a do pacote). Dentro dela há <strong>uma única pasta</strong>: <code>fauvovet</code>.</li>
+        <li>Clique com o botão direito em <code>fauvovet</code> (lado esquerdo) → <strong>Enviar</strong>.</li>
+        <li>Envia 7 arquivos, em segundos.</li>
+      </ol>
+      <p class="warn">Os arquivos que já estiverem em <code>public_html</code> (de outro site do domínio) <strong>não devem ser apagados nem substituídos</strong>. Este passo só cria a pasta <code>fauvovet</code> ao lado deles. Se o FileZilla perguntar "arquivo já existe — sobrescrever?" para algo <strong>fora</strong> de <code>fauvovet</code>, escolha <strong>Cancelar</strong>: você está na pasta errada.</p>
+      <p><strong>Resultado esperado:</strong> entrando em <code>/public_html/fauvovet</code> no lado direito, você vê <code>.htaccess</code>, <code>index.php</code>, <code>build</code>, <code>favicon.ico</code> e <code>robots.txt</code>.</p>
+
+      <h4><span class="where w-web">NAVEGADOR</span> E6. Primeira olhada (ainda não vai funcionar por completo)</h4>
+      <p>Abra <code>https://dradeboragakdino.com.br/fauvovet/up</code>. Pode aparecer uma página de erro "500": é <strong>normal neste momento</strong>, porque as tabelas do banco ainda não existem. A etapa F resolve. O importante é <strong>não</strong> aparecer "404 Not Found" da Locaweb; se aparecer, a pasta <code>fauvovet</code> não está dentro de <code>public_html</code>.</p>
+
+      <!-- ===================== ETAPA F ===================== -->
+      <h3>Etapa F — Instalar o banco e otimizar (do seu computador, pela internet)</h3>
+      <p>Como não há terminal no servidor, o sistema tem três endereços especiais de instalação: <strong>diagnóstico</strong>, <strong>migrar</strong> e <strong>otimizar</strong>. Eles só respondem com <code>DEPLOY_TOOLS_ENABLED=true</code> e com o TOKEN correto. Você os chama pelo terminal Ubuntu.</p>
+
+      <h4><span class="where w-term">TERMINAL UBUNTU</span> F1. Colocar o token na memória do terminal</h4>
+      <p>Digite o comando abaixo trocando <code>COLE_O_TOKEN_AQUI</code> pelo TOKEN ⑩. Mantenha as aspas simples. <strong>Comece com um espaço antes de <code>export</code></strong>: assim o Ubuntu não grava a linha no histórico de comandos.</p>
+<pre><code> export FAUVOVET_DEPLOY_TOKEN='COLE_O_TOKEN_AQUI'</code></pre>
+      <p>Não aparece nada como resposta: isso é normal. O token fica guardado só nessa janela; se fechá-la, repita este passo.</p>
+      <p class="warn"><strong>Se NÃO houver HTTPS</strong> (somente teste), rode também o comando abaixo e, em F2 a F4, troque <code>https://</code> por <code>http://</code> nos endereços:</p>
+<pre><code>export FAUVOVET_ALLOW_HTTP=1</code></pre>
+
+      <h4><span class="where w-term">TERMINAL UBUNTU</span> F2. Diagnóstico (só lê, não altera nada)</h4>
+<pre><code>pnpm deploy:remote https://dradeboragakdino.com.br/fauvovet diagnostico</code></pre>
+      <p><strong>Resultado esperado</strong> (os valores exatos variam):</p>
+<pre><code>HTTP 200
+{
+  "php": "8.3.x",                  ← precisa ser 8.3 ou maior
+  "extensions_missing": [],        ← precisa estar vazio: []
+  "argon2id": true,                ← precisa ser true
+  "https": true,                   ← false se você está sem HTTPS
+  "app_env": "production",
+  "app_debug": false,              ← precisa ser false
+  "session_secure_cookie": true,
+  "storage_writable": true,        ← precisa ser true
+  "bootstrap_cache_writable": true,← precisa ser true
+  "database": {
+    "ok": true,                    ← conectou no banco da Locaweb
+    "version": "8.0.x" ou "5.7.x",
+    "pending_migrations": 2        ← 2 = falta criar as tabelas (normal agora)
+  },
+  "warnings": ["Cadastro público de clínicas está LIGADO."]   ← normal agora
+}</code></pre>
+      <p>Confira linha por linha as marcadas com "←". Se alguma estiver diferente, procure na <a href="#s9">seção 9</a> antes de continuar.</p>
+
+      <h4><span class="where w-term">TERMINAL UBUNTU</span> F3. Criar as tabelas no banco (migrar)</h4>
+<pre><code>pnpm deploy:remote https://dradeboragakdino.com.br/fauvovet migrar</code></pre>
+      <p><strong>Resultado esperado:</strong> <code>HTTP 200</code>, <code>"exit_code": 0</code> e um texto com as duas migrações marcadas como <code>DONE</code> (<code>…create_identity_tables</code> e <code>…create_tenancy_tables</code>).</p>
+      <p class="note">O banco começa vazio: nenhum dado fictício do seu computador é enviado. Rodar "migrar" de novo depois não faz mal; ele responde que não há nada a fazer.</p>
+
+      <h4><span class="where w-term">TERMINAL UBUNTU</span> F4. Otimizar</h4>
+<pre><code>pnpm deploy:remote https://dradeboragakdino.com.br/fauvovet otimizar</code></pre>
+      <p><strong>Resultado esperado:</strong> <code>HTTP 200</code> e todos os itens com <code>0</code>:</p>
+<pre><code>{ "results": { "config:clear": 0, "route:clear": 0, "view:clear": 0,
+               "config:cache": 0, "route:cache": 0, "view:cache": 0 } }</code></pre>
+      <p class="note">O limite é de 5 chamadas por minuto. Se aparecer <code>HTTP 429</code>, espere 1 minuto e repita.</p>
+
+      <!-- ===================== ETAPA G ===================== -->
+      <h3>Etapa G — Criar a primeira clínica e fechar as portas de instalação</h3>
+
+      <h4><span class="where w-web">NAVEGADOR</span> G1. Cadastrar a clínica do titular</h4>
+      <ol class="steps">
+        <li>Abra <code>https://dradeboragakdino.com.br/fauvovet/cadastro</code>.</li>
+        <li>Preencha os dados da clínica ou profissional e da pessoa titular (nome, e-mail, senha com <strong>pelo menos 12 caracteres</strong>). Essa será a conta de administrador da clínica.</li>
+        <li>Clique para criar. O sistema entra automaticamente e mostra o <strong>Painel</strong>.</li>
+        <li>Clique em <strong>Sair</strong> e entre de novo por <code>https://dradeboragakdino.com.br/fauvovet/login</code>, para confirmar que o login funciona.</li>
+      </ol>
+      <p class="warn">Por enquanto, <strong>não cadastre</strong> tutores ou pacientes reais: esses módulos ainda não existem nesta versão (estão na Fase 1). Sem HTTPS, não cadastre nenhum dado real.</p>
+
+      <h4><span class="where w-fz">FILEZILLA</span> G2. Desligar o cadastro público e as ferramentas de instalação</h4>
+      <ol class="steps">
+        <li>No lado direito, vá em <code>/app-fauvovet</code>.</li>
+        <li>Clique com o botão direito em <code>.env</code> → <strong>Exibir/Editar</strong>. Se o FileZilla perguntar qual programa usar, escolha o <strong>Bloco de Notas</strong> (<code>C:\Windows\notepad.exe</code>).</li>
+        <li>Troque:
+<pre><code>FAUVOVET_ALLOW_SELF_SIGNUP=false
+DEPLOY_TOOLS_ENABLED=false</code></pre>
+        </li>
+        <li>Salve (<kbd>Ctrl</kbd>+<kbd>S</kbd>) e feche o Bloco de Notas.</li>
+        <li>Volte ao FileZilla. Ele pergunta se quer <strong>enviar o arquivo modificado de volta ao servidor</strong>: clique <strong>Sim</strong>.</li>
+      </ol>
+
+      <h4><span class="where w-fz">FILEZILLA</span> G3. Apagar o cache de configuração (obrigatório depois de editar o .env)</h4>
+      <p>A etapa F4 (otimizar) fez o sistema memorizar o <code>.env</code> num arquivo de cache. Enquanto esse arquivo existir, mudanças no <code>.env</code> são ignoradas.</p>
+      <ol class="steps">
+        <li>No lado direito, vá em <code>/app-fauvovet/bootstrap/cache</code>.</li>
+        <li>Clique com o botão direito em <code>config.php</code> → <strong>Excluir</strong> → confirme. Apague <strong>só esse arquivo</strong>.</li>
+      </ol>
+      <p><strong>Resultado esperado:</strong> abrindo <code>https://dradeboragakdino.com.br/fauvovet/cadastro</code>, o cadastro de nova clínica não está mais disponível. O sistema continua funcionando normalmente.</p>
+
+      <!-- ===================== ETAPA H ===================== -->
+      <h3>Etapa H — Teste final e limpeza</h3>
+
+      <h4><span class="where w-term">TERMINAL UBUNTU</span> H1. Teste automático contra o site no ar</h4>
+<pre><code>SMOKE_URL=https://dradeboragakdino.com.br/fauvovet pnpm smoke</code></pre>
+      <p><strong>Resultado esperado:</strong> 5 linhas começando com <code>PASS</code>:</p>
+<pre><code>PASS  Página de login (200, CSP com nonce, X-Frame-Options)
+PASS  Rota protegida sem sessão → redireciona para login
+PASS  Arquivos sensíveis não são servidos (.env, composer.json)
+PASS  Ferramentas de deploy não respondem sem token
+PASS  Health (/up)</code></pre>
+      <p>O teste não cria nem altera nada no servidor. Sem HTTPS, use <code>http://</code> no endereço.</p>
+
+      <h4><span class="where w-term">TERMINAL UBUNTU</span> H2. Tirar o token da memória do terminal</h4>
+<pre><code>unset FAUVOVET_DEPLOY_TOKEN FAUVOVET_ALLOW_HTTP</code></pre>
+
+      <h4><span class="where w-web">WINDOWS</span> H3. Apagar a cópia local que contém senhas</h4>
+      <ol class="steps">
+        <li>No Explorador de Arquivos, apague a pasta <code>C:\fauvovet-deploy</code> inteira. O <code>.env</code> dela tem a senha do banco, e o servidor já tem a própria cópia.</li>
+        <li>Esvazie a <strong>Lixeira</strong>.</li>
+        <li>Mantenha o TOKEN, a APP_KEY e as senhas só no gerenciador de senhas.</li>
+      </ol>
+      <p class="ok"><strong>Pronto.</strong> O FauvoVet está no ar em <code>https://dradeboragakdino.com.br/fauvovet</code>. Me avise o resultado da etapa H1 (e, se tiver, o que apareceu em F2) para eu registrar no checkpoint.</p>
+    </section>
+
+    <section id="s5">
+      <h2>5. Como testar se deu certo</h2>
+      <h3>Automático</h3>
+      <p>Etapa H1 (<code>pnpm smoke</code>): 5 × <code>PASS</code>. Opcionalmente, teste também entrar e sair automaticamente, usando a conta criada em G1:</p>
+<pre><code> SMOKE_EMAIL='seu-email@exemplo.com' SMOKE_PASSWORD='sua senha' SMOKE_URL=https://dradeboragakdino.com.br/fauvovet pnpm smoke</code></pre>
+      <p><small>O espaço no início evita que a senha fique no histórico do terminal. Deve aparecer uma sexta linha: <code>PASS Login + painel + logout</code>.</small></p>
+      <h3>Manual, no navegador do computador</h3>
+      <ol class="steps">
+        <li><code>/fauvovet/login</code> abre com o visual do FauvoVet (cores e fontes carregadas, não uma página "crua").</li>
+        <li>Senha errada mostra "E-mail ou senha incorretos.", sem dizer se o e-mail existe.</li>
+        <li>Depois de entrar: <strong>Unidades</strong> → criar uma unidade de teste → ela aparece na lista.</li>
+        <li>Menu <strong>Aparência</strong> → mudar a cor principal → salvar → a cor muda no menu.</li>
+        <li><code>/fauvovet/.env</code> e <code>/fauvovet/../app-fauvovet/.env</code> <strong>não</strong> mostram conteúdo (erro 403 ou 404).</li>
+      </ol>
+      <h3>Manual, no celular</h3>
+      <p>Abra <code>https://dradeboragakdino.com.br/fauvovet/login</code> no celular, entre, abra o menu (botão no topo) e navegue entre Painel, Unidades e Equipe. Nada pode exigir rolagem para os lados.</p>
+      <h3>Isolamento entre clínicas</h3>
+      <p>Já está provado automaticamente no seu computador (19 testes de isolamento + E2E, na etapa A4). No servidor, como o cadastro público foi desligado na etapa G, não há segunda clínica para testar. Não crie clínicas falsas em produção só para isso.</p>
+    </section>
+
+    <section id="s6">
+      <h2>6. Performance e uso no celular</h2>
+      <p>Medido no seu computador, na simulação de produção (pacote real, cache ligado): p95 login 22 ms, painel 37 ms, unidades 36 ms, equipe 35 ms; ~98 KB por página; CLS 0.</p>
+      <p><strong>No servidor da Locaweb: NOT RUN</strong> (ainda não publicado). Depois da publicação, o tempo de cada linha do <code>pnpm smoke</code> (entre parênteses) já dá uma primeira medida real. Um benchmark completo no servidor fica para depois, porque gera carga na hospedagem.</p>
+    </section>
+
+    <section id="s7">
+      <h2>7. Como publicar uma versão nova no futuro</h2>
+      <p>Depois da primeira instalação, cada atualização é mais curta. <strong>O <code>.env</code> e a pasta <code>storage</code> do servidor nunca são substituídos.</strong></p>
+      <ol class="steps">
+        <li><span class="where w-term">TERMINAL</span> <code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm db:start</code> → <code>pnpm verify --e2e</code> (tudo <code>PASS</code>).</li>
+        <li><span class="where w-term">TERMINAL</span> <code>pnpm deploy:package</code> → <code>pnpm deploy:copiar</code>. <strong>Sem</strong> <code>--primeira-instalacao</code>: assim o pacote não traz <code>.env</code>.</li>
+        <li><span class="where w-panel">PAINEL</span> <strong>Faça um backup do banco</strong> pelo painel (Banco de dados → backup/exportar). Isso é obrigatório se o guia da nova versão disser que há migração.</li>
+        <li><span class="where w-fz">FILEZILLA</span> Edite <code>/app-fauvovet/.env</code> (Exibir/Editar) e mude para <code>DEPLOY_TOOLS_ENABLED=true</code>. Gere antes um token novo (<code>pnpm deploy:token</code>) e troque também a linha <code>DEPLOY_TOKEN_SHA256</code>. Salve, envie de volta e apague <code>/app-fauvovet/bootstrap/cache/config.php</code>.</li>
+        <li><span class="where w-fz">FILEZILLA</span> Lado esquerdo em <code>C:\fauvovet-deploy\</code>, lado direito na raiz <code>/</code>. Entre em <code>app-fauvovet</code> nos <strong>dois lados</strong>. Selecione <strong>todas as pastas e arquivos, exceto <code>storage</code></strong> (clique no primeiro, <kbd>Ctrl</kbd>+clique para desmarcar <code>storage</code>), e envie. Quando perguntar sobre arquivos existentes, escolha <strong>Sobrescrever</strong>, marque <strong>Sempre usar esta ação</strong> e <strong>Aplicar somente à fila atual</strong>.</li>
+        <li><span class="where w-fz">FILEZILLA</span> Lado esquerdo <code>public_html\fauvovet</code>, lado direito <code>/public_html/fauvovet</code>. Envie tudo (sobrescrever). Os arquivos antigos de <code>build/assets</code> podem ficar; apague-os só depois de validar a nova versão.</li>
+        <li><span class="where w-term">TERMINAL</span> <code> export FAUVOVET_DEPLOY_TOKEN='…'</code> → <code>diagnostico</code> (confira <code>pending_migrations</code>) → <code>migrar</code> → <code>otimizar</code>, como na etapa F.</li>
+        <li><span class="where w-fz">FILEZILLA</span> <code>DEPLOY_TOOLS_ENABLED=false</code> no <code>.env</code> → enviar de volta → apagar <code>bootstrap/cache/config.php</code>.</li>
+        <li><span class="where w-term">TERMINAL</span> <code>SMOKE_URL=https://dradeboragakdino.com.br/fauvovet pnpm smoke</code> → <code>unset FAUVOVET_DEPLOY_TOKEN</code> → apagar <code>C:\fauvovet-deploy</code>.</li>
+      </ol>
+      <p class="note">Guarde o nome de cada pacote publicado (por exemplo <code>fauvovet-9bb7d11</code>). A pasta <code>.deploy/</code> do seu computador mantém os pacotes antigos, e isso é o que permite voltar atrás (seção 8).</p>
+    </section>
+
+    <section id="s8">
+      <h2>8. Como voltar atrás (Rollback)</h2>
+      <h3>Tirar o sistema do ar imediatamente (emergência)</h3>
+      <p><span class="where w-fz">FILEZILLA</span> Em <code>/public_html/fauvovet</code>, renomeie <code>index.php</code> para <code>index.php.desligado</code>. O sistema para de responder na hora, e nenhum dado é perdido. Para religar, volte ao nome <code>index.php</code>.</p>
+      <h3>Voltar para a versão anterior do código</h3>
+      <ol class="steps">
+        <li><span class="where w-term">TERMINAL</span> Veja os pacotes guardados com <code>ls .deploy/</code> e copie o anterior para o Windows com:
+<pre><code>rm -rf /mnt/c/fauvovet-deploy && cp -r .deploy/fauvovet-VERSAO_ANTERIOR /mnt/c/fauvovet-deploy</code></pre>
+        </li>
+        <li><span class="where w-fz">FILEZILLA</span> Reenvie como na seção 7, passos 5 e 6 (sem <code>storage</code>, sem <code>.env</code>).</li>
+        <li><span class="where w-fz">FILEZILLA</span> Em <code>/app-fauvovet/bootstrap/cache</code>, apague <code>config.php</code> e <code>routes-v7.php</code> (são caches da versão nova; o sistema funciona sem eles).</li>
+      </ol>
+      <h3>Voltar o banco de dados</h3>
+      <p>As migrações do FauvoVet só avançam: não há "desfazer migração" pelo navegador. Para voltar o banco, <strong>restaure o backup</strong> feito no passo 3 da seção 7, pelo painel da Locaweb. Isso apaga o que foi gravado depois do backup, por isso o backup é feito imediatamente antes da atualização.</p>
+      <h3>Desfazer a primeira instalação inteira</h3>
+      <p>Apague <code>/public_html/fauvovet</code> e <code>/app-fauvovet</code> pelo FileZilla. Para limpar o banco, pelo painel, exclua e recrie o banco MySQL. <strong>Só faça isso se não houver dados que você queira manter.</strong> Nada fora dessas duas pastas é tocado pela instalação.</p>
+    </section>
+
+    <section id="s9">
+      <h2>9. Se algo der errado</h2>
+      <h3>Onde ver o erro</h3>
+      <p><span class="where w-fz">FILEZILLA</span> Abra <code>/app-fauvovet/storage/logs/laravel.log</code> (botão direito → Exibir/Editar). As últimas linhas mostram o erro mais recente. Me envie <strong>só a mensagem do erro</strong> (a linha com <code>production.ERROR</code>); confira antes que não há senha no trecho.</p>
+      <table>
+        <tr><th>Sintoma</th><th>Causa provável e o que fazer</th></tr>
+        <tr><td>FileZilla: "Conexão recusada" ou "Tempo esgotado" com SFTP</td><td>O plano não oferece SFTP. Use FTPS (etapa E1, item 5).</td></tr>
+        <tr><td>FileZilla: "Falha na autenticação" / "530 Login incorrect"</td><td>Usuário ou senha de FTP errados. Confira no painel (Arquivos e FTP) ou altere a senha lá.</td></tr>
+        <tr><td>FileZilla: "Permissão negada" ao enviar <code>app-fauvovet</code> na raiz</td><td>Pare e me avise (não coloque dentro de <code>public_html</code>).</td></tr>
+        <tr><td>Navegador: 404 da Locaweb em <code>/fauvovet</code></td><td>A pasta <code>fauvovet</code> não está dentro de <code>public_html</code>, ou o nome está diferente (maiúscula, espaço). Confira em <code>/public_html/fauvovet/index.php</code>.</td></tr>
+        <tr><td>Navegador: erro 500 antes da etapa F</td><td>Normal: as tabelas ainda não existem. Siga para a etapa F.</td></tr>
+        <tr><td>Navegador: erro 500 depois da etapa F</td><td>Veja o <code>laravel.log</code>. As causas mais comuns são <code>APP_KEY</code> vazia ou sem <code>base64:</code> e erro de digitação no <code>.env</code>.</td></tr>
+        <tr><td>Página em branco ou <code>Failed opening required … app-fauvovet/vendor/autoload.php</code></td><td><code>app-fauvovet</code> não está na raiz do FTP (está em outro lugar) ou o envio do <code>vendor</code> ficou incompleto. Reenvie <code>app-fauvovet</code>. Se a mensagem mencionar <code>open_basedir</code>, a hospedagem não deixa o PHP ler fora de <code>public_html</code>: me avise.</td></tr>
+        <tr><td><code>deploy:remote</code> responde <code>HTTP 404</code></td><td>(1) <code>DEPLOY_TOOLS_ENABLED</code> não está <code>true</code>; (2) o TOKEN não corresponde à linha <code>DEPLOY_TOKEN_SHA256</code> (gere os dois de novo, na mesma execução); (3) existe um <code>bootstrap/cache/config.php</code> antigo: apague-o; (4) o endereço está sem <code>/fauvovet</code>.</td></tr>
+        <tr><td><code>deploy:remote</code>: "AVISO: URL sem HTTPS"</td><td>Você usou <code>http://</code>. Ative o HTTPS ou, só em teste, rode <code>export FAUVOVET_ALLOW_HTTP=1</code>.</td></tr>
+        <tr><td><code>deploy:remote</code>: <code>HTTP 429</code></td><td>Mais de 5 chamadas por minuto. Espere 1 minuto.</td></tr>
+        <tr><td><code>deploy:remote</code>: "Uso: FAUVOVET_DEPLOY_TOKEN=…"</td><td>O token não está na memória do terminal (talvez você abriu outra janela). Repita F1.</td></tr>
+        <tr><td><code>deploy:remote</code>: <code>fetch failed</code> / tempo esgotado</td><td>Endereço digitado errado, internet fora ou HTTPS sem certificado válido.</td></tr>
+        <tr><td>Diagnóstico: <code>"php": "8.2…"</code> ou menor</td><td>Versão do PHP não foi trocada ou ainda não aplicou. Refaça B2 e espere alguns minutos.</td></tr>
+        <tr><td>Diagnóstico: <code>extensions_missing</code> com itens</td><td>Falta extensão do PHP. Tente outra versão 8.3+ no painel, ou peça ao suporte da Locaweb para habilitá-la (diga o nome, por exemplo <code>sodium</code> ou <code>pdo_mysql</code>).</td></tr>
+        <tr><td>Diagnóstico: <code>"argon2id": false</code></td><td>O PHP do servidor não tem suporte ao Argon2id. Me avise antes de continuar; o tipo de hash das senhas precisa ser decidido.</td></tr>
+        <tr><td>Diagnóstico: <code>"database": {"ok": false, "error": "QueryException"}</code></td><td>Dados do banco errados no <code>.env</code> (host, nome, usuário ou senha), ou o banco ainda está em instalação. Confira no painel, corrija o <code>.env</code> pelo FileZilla e chame o diagnóstico de novo. Se a senha tem caracteres especiais, use aspas (etapa D2).</td></tr>
+        <tr><td>Diagnóstico: <code>storage_writable</code> ou <code>bootstrap_cache_writable</code> = <code>false</code></td><td>No FileZilla, clique com o botão direito em <code>/app-fauvovet/storage</code> → <strong>Permissões de arquivo…</strong> → valor <code>755</code> → marque <strong>Recursão em subdiretórios</strong> → <strong>Aplicar somente a diretórios</strong>. Repita para <code>/app-fauvovet/bootstrap/cache</code>. Se continuar <code>false</code>, tente <code>775</code>.</td></tr>
+        <tr><td>Migrar: <code>exit_code</code> diferente de 0</td><td>Me envie o campo <code>output</code>. Não rode de novo várias vezes.</td></tr>
+        <tr><td>Telas sem cores ou fontes (página "crua")</td><td><code>/public_html/fauvovet/build/</code> não foi enviada, ou <code>APP_URL</code> está errado (precisa terminar em <code>/fauvovet</code>, sem barra final).</td></tr>
+        <tr><td>Erro 419 ("página expirada") ao entrar</td><td>Com HTTPS, confira <code>SESSION_SECURE_COOKIE=true</code> e <code>APP_URL</code> com <code>https</code>. Sem HTTPS, os dois precisam estar como na caixa "se NÃO houver HTTPS". Depois de corrigir, apague <code>bootstrap/cache/config.php</code>.</td></tr>
+        <tr><td>Mudei o <code>.env</code> e nada aconteceu</td><td>Apague <code>/app-fauvovet/bootstrap/cache/config.php</code> (etapa G3).</td></tr>
+        <tr><td>Outro site do domínio parou depois da troca de PHP</td><td>Volte a versão do PHP no painel (etapa B2) e me avise. A pasta do FauvoVet não interfere nos outros sites.</td></tr>
+      </table>
+    </section>
+
+    <section id="s10">
+      <h2>10. Evidências e status</h2>
+      <table>
+        <tr><th>Verificação</th><th>Status</th><th>Detalhe</th></tr>
+        <tr><td>Pacote gerado a partir do código atual (<code>pnpm deploy:package</code>)</td><td class="pass">PASS</td><td>6.582 arquivos; <code>app-fauvovet</code> 48 MB; <code>public_html/fauvovet</code> com 7 arquivos</td></tr>
+        <tr><td><code>pnpm deploy:copiar</code> recusa pacote "-modificado"</td><td class="pass">PASS</td><td>Mensagem clara, código de saída 1</td></tr>
+        <tr><td><code>pnpm deploy:copiar --primeira-instalacao</code> → pasta de teste</td><td class="pass">PASS</td><td>Cópia completa + <code>.env</code> criado a partir do modelo; recusa sobrescrever pasta com <code>.env</code> e pasta alheia</td></tr>
+        <tr><td>Fluxo das etapas F–H em simulação local de produção</td><td class="pass">PASS</td><td>Ensaiado na entrega anterior: diagnóstico 200 → migrar 0 → otimizar 0 → cadastro → smoke 6/6</td></tr>
+        <tr><td><code>pnpm verify</code> (docs, segredos, testes)</td><td class="pass">PASS</td><td>Executado antes do commit desta entrega</td></tr>
+        <tr><td>Execução no servidor da Locaweb</td><td class="notrun">NOT RUN</td><td>Depende do proprietário seguir este guia; aguardando o resultado das etapas F2 e H1</td></tr>
+        <tr><td>Nomes de menus do painel Locaweb</td><td class="notrun">NOT RUN</td><td>Baseados na ajuda oficial da Locaweb (FileZilla, Banco de dados, Versão do PHP), não conferidos no painel do plano Dedicado</td></tr>
+      </table>
+      <p><strong>Commit:</strong> registrado no <code>docs/PROGRESS.md</code> após a sincronização (o hash não é escrito aqui para não criar um commit só para isso).</p>
+      <p><strong>Próximo passo:</strong> o proprietário executa este guia. Com o resultado de F2 e H1, eu registro o deploy no checkpoint e sigo para a Fase 1 (convites de equipe, responsáveis e pacientes).</p>
+    </section>
+  </main>
+</body>
+</html>

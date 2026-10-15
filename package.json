@@ -31,6 +31,7 @@
     "security:audit": "composer audit --no-dev --locked",
     "deploy:token": "node scripts/deploy-token.mjs",
     "deploy:package": "node scripts/deploy-package.mjs",
+    "deploy:copiar": "node scripts/deploy-copy-windows.mjs",
     "verify": "node scripts/verify.mjs",
     "smoke": "node scripts/smoke.mjs",
     "deploy:remote": "node scripts/deploy-remote.mjs"
