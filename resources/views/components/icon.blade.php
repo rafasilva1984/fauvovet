@@ -57,6 +57,45 @@
         @case('search')
             <circle cx="11" cy="11" r="6.5" /><path d="m20 20-4.2-4.2" />
         @break
+        @case('chevron-right')
+            <path d="m9 6 6 6-6 6" />
+        @break
+        @case('chevron-left')
+            <path d="m15 6-6 6 6 6" />
+        @break
+        @case('chevron-down')
+            <path d="m6 9 6 6 6-6" />
+        @break
+        @case('arrow-right')
+            <path d="M5 12h14M13 6l6 6-6 6" />
+        @break
+        @case('alert-circle')
+            <circle cx="12" cy="12" r="9" /><path d="M12 7.5v5.5M12 16.5h.01" />
+        @break
+        @case('check-circle')
+            <circle cx="12" cy="12" r="9" /><path d="m8 12.5 2.8 2.8L16.5 9.5" />
+        @break
+        @case('info')
+            <circle cx="12" cy="12" r="9" /><path d="M12 11v5.5M12 7.5h.01" />
+        @break
+        @case('sparkles')
+            <path d="M12 3.5 13.6 8 18 9.6l-4.4 1.6L12 15.6l-1.6-4.4L6 9.6 10.4 8 12 3.5Z" /><path d="M18.5 15.5 19.2 17.3 21 18l-1.8.7-.7 1.8-.7-1.8L16 18l1.8-.7.7-1.8Z" />
+        @break
+        @case('phone')
+            <path d="M5 4h3.5l1.8 4.5-2.3 1.4a11 11 0 0 0 6.1 6.1l1.4-2.3L20 15.5V19a1.5 1.5 0 0 1-1.6 1.5C10.6 20 4 13.4 3.5 5.6A1.5 1.5 0 0 1 5 4Z" />
+        @break
+        @case('stethoscope')
+            <path d="M6 3.5v5a4.5 4.5 0 0 0 9 0v-5" /><path d="M10.5 13v2.5a4.5 4.5 0 0 0 9 0V13" /><circle cx="19.5" cy="10.5" r="2.2" /><path d="M5 3.5h2M14 3.5h2" />
+        @break
+        @case('settings')
+            <circle cx="12" cy="12" r="3" /><path d="M19.4 14.6a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3h0a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8v0a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z" />
+        @break
+        @case('heart')
+            <path d="M12 20s-7.5-4.4-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.6-7.5 10-7.5 10Z" />
+        @break
+        @case('user')
+            <circle cx="12" cy="8.5" r="3.8" /><path d="M4.5 20a7.5 7.5 0 0 1 15 0" />
+        @break
         @case('check')
             <path d="m5 12.5 4.5 4.5L19 7.5" />
         @break

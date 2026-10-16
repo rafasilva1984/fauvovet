@@ -6,7 +6,7 @@
 @endpush
 
 @section('content')
-    <x-page-header title="Tipos de atendimento" description="Duração padrão e cor de cada tipo na agenda. Desative os que não usa; o histórico é mantido." />
+    <x-page-header title="Tipos de atendimento" icon="list" eyebrow="Configurações" description="Duração padrão e cor de cada tipo na agenda. Desative os que não usa; o histórico é mantido." />
     <div class="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <x-card class="p-0">
             <ul class="divide-y divide-line">
@@ -26,7 +26,7 @@
         </x-card>
         <section aria-labelledby="novo-tipo">
             <x-card>
-                <h2 id="novo-tipo" class="mb-4 text-lg font-semibold">Novo tipo</h2>
+                <h2 id="novo-tipo" class="mb-4 text-lg font-bold tracking-tight">Novo tipo</h2>
                 <form method="POST" action="{{ route('settings.appointment-types.store') }}" class="flex flex-col gap-4" novalidate>
                     @csrf
                     <x-field name="name" label="Nome" required />

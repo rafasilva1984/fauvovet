@@ -33,69 +33,82 @@
         'appointment_type.created' => 'criou um tipo de atendimento',
         'appointment_type.updated' => 'alterou um tipo de atendimento',
     ];
+    $firstName = strtok(auth()->user()->name, ' ');
+    $todayLabel = ucfirst(now('America/Sao_Paulo')->locale('pt_BR')->translatedFormat('l, d \\d\\e F'));
+    $activityIcons = ['appointment' => 'calendar', 'patient' => 'paw', 'guardian' => 'user', 'member' => 'users', 'invitation' => 'mail', 'unit' => 'building', 'tenant' => 'sparkles', 'auth' => 'shield'];
 @endphp
 
 @section('content')
-    <x-page-header :title="$greeting.', '.strtok(auth()->user()->name, ' ')" :description="$copy[0].' · '.$copy[1]" />
+    {{-- Faixa de boas-vindas: degradê da clínica, data, papéis e ações principais --}}
+    <section aria-labelledby="saudacao" class="relative mb-8 animate-fade-up overflow-hidden rounded-[1.75rem] bg-brand fv-gradient p-6 text-on-brand shadow-glow sm:p-8">
+        <div aria-hidden="true" class="fv-orb fv-orb-a absolute -right-16 -top-20 size-72 opacity-35"></div>
+        <div aria-hidden="true" class="fv-dots absolute inset-0 opacity-20"></div>
+        <div class="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div class="max-w-2xl">
+                <p class="text-[0.7rem] font-bold uppercase tracking-[0.12em] opacity-90 sm:text-xs sm:tracking-[0.18em]">{{ $todayLabel }} · {{ $copy[0] }}</p>
+                <h1 id="saudacao" class="mt-2 text-[1.9rem] font-bold leading-tight tracking-tight sm:text-[2.4rem]">{{ $greeting }}, {{ $firstName }}</h1>
+                <p class="mt-2 opacity-90">{{ $copy[1] }}</p>
+                <div class="mt-4 flex flex-wrap gap-1.5">
+                    @foreach ($fvRoles as $role)
+                        <span class="rounded-full bg-white/15 px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ring-white/25">{{ $role }}</span>
+                    @endforeach
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                @if ($fvCan('schedule:write'))
+                    <a href="{{ route('agenda.create') }}" class="inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-4 text-sm font-bold text-[#0d1b21] shadow-lg transition hover:-translate-y-0.5"><x-icon name="calendar" :size="18" /> Novo agendamento</a>
+                @endif
+                @if ($fvCan('patients:write'))
+                    <a href="{{ route('patients.create') }}" class="inline-flex min-h-11 items-center gap-2 rounded-xl bg-white/15 px-4 text-sm font-bold ring-1 ring-inset ring-white/30 transition hover:bg-white/25"><x-icon name="plus" :size="18" /> Novo paciente</a>
+                @endif
+            </div>
+        </div>
+    </section>
 
-    <div class="mb-6 flex flex-wrap gap-1.5">
-        @foreach ($fvRoles as $role)
-            <x-badge>{{ $role }}</x-badge>
-        @endforeach
-    </div>
-
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         @if ($today !== null)
-            <a href="{{ route('agenda.index') }}">
-                <x-card class="flex items-center gap-4 transition hover:border-brand/40">
-                    <span class="flex size-11 items-center justify-center rounded-xl bg-surface-2 text-link"><x-icon name="calendar" /></span>
-                    <span><span class="block text-2xl font-semibold tabular-nums">{{ $today['total'] }}</span><span class="text-sm text-muted">{{ $today['total'] === 1 ? 'agendamento hoje' : 'agendamentos hoje' }}{{ $today['waiting'] ? ' · '.$today['waiting'].' aguardando' : '' }}</span></span>
-                </x-card>
-            </a>
+            <x-stat :href="route('agenda.index')" icon="calendar" :value="$today['total']" :label="$today['total'] === 1 ? 'agendamento hoje' : 'agendamentos hoje'" :hint="$today['waiting'] ? $today['waiting'].' aguardando agora' : null" />
         @endif
         @if ($patientCount !== null)
-            <a href="{{ route('patients.index') }}">
-                <x-card class="flex items-center gap-4 transition hover:border-brand/40">
-                    <span class="flex size-11 items-center justify-center rounded-xl bg-surface-2 text-link"><x-icon name="paw" /></span>
-                    <span><span class="block text-2xl font-semibold tabular-nums">{{ $patientCount }}</span><span class="text-sm text-muted">{{ $patientCount === 1 ? 'paciente ativo' : 'pacientes ativos' }}</span></span>
-                </x-card>
-            </a>
+            <x-stat :href="route('patients.index')" icon="paw" :value="$patientCount" :label="$patientCount === 1 ? 'paciente ativo' : 'pacientes ativos'" />
         @endif
-        <a href="{{ route('units.index') }}">
-            <x-card class="flex items-center gap-4 transition hover:border-brand/40">
-                <span class="flex size-11 items-center justify-center rounded-xl bg-surface-2 text-link"><x-icon name="building" /></span>
-                <span><span class="block text-2xl font-semibold tabular-nums">{{ $unitCount }}</span><span class="text-sm text-muted">{{ $unitCount === 1 ? 'unidade' : 'unidades' }}</span></span>
-            </x-card>
-        </a>
+        <x-stat :href="route('units.index')" icon="building" :value="$unitCount" :label="$unitCount === 1 ? 'unidade' : 'unidades'" />
         @if ($memberCount !== null)
-            <a href="{{ route('team.index') }}">
-                <x-card class="flex items-center gap-4 transition hover:border-brand/40">
-                    <span class="flex size-11 items-center justify-center rounded-xl bg-surface-2 text-link"><x-icon name="users" /></span>
-                    <span><span class="block text-2xl font-semibold tabular-nums">{{ $memberCount }}</span><span class="text-sm text-muted">{{ $memberCount === 1 ? 'membro ativo' : 'membros ativos' }}</span></span>
-                </x-card>
-            </a>
+            <x-stat :href="route('team.index')" icon="users" :value="$memberCount" :label="$memberCount === 1 ? 'membro ativo' : 'membros ativos'" />
         @endif
-        <x-card class="flex items-center gap-4">
-            <span class="flex size-11 items-center justify-center rounded-xl bg-surface-2 text-link"><x-icon name="shield" /></span>
-            <span class="text-sm text-muted">Ambiente isolado: você vê somente dados de <strong class="text-ink">{{ $fvTenant?->trade_name }}</strong>.</span>
-        </x-card>
     </div>
 
-    <div class="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+    <div class="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <section aria-labelledby="atendimento">
-            <h2 id="atendimento" class="mb-3 text-lg font-semibold">Atendimento</h2>
+            <div class="mb-3 flex items-center justify-between gap-3">
+                <h2 id="atendimento" class="text-lg font-bold tracking-tight">Hoje na agenda</h2>
+                @if ($today !== null)
+                    <a href="{{ route('agenda.index') }}" class="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-link">Ver agenda <x-icon name="arrow-right" :size="16" /></a>
+                @endif
+            </div>
             @if ($today !== null && $today['next']->isNotEmpty())
-                <x-card class="p-0">
-                    <ul class="divide-y divide-line">
+                <x-card class="p-2">
+                    <ol class="relative">
                         @foreach ($today['next'] as $ap)
                             <li>
-                                <a href="{{ route('agenda.show', $ap) }}" class="flex flex-wrap items-center justify-between gap-2 px-5 py-3 hover:bg-surface-2">
-                                    <span><span class="font-semibold tabular-nums">{{ $ap->starts_at->timezone($ap->unit->timezone)->format('H:i') }}</span> · {{ $ap->patient->name }} <span class="text-sm text-muted">· {{ $ap->type->name }}</span></span>
-                                    <span class="text-xs font-semibold text-muted">{{ \App\Models\Appointment::STATUS[$ap->status] }}</span>
+                                <a href="{{ route('agenda.show', $ap) }}" class="group flex items-center gap-4 rounded-2xl px-3 py-3 transition hover:bg-tint">
+                                    <span class="w-14 shrink-0 text-right">
+                                        <span class="block text-base font-bold tabular-nums text-ink">{{ $ap->starts_at->timezone($ap->unit->timezone)->format('H:i') }}</span>
+                                    </span>
+                                    <span aria-hidden="true" class="relative flex h-full flex-col items-center self-stretch">
+                                        <span class="mt-2 size-2.5 rounded-full bg-brand ring-4 ring-tint"></span>
+                                        <span class="w-px flex-1 bg-line"></span>
+                                    </span>
+                                    <x-avatar :name="$ap->patient->name" icon="paw" size="sm" />
+                                    <span class="min-w-0 flex-1">
+                                        <span class="block truncate font-semibold text-ink">{{ $ap->patient->name }}</span>
+                                        <span class="block truncate text-sm text-muted">{{ $ap->type->name }}</span>
+                                    </span>
+                                    @include('agenda._status', ['status' => $ap->status])
                                 </a>
                             </li>
                         @endforeach
-                    </ul>
+                    </ol>
                 </x-card>
             @else
                 <x-empty-state title="Nenhum atendimento pendente hoje" icon="calendar">
@@ -104,41 +117,50 @@
                 </x-empty-state>
             @endif
         </section>
+
         <section aria-labelledby="atalhos">
-            <h2 id="atalhos" class="mb-3 text-lg font-semibold">Atalhos</h2>
-            <div class="flex flex-col gap-2">
-                @if ($fvCan('schedule:write'))
-                    <a href="{{ route('agenda.create') }}" class="flex min-h-12 items-center gap-3 rounded-xl border border-line bg-surface px-4 text-sm font-medium hover:bg-surface-2"><x-icon name="calendar" /> Novo agendamento</a>
-                @endif
-                @if ($fvCan('patients:write'))
-                    <a href="{{ route('patients.create') }}" class="flex min-h-12 items-center gap-3 rounded-xl border border-line bg-surface px-4 text-sm font-medium hover:bg-surface-2"><x-icon name="plus" /> Novo paciente</a>
-                @endif
-                @if ($fvCan('patients:read'))
-                    <a href="{{ route('patients.index') }}" class="flex min-h-12 items-center gap-3 rounded-xl border border-line bg-surface px-4 text-sm font-medium hover:bg-surface-2"><x-icon name="search" /> Buscar paciente ou responsável</a>
-                @endif
-                @if ($fvCan('units:create'))
-                    <a href="{{ route('units.index') }}#nova" class="flex min-h-12 items-center gap-3 rounded-xl border border-line bg-surface px-4 text-sm font-medium hover:bg-surface-2"><x-icon name="plus" /> Nova unidade</a>
-                @endif
-                @if ($fvCan('theme:update'))
-                    <a href="{{ route('settings.appearance') }}" class="flex min-h-12 items-center gap-3 rounded-xl border border-line bg-surface px-4 text-sm font-medium hover:bg-surface-2"><x-icon name="palette" /> Personalizar aparência</a>
-                @endif
-                <a href="{{ route('units.index') }}" class="flex min-h-12 items-center gap-3 rounded-xl border border-line bg-surface px-4 text-sm font-medium hover:bg-surface-2"><x-icon name="building" /> Ver unidades</a>
+            <h2 id="atalhos" class="mb-3 text-lg font-bold tracking-tight">Atalhos</h2>
+            @php
+                $shortcuts = array_values(array_filter([
+                    $fvCan('schedule:write') ? [route('agenda.create'), 'Novo agendamento', 'calendar', 'Marcar horário'] : null,
+                    $fvCan('patients:write') ? [route('patients.create'), 'Novo paciente', 'plus', 'Cadastro rápido'] : null,
+                    $fvCan('patients:read') ? [route('patients.index'), 'Buscar paciente ou responsável', 'search', 'Nome, telefone ou microchip'] : null,
+                    $fvCan('units:create') ? [route('units.index').'#nova', 'Nova unidade', 'building', 'Filial ou local'] : null,
+                    $fvCan('theme:update') ? [route('settings.appearance'), 'Personalizar aparência', 'palette', 'Cores da clínica'] : null,
+                    [route('units.index'), 'Ver unidades', 'building', 'Fusos e endereços'],
+                ]));
+            @endphp
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                @foreach ($shortcuts as [$href, $label, $icon, $hint])
+                    <a href="{{ $href }}" class="fv-lift flex min-h-16 items-center gap-3 rounded-2xl border border-line bg-surface p-3 shadow-card">
+                        <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-tint text-link"><x-icon :name="$icon" :size="20" /></span>
+                        <span class="min-w-0">
+                            <span class="block text-sm font-semibold leading-snug text-ink">{{ $label }}</span>
+                            <span class="block truncate text-xs text-muted">{{ $hint }}</span>
+                        </span>
+                    </a>
+                @endforeach
+            </div>
+            <div class="mt-4 flex items-start gap-3 rounded-2xl border border-line bg-surface p-4 text-sm text-muted shadow-card">
+                <span class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-success-bg text-success"><x-icon name="shield" :size="18" /></span>
+                <span>Ambiente isolado: você vê somente dados de <strong class="text-ink">{{ $fvTenant?->trade_name }}</strong>.</span>
             </div>
         </section>
     </div>
 
     @if ($activity !== null)
         <section aria-labelledby="atividade" class="mt-8">
-            <h2 id="atividade" class="mb-3 text-lg font-semibold">Atividade recente</h2>
+            <h2 id="atividade" class="mb-3 text-lg font-bold tracking-tight">Atividade recente</h2>
             @if ($activity->isEmpty())
-                <x-empty-state title="Sem atividade registrada" />
+                <x-empty-state title="Sem atividade registrada" icon="sparkles" />
             @else
-                <x-card class="p-0">
-                    <ul class="divide-y divide-line">
+                <x-card class="p-2">
+                    <ul>
                         @foreach ($activity as $event)
-                            <li class="flex flex-wrap items-center justify-between gap-2 px-5 py-3 text-sm">
-                                <span><strong class="font-medium">{{ $event->actor?->name ?? 'Sistema' }}</strong> <span class="text-muted">{{ $actions[$event->action] ?? $event->action }}</span></span>
-                                <time class="text-xs tabular-nums text-muted" datetime="{{ $event->created_at->toIso8601String() }}">{{ $event->created_at->timezone('America/Sao_Paulo')->format('d/m/Y H:i') }}</time>
+                            <li class="flex items-center gap-3 rounded-2xl px-3 py-2.5">
+                                <span class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-muted"><x-icon :name="$activityIcons[strtok($event->action, '.')] ?? 'sparkles'" :size="18" /></span>
+                                <span class="min-w-0 flex-1 text-sm"><strong class="font-semibold">{{ $event->actor?->name ?? 'Sistema' }}</strong> <span class="text-muted">{{ $actions[$event->action] ?? $event->action }}</span></span>
+                                <time class="shrink-0 text-xs tabular-nums text-muted" datetime="{{ $event->created_at->toIso8601String() }}" title="{{ $event->created_at->timezone('America/Sao_Paulo')->format('d/m/Y H:i') }}">{{ $event->created_at->locale('pt_BR')->diffForHumans() }}</time>
                             </li>
                         @endforeach
                     </ul>

@@ -139,3 +139,17 @@ modelo de outro projeto dele já operado na Locaweb (Laravel + Vite, Node só pa
   Achado real nesta entrega (nome de índice > 64 caracteres falhou no ensaio local). Mitigação: toda migração roda
   em `pnpm verify` (banco `_test` do zero) antes do pacote; nomes de índice explícitos e curtos; backup obrigatório
   antes de `migrar` no servidor.
+
+## ADR-012 — Linguagem visual 2.0: fonte própria, menu escuro, degradês da clínica (2026-10-16)
+
+- **Decisão:** fonte **Plus Jakarta Sans** variável (OFL-1.1) auto-hospedada no build (sem CDN, CSP `font-src
+'self'`); menu lateral escuro fixo com destaque em degradê da cor da clínica; superfícies com malha suave
+  (`fv-mesh`), vidro (`fv-glass`), cantos 20–28 px, sombras em camadas, avatares com 8 tons AA, animações curtas
+  desligadas por `prefers-reduced-motion`.
+- **Personalização preservada:** degradês, realces e brilhos derivam de `--fv-primary`/`--fv-secondary` via
+  `color-mix` — nenhum CSS por cliente. Cores dinâmicas nunca usam atributo `style` (CSP): classes fixas
+  (`fv-tone-*`) ou `<style nonce>`.
+- **Build:** `base: './'` no Vite para que as URLs de fontes dentro do CSS sejam relativas e funcionem em
+  `/fauvovet` (antes apontavam para `/build` na raiz do domínio).
+- **Custo medido:** ~98 → 149 KB transferidos na primeira visita (fonte em cache depois); LCP de laboratório ≤ 120
+  ms; p95 do painel 48 → 54 ms. Acessibilidade AA mantida (axe medido no estado final, sem animação).

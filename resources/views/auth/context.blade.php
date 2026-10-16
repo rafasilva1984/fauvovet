@@ -9,17 +9,20 @@
             <x-alert tone="warning">{{ session('status') }}</x-alert>
         @endif
         @forelse ($memberships as $m)
-            <form method="POST" action="{{ route('context.store') }}" class="rounded-2xl border border-line bg-surface p-5 shadow-card">
+            <form method="POST" action="{{ route('context.store') }}" class="fv-lift rounded-2xl border border-line bg-surface p-4 shadow-card">
                 @csrf
                 <input type="hidden" name="membership_id" value="{{ $m['membership_id'] }}">
                 <div class="flex flex-wrap items-start justify-between gap-2">
-                    <div>
-                        <h2 class="font-semibold text-ink">{{ $m['tenant_name'] }}</h2>
+                    <div class="flex min-w-0 items-start gap-3">
+                    <x-avatar :name="$m['tenant_name']" />
+                    <div class="min-w-0">
+                        <h2 class="font-bold text-ink">{{ $m['tenant_name'] }}</h2>
                         <div class="mt-2 flex flex-wrap gap-1.5">
                             @foreach ($m['role_labels'] as $label)
-                                <x-badge>{{ $label }}</x-badge>
+                                <x-badge tone="tint">{{ $label }}</x-badge>
                             @endforeach
                         </div>
+                    </div>
                     </div>
                     @if ($current === $m['membership_id'])
                         <x-badge tone="brand">Atual</x-badge>

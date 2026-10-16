@@ -7,16 +7,22 @@
 @endphp
 
 @section('content')
-    <x-page-header :title="$patient->name" :description="$speciesText">
+    <x-profile-header :title="$patient->name" eyebrow="Paciente" :description="$speciesText" avatar-icon="paw" :tone="\App\Support\Species::tone($patient->species)">
+        <x-slot:meta>
+            @if ($patient->status !== 'active')<x-badge :tone="$patient->status === 'deceased' ? 'neutral' : 'warning'">{{ \App\Models\Patient::STATUS[$patient->status] }}</x-badge>@endif
+            @if ($patient->ageLabel())<x-badge tone="tint">{{ $patient->ageLabel() }}</x-badge>@endif
+            <x-badge>{{ \App\Models\Patient::SEX[$patient->sex] }}</x-badge>
+            @if ($patient->microchip)<x-badge>Microchip {{ $patient->microchip }}</x-badge>@endif
+        </x-slot:meta>
         <div class="flex flex-wrap gap-2">
             @if ($fvCan('schedule:write') && $patient->status === 'active')
-                <a href="{{ route('agenda.create', ['paciente' => $patient->id]) }}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-on-brand shadow-sm hover:brightness-110"><x-icon name="calendar" /> Agendar</a>
+                <a href="{{ route('agenda.create', ['paciente' => $patient->id]) }}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand fv-gradient px-4 text-sm font-semibold text-on-brand shadow-glow transition hover:brightness-110"><x-icon name="calendar" /> Agendar</a>
             @endif
             @if ($canWrite)
-                <a href="{{ route('patients.edit', $patient) }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line px-4 text-sm font-semibold hover:bg-surface-2">Editar</a>
+                <a href="{{ route('patients.edit', $patient) }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line bg-surface px-4 text-sm font-semibold shadow-card transition hover:border-brand/40 hover:bg-tint">Editar</a>
             @endif
         </div>
-    </x-page-header>
+    </x-profile-header>
 
     @if ($patient->status === 'deceased')
         <x-alert tone="info" class="mb-6">Óbito registrado{{ $patient->deceased_on ? ' em '.$patient->deceased_on->format('d/m/Y') : '' }}.</x-alert>
@@ -26,7 +32,7 @@
 
     <div class="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
         <x-card>
-            <h2 class="mb-4 text-lg font-semibold">Identificação</h2>
+            <h2 class="mb-4 text-lg font-bold tracking-tight">Identificação</h2>
             <dl class="grid gap-4 sm:grid-cols-2">
                 <div><dt class="text-sm text-muted">Espécie</dt><dd class="font-medium">{{ $speciesText }}</dd></div>
                 <div><dt class="text-sm text-muted">Raça</dt><dd class="font-medium">{{ $patient->breed ?: '—' }}</dd></div>
@@ -62,7 +68,7 @@
         </x-card>
 
         <section aria-labelledby="resp-titulo" class="flex flex-col gap-4">
-            <h2 id="resp-titulo" class="text-lg font-semibold">Responsáveis</h2>
+            <h2 id="resp-titulo" class="text-lg font-bold tracking-tight">Responsáveis</h2>
             @error('guardian_id')<x-alert>{{ $message }}</x-alert>@enderror
             <ul class="flex flex-col gap-3">
                 @foreach ($patient->guardians as $g)

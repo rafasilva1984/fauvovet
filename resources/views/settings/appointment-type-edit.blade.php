@@ -2,7 +2,7 @@
 @section('title', 'Editar '.$type->name)
 
 @section('content')
-    <x-page-header :title="'Editar '.$type->name" />
+    <x-page-header :title="'Editar '.$type->name" icon="list" eyebrow="Tipos de atendimento" />
     <x-card class="max-w-xl">
         <form method="POST" action="{{ route('settings.appointment-types.update', $type) }}" class="flex flex-col gap-4" novalidate>
             @csrf
@@ -17,7 +17,7 @@
             </label>
             <div class="flex flex-col gap-3 sm:flex-row">
                 <x-button>Salvar</x-button>
-                <a href="{{ route('settings.appointment-types') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line px-4 text-sm font-semibold hover:bg-surface-2">Voltar</a>
+                <a href="{{ route('settings.appointment-types') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line bg-surface px-4 text-sm font-semibold shadow-card transition hover:border-brand/40 hover:bg-tint">Voltar</a>
             </div>
         </form>
     </x-card>

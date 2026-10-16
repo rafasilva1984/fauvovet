@@ -1,71 +1,109 @@
 @import 'tailwindcss';
+/* Fonte variável auto-hospedada (OFL-1.1): servida pelo próprio build, sem CDN (CSP 'self'). */
+@import '@fontsource-variable/plus-jakarta-sans/wght.css';
 
 @source '../views/**/*.blade.php';
 @source '../js/**/*.js';
+@source '../../app/**/*.php';
 
 /*
  * Design tokens FauvoVet. A clínica personaliza apenas --fv-primary/--fv-secondary (e as cores de
- * texto sobre elas, calculadas no servidor com contraste AA). Nenhum CSS é duplicado por cliente.
+ * texto sobre elas, calculadas no servidor com contraste AA). Degradês, brilhos e realces derivam
+ * dessas duas cores com color-mix — nenhum CSS é duplicado por cliente.
  */
 :root {
   --fv-primary: #0e5e66;
   --fv-on-primary: #ffffff;
   --fv-secondary: #7a4fa3;
   --fv-on-secondary: #ffffff;
-  --fv-bg: #f5f7f6;
+  --fv-bg: #f4f6f8;
   --fv-surface: #ffffff;
-  --fv-surface-2: #eef3f2;
-  --fv-border: #d9e3e1;
-  --fv-text: #0f1e24;
-  --fv-muted: #4f6268;
+  --fv-surface-2: #f0f4f5;
+  --fv-surface-3: #e6eced;
+  --fv-border: #e0e7e9;
+  --fv-text: #0d1b21;
+  --fv-muted: #4c5f66;
   --fv-danger: #b42318;
   --fv-danger-bg: #fdecea;
-  --fv-success: #146c43;
-  --fv-success-bg: #e6f4ec;
+  --fv-success: #136b42;
+  --fv-success-bg: #e3f4ea;
   --fv-warning: #7a4b00;
-  --fv-warning-bg: #fff6e0;
-  --fv-link: color-mix(in oklab, var(--fv-primary) 88%, black);
-  --fv-ring: color-mix(in oklab, var(--fv-primary) 70%, white);
-  --fv-shadow: 0 1px 2px rgb(15 30 36 / 6%), 0 8px 24px rgb(15 30 36 / 6%);
+  --fv-warning-bg: #fff4d9;
+  --fv-link: color-mix(in oklab, var(--fv-primary) 85%, black);
+  --fv-ring: color-mix(in oklab, var(--fv-primary) 65%, white);
+  --fv-tint: color-mix(in oklab, var(--fv-primary) 9%, var(--fv-surface));
+  --fv-tint-strong: color-mix(in oklab, var(--fv-primary) 16%, var(--fv-surface));
+  --fv-gradient: linear-gradient(
+    135deg,
+    var(--fv-primary) 0%,
+    color-mix(in oklab, var(--fv-primary) 72%, var(--fv-secondary)) 100%
+  );
+  --fv-shadow: 0 1px 2px rgb(13 27 33 / 5%), 0 4px 16px -4px rgb(13 27 33 / 8%);
+  --fv-shadow-lift: 0 2px 4px rgb(13 27 33 / 6%), 0 18px 40px -12px rgb(13 27 33 / 18%);
+  --fv-shadow-glow: 0 10px 30px -10px color-mix(in oklab, var(--fv-primary) 60%, transparent);
+  /* Menu lateral "noturno": fixo e escuro em qualquer tema (texto claro sempre legível). */
+  --fv-side: #0c171b;
+  --fv-side-2: #13232a;
+  --fv-side-text: #e9f1f2;
+  --fv-side-muted: #9fb3b8;
+  --fv-mesh-a: color-mix(in oklab, var(--fv-primary) 14%, transparent);
+  --fv-mesh-b: color-mix(in oklab, var(--fv-secondary) 11%, transparent);
   color-scheme: light;
 }
 
+/* Escuro: mesmos tokens, valores próprios (aplicado por preferência do sistema ou escolha da clínica). */
 :root[data-theme='dark'] {
-  --fv-bg: #0b1417;
-  --fv-surface: #111d21;
-  --fv-surface-2: #172629;
-  --fv-border: #26393d;
-  --fv-text: #e6efed;
-  --fv-muted: #9cb1b5;
+  --fv-bg: #091115;
+  --fv-surface: #0f1b20;
+  --fv-surface-2: #15242a;
+  --fv-surface-3: #1b2e35;
+  --fv-border: #23383f;
+  --fv-text: #e7f0f1;
+  --fv-muted: #9db1b6;
   --fv-danger: #ff8a7a;
   --fv-danger-bg: #3a1714;
   --fv-success: #6fd69c;
-  --fv-success-bg: #12301f;
+  --fv-success-bg: #10301f;
   --fv-warning: #f3c06b;
   --fv-warning-bg: #2e2410;
-  --fv-link: color-mix(in oklab, var(--fv-primary) 45%, white);
+  --fv-link: color-mix(in oklab, var(--fv-primary) 40%, white);
   --fv-ring: color-mix(in oklab, var(--fv-primary) 50%, white);
-  --fv-shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 8px 24px rgb(0 0 0 / 25%);
+  --fv-tint: color-mix(in oklab, var(--fv-primary) 18%, var(--fv-surface));
+  --fv-tint-strong: color-mix(in oklab, var(--fv-primary) 28%, var(--fv-surface));
+  --fv-shadow: 0 1px 2px rgb(0 0 0 / 35%), 0 6px 20px -6px rgb(0 0 0 / 40%);
+  --fv-shadow-lift: 0 2px 4px rgb(0 0 0 / 35%), 0 20px 44px -12px rgb(0 0 0 / 60%);
+  --fv-side: #060d10;
+  --fv-side-2: #0f1c21;
+  --fv-mesh-a: color-mix(in oklab, var(--fv-primary) 22%, transparent);
+  --fv-mesh-b: color-mix(in oklab, var(--fv-secondary) 14%, transparent);
   color-scheme: dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --fv-bg: #0b1417;
-    --fv-surface: #111d21;
-    --fv-surface-2: #172629;
-    --fv-border: #26393d;
-    --fv-text: #e6efed;
-    --fv-muted: #9cb1b5;
+    --fv-bg: #091115;
+    --fv-surface: #0f1b20;
+    --fv-surface-2: #15242a;
+    --fv-surface-3: #1b2e35;
+    --fv-border: #23383f;
+    --fv-text: #e7f0f1;
+    --fv-muted: #9db1b6;
     --fv-danger: #ff8a7a;
     --fv-danger-bg: #3a1714;
     --fv-success: #6fd69c;
-    --fv-success-bg: #12301f;
+    --fv-success-bg: #10301f;
     --fv-warning: #f3c06b;
     --fv-warning-bg: #2e2410;
-    --fv-link: color-mix(in oklab, var(--fv-primary) 45%, white);
+    --fv-link: color-mix(in oklab, var(--fv-primary) 40%, white);
     --fv-ring: color-mix(in oklab, var(--fv-primary) 50%, white);
-    --fv-shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 8px 24px rgb(0 0 0 / 25%);
+    --fv-tint: color-mix(in oklab, var(--fv-primary) 18%, var(--fv-surface));
+    --fv-tint-strong: color-mix(in oklab, var(--fv-primary) 28%, var(--fv-surface));
+    --fv-shadow: 0 1px 2px rgb(0 0 0 / 35%), 0 6px 20px -6px rgb(0 0 0 / 40%);
+    --fv-shadow-lift: 0 2px 4px rgb(0 0 0 / 35%), 0 20px 44px -12px rgb(0 0 0 / 60%);
+    --fv-side: #060d10;
+    --fv-side-2: #0f1c21;
+    --fv-mesh-a: color-mix(in oklab, var(--fv-primary) 22%, transparent);
+    --fv-mesh-b: color-mix(in oklab, var(--fv-secondary) 14%, transparent);
     color-scheme: dark;
   }
 }
@@ -74,6 +112,7 @@
   --color-bg: var(--fv-bg);
   --color-surface: var(--fv-surface);
   --color-surface-2: var(--fv-surface-2);
+  --color-surface-3: var(--fv-surface-3);
   --color-line: var(--fv-border);
   --color-ink: var(--fv-text);
   --color-muted: var(--fv-muted);
@@ -83,31 +122,219 @@
   --color-on-accent: var(--fv-on-secondary);
   --color-link: var(--fv-link);
   --color-ring: var(--fv-ring);
+  --color-tint: var(--fv-tint);
+  --color-tint-strong: var(--fv-tint-strong);
   --color-danger: var(--fv-danger);
   --color-danger-bg: var(--fv-danger-bg);
   --color-success: var(--fv-success);
   --color-success-bg: var(--fv-success-bg);
   --color-warning: var(--fv-warning);
   --color-warning-bg: var(--fv-warning-bg);
+  --color-side: var(--fv-side);
+  --color-side-2: var(--fv-side-2);
+  --color-side-text: var(--fv-side-text);
+  --color-side-muted: var(--fv-side-muted);
   --shadow-card: var(--fv-shadow);
+  --shadow-lift: var(--fv-shadow-lift);
+  --shadow-glow: var(--fv-shadow-glow);
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+    'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+  --animate-fade-up: fv-fade-up 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-float: fv-float 7s ease-in-out infinite;
+}
+
+@keyframes fv-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fv-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes fv-drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(4%, -3%, 0) scale(1.08);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
 }
 
 html,
 body {
   background: var(--fv-bg);
   color: var(--fv-text);
+  /* Nada pode criar rolagem lateral (ex.: e-mail longo); "clip" não quebra elementos sticky. */
+  overflow-x: clip;
+}
+
+h1,
+h2,
+h3,
+p,
+dd {
+  overflow-wrap: anywhere;
 }
 
 body {
-  font-family: var(--font-sans);
+  /* Definido aqui (não via var): @theme inline não publica --font-sans como variável CSS. */
+  font-family:
+    'Plus Jakarta Sans Variable',
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
+  /* A fonte tem o espaço entre palavras curto; um leve acréscimo melhora a leitura. */
+  word-spacing: 0.06em;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Fundo com "malha" suave nas cores da clínica (fixo, não rola junto). */
+.fv-mesh {
+  background-color: var(--fv-bg);
+  background-image:
+    radial-gradient(60rem 40rem at 100% -10%, var(--fv-mesh-a), transparent 60%),
+    radial-gradient(50rem 36rem at -10% 110%, var(--fv-mesh-b), transparent 60%);
+  background-attachment: fixed;
+}
+
+.fv-gradient {
+  background-image: var(--fv-gradient);
+}
+
+/* Texto em degradê (títulos de destaque). */
+.fv-gradient-text {
+  background-image: var(--fv-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.fv-glass {
+  background-color: color-mix(in oklab, var(--fv-surface) 86%, transparent);
+  backdrop-filter: saturate(1.6) blur(14px);
+  -webkit-backdrop-filter: saturate(1.6) blur(14px);
+}
+
+/* Barra inferior do celular: quase opaca para o conteúdo não "vazar" por trás do texto. */
+.fv-glass-strong {
+  background-color: color-mix(in oklab, var(--fv-surface) 96%, transparent);
+  backdrop-filter: saturate(1.6) blur(16px);
+  -webkit-backdrop-filter: saturate(1.6) blur(16px);
+}
+
+/* Cartões que "sobem" ao passar o mouse (somente com ponteiro fino). */
+@media (hover: hover) {
+  .fv-lift {
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease,
+      border-color 0.18s ease;
+  }
+  .fv-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--fv-shadow-lift);
+    border-color: color-mix(in oklab, var(--fv-primary) 30%, var(--fv-border));
+  }
+}
+
+/* Brilhos decorativos (tela de login e cabeçalhos). */
+.fv-orb {
+  border-radius: 9999px;
+  filter: blur(48px);
+  animation: fv-drift 16s ease-in-out infinite;
+}
+.fv-orb-a {
+  background: color-mix(in oklab, var(--fv-secondary) 70%, white);
+}
+.fv-orb-b {
+  background: color-mix(in oklab, var(--fv-primary) 55%, white);
+}
+
+/* Grade pontilhada sutil para áreas de destaque. */
+.fv-dots {
+  background-image: radial-gradient(color-mix(in oklab, currentColor 22%, transparent) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+/*
+ * Avatares/etiquetas: 8 tons a partir de uma cor-base escura; fundo claro + texto escuro (claro) e o inverso
+ * (escuro), ambos com contraste AA. Classes fixas — a CSP proíbe estilos inline.
+ */
+.fv-tone-0 {
+  --t-base: #0a4a50;
+}
+.fv-tone-1 {
+  --t-base: #4a2984;
+}
+.fv-tone-2 {
+  --t-base: #663c00;
+}
+.fv-tone-3 {
+  --t-base: #861b3a;
+}
+.fv-tone-4 {
+  --t-base: #14477c;
+}
+.fv-tone-5 {
+  --t-base: #1d5a2a;
+}
+.fv-tone-6 {
+  --t-base: #80320a;
+}
+.fv-tone-7 {
+  --t-base: #2a3848;
+}
+.fv-tone {
+  background-color: color-mix(in oklab, var(--t-base) 15%, white);
+  color: var(--t-base);
+}
+:root[data-theme='dark'] .fv-tone {
+  background-color: color-mix(in oklab, var(--t-base) 70%, black);
+  color: color-mix(in oklab, var(--t-base) 18%, white);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .fv-tone {
+    background-color: color-mix(in oklab, var(--t-base) 70%, black);
+    color: color-mix(in oklab, var(--t-base) 18%, white);
+  }
+}
+
+/* Barra de rolagem discreta. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--fv-surface-3) transparent;
 }
 
 :focus-visible {
   outline: 3px solid var(--fv-ring);
   outline-offset: 2px;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--fv-primary) 25%, transparent);
 }
 
 [x-cloak] {
@@ -121,6 +348,7 @@ body {
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }

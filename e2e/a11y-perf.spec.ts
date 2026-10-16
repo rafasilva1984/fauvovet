@@ -5,8 +5,21 @@ import { expect, test, type Page } from '@playwright/test';
 import { USERS, loginInto, logout } from './helpers';
 
 async function axe(page: Page) {
+  // Mede o estado FINAL da tela: com animação de entrada, o axe calcularia o contraste no meio do "fade".
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.waitForTimeout(50);
   const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze();
-  const summary = r.violations.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nó(s) — ${v.help}`);
+  // Lista cada elemento reprovado (seletor + dados do contraste) para facilitar a correção.
+  const summary = r.violations.map(
+    (v) =>
+      `${v.id} (${v.impact}): ${v.nodes.length} nó(s) — ${v.help}\n` +
+      v.nodes
+        .map((n) => {
+          const d = (n.any[0]?.data ?? {}) as { fgColor?: string; bgColor?: string; contrastRatio?: number };
+          return `   • ${n.target.join(' ')}${d.contrastRatio ? ` [${d.fgColor} sobre ${d.bgColor} = ${d.contrastRatio}]` : ''}`;
+        })
+        .join('\n'),
+  );
   expect(summary, summary.join('\n')).toEqual([]);
 }
 

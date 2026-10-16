@@ -30,6 +30,18 @@ final class Species
     /** Espécies em que o detalhe (qual ave, qual réptil...) é pedido com destaque na interface. */
     public const DETAIL_SUGGESTED = ['bird', 'reptile', 'rodent', 'small_mammal', 'fish', 'amphibian', 'wild', 'other'];
 
+    /** Tom de avatar (0–7, ver .fv-tone-* no CSS) por espécie, para reconhecer o grupo de relance. */
+    public const TONES = [
+        'canine' => 2, 'feline' => 1, 'bird' => 5, 'reptile' => 0, 'rodent' => 6, 'rabbit' => 3, 'ferret' => 6,
+        'small_mammal' => 6, 'fish' => 4, 'amphibian' => 0, 'equine' => 7, 'bovine' => 7, 'small_ruminant' => 7,
+        'swine' => 3, 'wild' => 5, 'other' => 7,
+    ];
+
+    public static function tone(string $code): int
+    {
+        return self::TONES[$code] ?? 7;
+    }
+
     /** @return list<string> */
     public static function codes(): array
     {

@@ -7,18 +7,19 @@
 @endpush
 
 @section('content')
-    <x-page-header :title="$a->patient->name" :description="$a->type->name.' · '.$a->unit->name">
+    <x-profile-header :title="$a->patient->name" eyebrow="Agendamento" :description="$a->type->name.' · '.$a->unit->name" avatar-icon="paw" :tone="\App\Support\Species::tone($a->patient->species)">
+        <x-slot:meta>@include('agenda._status', ['status' => $a->status])</x-slot:meta>
         @if ($fvCan('schedule:write') && in_array($a->status, ['scheduled', 'confirmed', 'waiting'], true))
-            <a href="{{ route('agenda.edit', $a) }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line px-4 text-sm font-semibold hover:bg-surface-2">Reagendar / editar</a>
+            <a href="{{ route('agenda.edit', $a) }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line bg-surface px-4 text-sm font-semibold shadow-card transition hover:border-brand/40 hover:bg-tint">Reagendar / editar</a>
         @endif
-    </x-page-header>
+    </x-profile-header>
     @error('status')<x-alert class="mb-6">{{ $message }}</x-alert>@enderror
     @error('starts_at')<x-alert class="mb-6">{{ $message }}</x-alert>@enderror
 
     <div class="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
         <x-card class="fv-at-{{ strtolower($a->appointment_type_id) }} border-l-4">
             <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-                <h2 class="text-lg font-semibold tabular-nums">{{ ucfirst($a->starts_at->timezone($tz)->locale('pt_BR')->translatedFormat('l, d/m/Y')) }} · {{ $a->starts_at->timezone($tz)->format('H:i') }}–{{ $a->ends_at->timezone($tz)->format('H:i') }}</h2>
+                <h2 class="text-lg font-bold tracking-tight tabular-nums">{{ ucfirst($a->starts_at->timezone($tz)->locale('pt_BR')->translatedFormat('l, d/m/Y')) }} · {{ $a->starts_at->timezone($tz)->format('H:i') }}–{{ $a->ends_at->timezone($tz)->format('H:i') }}</h2>
                 @include('agenda._status', ['status' => $a->status])
             </div>
             <dl class="grid gap-4 sm:grid-cols-2">
@@ -50,7 +51,7 @@
         </x-card>
 
         <section aria-labelledby="contato-titulo">
-            <h2 id="contato-titulo" class="mb-3 text-lg font-semibold">Responsáveis</h2>
+            <h2 id="contato-titulo" class="mb-3 text-lg font-bold tracking-tight">Responsáveis</h2>
             <ul class="flex flex-col gap-3">
                 @foreach ($a->patient->guardians as $g)
                     <li><x-card><p class="font-semibold">{{ $g->name }}</p><dl class="mt-2 grid gap-3">@include('guardians._contact', ['guardian' => $g])</dl></x-card></li>

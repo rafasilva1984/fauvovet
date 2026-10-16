@@ -23,7 +23,12 @@ test('recepção cadastra paciente exótico com responsável novo, busca e vincu
   await expect(page.getByRole('main').getByRole('status')).toContainText('cadastrado');
   await expect(page.getByRole('heading', { level: 1, name: petName })).toBeVisible();
   await expect(page.getByRole('main').getByText('Ave — Calopsita').first()).toBeVisible();
-  await expect(page.getByRole('main').getByText(/~2 anos/)).toBeVisible();
+  await expect(
+    page
+      .getByRole('main')
+      .getByText(/~2 anos/)
+      .first(),
+  ).toBeVisible(); // etiqueta do cabeçalho + ficha
 
   // Vincula um co-responsável já cadastrado (seed fictício).
   await page.getByLabel('Buscar responsável já cadastrado').fill('Rafael');

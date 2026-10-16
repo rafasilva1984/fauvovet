@@ -9,14 +9,14 @@
 @endphp
 
 @section('content')
-    <x-page-header :title="$editing ? 'Reagendar' : 'Novo agendamento'" :description="$unit ? $unit->name.' · horários no fuso '.$unit->timezone : null" />
+    <x-page-header icon="calendar" eyebrow="Agenda" :title="$editing ? 'Reagendar' : 'Novo agendamento'" :description="$unit ? $unit->name.' · horários no fuso '.$unit->timezone : null" />
 
     @if (! $unit)
         <x-empty-state title="Nenhuma unidade disponível para o seu acesso" icon="building" />
     @else
         @if (! $patient)
             <x-card class="mb-6 max-w-3xl">
-                <h2 class="mb-3 text-lg font-semibold">1. Paciente</h2>
+                <h2 class="mb-3 text-lg font-bold tracking-tight">1. Paciente</h2>
                 <form method="GET" action="{{ route('agenda.create') }}" class="flex flex-col gap-2 sm:flex-row sm:items-end" role="search">
                     <input type="hidden" name="unidade" value="{{ $unit->id }}">
                     <input type="hidden" name="data" value="{{ $defaults['date'] }}">
@@ -35,7 +35,7 @@
                             @foreach ($candidates as $c)
                                 <li class="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
                                     <span><strong class="font-medium">{{ $c->name }}</strong> <span class="text-sm text-muted">{{ \App\Support\Species::label($c->species) }} · {{ $c->guardians->pluck('name')->join(', ') }}</span></span>
-                                    <a href="{{ route('agenda.create', ['paciente' => $c->id, 'unidade' => $unit->id, 'data' => $defaults['date'], 'hora' => $defaults['time']]) }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line px-4 text-sm font-semibold hover:bg-surface-2">Escolher<span class="sr-only"> {{ $c->name }}</span></a>
+                                    <a href="{{ route('agenda.create', ['paciente' => $c->id, 'unidade' => $unit->id, 'data' => $defaults['date'], 'hora' => $defaults['time']]) }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line bg-surface px-4 text-sm font-semibold shadow-card transition hover:border-brand/40 hover:bg-tint">Escolher<span class="sr-only"> {{ $c->name }}</span></a>
                                 </li>
                             @endforeach
                         </ul>
@@ -50,7 +50,7 @@
                 <input type="hidden" name="patient_id" value="{{ $patient->id }}">
 
                 <x-card>
-                    <h2 class="mb-1 text-lg font-semibold">Paciente</h2>
+                    <h2 class="mb-1 text-lg font-bold tracking-tight">Paciente</h2>
                     <p><strong>{{ $patient->name }}</strong> <span class="text-muted">{{ \App\Support\Species::label($patient->species) }}</span>
                         @unless ($editing)
                             · <a class="text-sm font-semibold text-link underline underline-offset-4" href="{{ route('agenda.create', ['unidade' => $unit->id, 'data' => $defaults['date'], 'hora' => $defaults['time']]) }}">trocar</a>
@@ -59,7 +59,7 @@
                 </x-card>
 
                 <x-card>
-                    <h2 class="mb-4 text-lg font-semibold">Horário</h2>
+                    <h2 class="mb-4 text-lg font-bold tracking-tight">Horário</h2>
                     <div class="grid gap-4 sm:grid-cols-2">
                         @if ($units->count() > 1)
                             <x-select name="unit_id" label="Unidade" :options="$units->pluck('name', 'id')->all()" :value="$unit->id" required class="sm:col-span-2" />
@@ -84,7 +84,7 @@
 
                 <div class="flex flex-col gap-3 sm:flex-row">
                     <x-button>{{ $editing ? 'Salvar alterações' : 'Agendar' }}</x-button>
-                    <a href="{{ $editing ? route('agenda.show', $appointment) : route('agenda.index', ['unidade' => $unit->id, 'data' => $defaults['date']]) }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line px-4 text-sm font-semibold hover:bg-surface-2">Voltar</a>
+                    <a href="{{ $editing ? route('agenda.show', $appointment) : route('agenda.index', ['unidade' => $unit->id, 'data' => $defaults['date']]) }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line bg-surface px-4 text-sm font-semibold shadow-card transition hover:border-brand/40 hover:bg-tint">Voltar</a>
                 </div>
             </form>
         @endif

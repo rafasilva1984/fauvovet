@@ -1,12 +1,12 @@
 @php
     $tones = [
-        'scheduled' => 'bg-surface-2 text-ink',
-        'confirmed' => 'bg-surface-2 text-link ring-1 ring-inset ring-current',
-        'waiting' => 'bg-warning-bg text-warning',
-        'in_progress' => 'bg-brand text-on-brand',
-        'completed' => 'bg-success-bg text-success',
-        'no_show' => 'bg-danger-bg text-danger',
-        'cancelled' => 'bg-surface-2 text-muted line-through',
+        'scheduled' => 'bg-surface-2 text-muted ring-line',
+        'confirmed' => 'bg-tint text-link ring-transparent',
+        'waiting' => 'bg-warning-bg text-warning ring-transparent',
+        'in_progress' => 'bg-brand fv-gradient text-on-brand ring-transparent',
+        'completed' => 'bg-success-bg text-success ring-transparent',
+        'no_show' => 'bg-danger-bg text-danger ring-transparent',
+        'cancelled' => 'bg-surface-2 text-muted ring-line line-through',
     ];
 @endphp
-<span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $tones[$status] ?? '' }}">{{ \App\Models\Appointment::STATUS[$status] ?? $status }}</span>
+<span class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset {{ $tones[$status] ?? '' }}"><span aria-hidden="true" class="size-1.5 rounded-full bg-current {{ $status === 'waiting' ? 'animate-pulse' : '' }}"></span>{{ \App\Models\Appointment::STATUS[$status] ?? $status }}</span>

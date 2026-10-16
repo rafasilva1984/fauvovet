@@ -2,7 +2,7 @@
 @section('title', $unit->name)
 
 @section('content')
-    <x-page-header :title="$unit->name" description="Detalhes da unidade." />
+    <x-profile-header :title="$unit->name" eyebrow="Unidade" description="Detalhes da unidade." avatar-icon="building" />
     <x-card>
         <dl class="grid gap-4 sm:grid-cols-2">
             <div><dt class="text-sm text-muted">Cidade/UF</dt><dd class="font-medium">{{ collect([$unit->city, $unit->state])->filter()->join(' · ') ?: '—' }}</dd></div>

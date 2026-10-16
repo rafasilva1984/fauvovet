@@ -28,7 +28,7 @@
 
         @case('login')
             <p class="text-muted">Já existe uma conta no FauvoVet para <strong class="text-ink">{{ $invitation->email }}</strong>. Entre com ela; depois do login você volta para esta página para aceitar.</p>
-            <a href="{{ route('login') }}" class="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-brand px-4 text-sm font-semibold text-on-brand shadow-sm hover:brightness-110">Entrar para aceitar</a>
+            <a href="{{ route('login') }}" class="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-brand fv-gradient px-4 text-sm font-semibold text-on-brand shadow-glow transition hover:brightness-110">Entrar para aceitar</a>
         @break
 
         @default

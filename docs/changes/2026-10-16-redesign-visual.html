@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FauvoVet — Novo visual</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #1a2935; background: #f4f7f8; line-height: 1.65; font-size: 17px; }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 16px 80px; }
+    header { border-radius: 20px; padding: 32px; color: white; background: linear-gradient(120deg, #0b4652, #1a7375); }
+    header p { color: #e1f5f0; margin-bottom: 0; }
+    h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.2; margin: 0; }
+    h2 { font-size: 1.3rem; margin: 0 0 12px; }
+    h3 { font-size: 1.12rem; margin: 28px 0 8px; padding-top: 16px; border-top: 1px dashed #c9d6d8; }
+    h4 { font-size: 1rem; margin: 18px 0 6px; }
+    section { margin-top: 20px; background: #fff; padding: 24px; border: 1px solid #dee7e8; border-radius: 14px; }
+    p, li { overflow-wrap: anywhere; }
+    code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { background: #eaf1f2; padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+    pre code { background: none; padding: 0; }
+    kbd { border: 1px solid #b8c6c9; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: #fff; font-size: 0.9em; }
+    pre { overflow-x: auto; border-radius: 8px; padding: 14px; color: #e9fbff; background: #172b32; font-size: 0.9rem; line-height: 1.5; }
+    .tag { display: inline-block; font-size: 0.8rem; font-weight: 700; border: 1px solid #f5cf83; background: #fff8e4; color: #7a4b12; border-radius: 30px; padding: 3px 10px; }
+    .where { display: inline-block; font-size: 0.78rem; font-weight: 700; border-radius: 30px; padding: 2px 10px; margin-right: 6px; vertical-align: middle; }
+    .w-term { background: #1f3b44; color: #d9fbff; }
+    .w-web { background: #e1effd; color: #0f3e72; }
+    .w-fz { background: #fde8e1; color: #7a2a0f; }
+    .w-np { background: #ece5fb; color: #42237a; }
+    .w-panel { background: #e2f6e8; color: #145c2e; }
+    .note { border-left: 4px solid #338b96; background: #eef7f8; padding: 10px 12px; border-radius: 6px; }
+    .warn { border-left: 4px solid #c27c0e; background: #fff8e4; padding: 10px 12px; border-radius: 6px; }
+    .stop { border-left: 4px solid #b3261e; background: #fdecea; padding: 10px 12px; border-radius: 6px; }
+    .ok { border-left: 4px solid #1d7a45; background: #e8f6ee; padding: 10px 12px; border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid #e0e7e8; text-align: left; vertical-align: top; }
+    small { color: #52646d; }
+    .pass { color: #116b3a; font-weight: 700; }
+    .notrun { color: #8a5a00; font-weight: 700; }
+    ol.steps > li { margin-bottom: 12px; }
+    .map { font-size: 0.85rem; }
+    .shots { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .shots figure { margin: 0; }
+    .shots img { width: 100%; height: auto; border-radius: 12px; border: 1px solid #dee7e8; display: block; }
+    .shots figcaption { font-size: 0.85rem; color: #52646d; margin-top: 4px; }
+    .shots .tall img { max-height: 520px; object-fit: cover; object-position: top; }
+    nav ol { columns: 2; column-gap: 32px; }
+    @media (max-width: 640px) { nav ol { columns: 1; } body { font-size: 16px; } section { padding: 18px; } header { padding: 22px; } }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e4eef0; background: #0f1a1e; }
+      section { background: #15242a; border-color: #23373e; }
+      th, td { border-color: #23373e; }
+      code { background: #213840; }
+      kbd { background: #1d3138; border-color: #3b5760; }
+      .warn { background: #2a2210; } .note { background: #12303a; } .stop { background: #3a1614; } .ok { background: #12301f; }
+      small { color: #9fb3ba; }
+      h3 { border-color: #2c454c; }
+      .pass { color: #5fd28f; } .notrun { color: #f0b54a; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="tag">INCREMENTO IMPLEMENTADO — DESIGN (SEM MUDANÇA DE REGRAS OU DADOS)</span>
+      <h1>Novo visual do FauvoVet: moderno, vivo e com a identidade de cada clínica</h1>
+      <p>ID: <strong>2026-10-16-redesign-visual</strong> · Data: <strong>16/10/2026</strong> · Versão: <strong>0.5.1</strong> · Módulo: <strong>§7 UX/UI</strong> · Estado: <strong>implementado e testado localmente; publicação a cargo do proprietário (seção 7)</strong></p>
+    </header>
+
+    <section>
+      <h2>1. Objetivo</h2>
+      <p>O proprietário achou as telas "sem vida, muito simples, muito quadradas". Esta entrega muda <strong>só o design</strong>: nenhuma regra, permissão, tabela ou dado foi alterado. O objetivo é uma aparência de software premium de saúde, com a cor de cada clínica presente na interface toda, sem perder acessibilidade (WCAG AA), velocidade e uso confortável no celular.</p>
+      <div class="shots">
+        <figure><img src="img/2026-10-16-design-painel.jpg" alt="Painel com faixa de boas-vindas em degradê, indicadores e agenda de hoje (dados fictícios)" loading="lazy"><figcaption>Painel</figcaption></figure>
+        <figure><img src="img/2026-10-16-design-agenda.jpg" alt="Agenda em linha do tempo com cartões por paciente (dados fictícios)" loading="lazy"><figcaption>Agenda (linha do tempo)</figcaption></figure>
+        <figure><img src="img/2026-10-16-design-paciente.jpg" alt="Ficha do paciente com cabeçalho de perfil (dados fictícios)" loading="lazy"><figcaption>Ficha do paciente</figcaption></figure>
+        <figure><img src="img/2026-10-16-design-login.jpg" alt="Tela de login com painel em degradê e prévia ilustrativa" loading="lazy"><figcaption>Login</figcaption></figure>
+        <figure><img src="img/2026-10-16-design-agenda-escuro.jpg" alt="Agenda no modo escuro (dados fictícios)" loading="lazy"><figcaption>Modo escuro</figcaption></figure>
+        <figure><img src="img/2026-10-16-design-pacientes.jpg" alt="Lista de pacientes com avatares por espécie (dados fictícios)" loading="lazy"><figcaption>Pacientes</figcaption></figure>
+        <figure class="tall"><img src="img/2026-10-16-design-celular-painel.jpg" alt="Painel no celular com barra inferior flutuante (dados fictícios)" loading="lazy"><figcaption>Celular — painel</figcaption></figure>
+        <figure class="tall"><img src="img/2026-10-16-design-celular-agenda.jpg" alt="Agenda no celular (dados fictícios)" loading="lazy"><figcaption>Celular — agenda</figcaption></figure>
+      </div>
+      <p><small>Capturas com dados 100% fictícios do seed de desenvolvimento.</small></p>
+    </section>
+
+    <section>
+      <h2>2. O que mudou</h2>
+      <h3>Linguagem visual (ADR-012)</h3>
+      <ul>
+        <li><strong>Tipografia:</strong> fonte <strong>Plus Jakarta Sans</strong> (licença OFL), servida pelo próprio sistema, sem Google Fonts nem CDN. Títulos maiores e mais firmes.</li>
+        <li><strong>Cores da clínica em toda a interface:</strong>
+          <ul>
+            <li>degradês, brilhos e realces são calculados a partir das duas cores escolhidas em <em>Aparência</em>;</li>
+            <li>trocar a cor da clínica muda botões, menu ativo, faixa do painel, ícones e logo.</li>
+          </ul>
+        </li>
+        <li><strong>Superfícies:</strong> fundo com "malha" suave nas cores da clínica, cartões com cantos mais arredondados e sombras em camadas. Cartões clicáveis sobem levemente ao passar o mouse. Barras superiores translúcidas.</li>
+        <li><strong>Avatares:</strong> iniciais coloridas para pessoas e clínicas; para pacientes, ícone com cor por grupo de espécie (cão, gato, ave, réptil…). São 8 tons, todos com contraste AA, no claro e no escuro.</li>
+        <li><strong>Status com ponto colorido:</strong> "Aguardando" pulsa suavemente; "Em atendimento" usa o degradê da clínica.</li>
+        <li><strong>Movimento:</strong> entradas suaves de 0,45 s. Quem ativa "reduzir movimento" no sistema operacional não vê animações.</li>
+        <li><strong>Modo escuro</strong> refeito com os mesmos tokens.</li>
+      </ul>
+      <h3>Estrutura</h3>
+      <ul>
+        <li><strong>Menu lateral escuro</strong> (computador), em grupos: <em>Atendimento</em> (Painel, Agenda, Pacientes, Responsáveis), <em>Clínica</em> (Unidades, Equipe) e <em>Configurações</em> (Tipos de atendimento, Aparência). Também mostra o cartão da clínica, com "Trocar clínica/unidade", e o usuário com o botão de sair.</li>
+        <li><strong>Barra superior</strong> (computador):
+          <ul>
+            <li><strong>busca rápida</strong> de paciente, tutor, telefone ou microchip;</li>
+            <li>data de hoje;</li>
+            <li>botão <strong>Novo</strong> com Novo agendamento, Novo paciente e Novo responsável.</li>
+          </ul>
+        </li>
+        <li><strong>Celular:</strong>
+          <ul>
+            <li>barra inferior flutuante, com o item ativo em degradê;</li>
+            <li>no topo, lupa (vai para Pacientes) e avatar (abre o menu da conta);</li>
+            <li>o menu da conta traz atalhos de criação e "Mais opções".</li>
+          </ul>
+        </li>
+        <li><strong>Painel:</strong> faixa de boas-vindas em degradê (data, papéis, botões principais), 4 indicadores com ícone (2 por linha no celular), "Hoje na agenda" em linha do tempo, atalhos em blocos e atividade recente com ícones e "há X minutos".</li>
+        <li><strong>Agenda:</strong> visão de dia como <strong>linha do tempo</strong> (hora à esquerda, trilho e cartão com avatar da espécie); filtros num cartão (compacto no celular); navegação e Dia/Semana em botões segmentados; semana com o dia de hoje em destaque e dias vazios marcados "Livre".</li>
+        <li><strong>Fichas</strong> (paciente, responsável, agendamento, membro, unidade): novo cabeçalho de perfil com avatar grande e etiquetas (idade, sexo, microchip, nº de pacientes, status).</li>
+        <li><strong>Listas:</strong> pacientes em grade de 2 colunas no computador; responsáveis, equipe e unidades com avatar e seta.</li>
+        <li><strong>Login:</strong> painel em degradê com brilhos animados e uma prévia ilustrativa do produto (decorativa, fictícia, ignorada por leitores de tela); formulário num cartão.</li>
+        <li><strong>Telas de erro</strong> (404, 419, 500…) em cartão central, com o número em degradê.</li>
+      </ul>
+      <h3>Defeitos encontrados e corrigidos durante a entrega</h3>
+      <ul>
+        <li><strong>Fonte não carregava em <code>/fauvovet</code>:</strong> o CSS apontava para <code>/build/…</code> na raiz do domínio. O Vite agora usa <code>base: './'</code> (endereços relativos). O defeito afetaria a produção.</li>
+        <li><strong>Rolagem lateral no celular:</strong>
+          <ul>
+            <li>e-mails longos no painel do link de convite alargavam a página;</li>
+            <li>os cartões de paciente não encolhiam na grade.</li>
+          </ul>
+          Corrigido com quebra de texto longo, <code>overflow-x: clip</code> e coluna única de grade. Foi achado por um teste E2E que errava o clique por causa do deslocamento.
+        </li>
+        <li><strong>Espaço entre palavras curto</strong> na fonte nova: leve acréscimo de <code>word-spacing</code>.</li>
+      </ul>
+      <h3>Arquivos</h3>
+      <ul>
+        <li><strong>Estilo e build:</strong> <code>resources/css/app.css</code> (tokens novos, malha, vidro, tons, animações), <code>vite.config.js</code>, <code>package.json</code> (<code>@fontsource-variable/plus-jakarta-sans</code>).</li>
+        <li><strong>Componentes:</strong> <code>button</code>, <code>card</code>, <code>badge</code>, <code>page-header</code>, <code>alert</code>, <code>empty-state</code>, <code>field</code>, <code>select</code>, <code>textarea</code>, <code>logo</code>, <code>icon</code> (+14 ícones) e os novos <code>avatar</code>, <code>stat</code>, <code>profile-header</code>.</li>
+        <li><strong>Telas:</strong> <code>layouts/app</code>, <code>layouts/auth</code>, <code>layouts/partials/context</code>, <code>dashboard</code>, <code>agenda/*</code>, <code>patients/*</code>, <code>guardians/*</code>, <code>team/*</code>, <code>units/*</code>, <code>settings/*</code>, <code>auth/context</code>, <code>errors/*</code>.</li>
+        <li><strong>PHP:</strong> só <code>App\Support\Species::tone()</code> (cor do avatar por espécie).</li>
+        <li><strong>Testes:</strong> o axe passa a medir o estado final (animação reduzida) e lista cada elemento reprovado com as cores. Dois testes E2E ajustados à nova interface.</li>
+      </ul>
+      <p>Dependência nova: <code>@fontsource-variable/plus-jakarta-sans</code> 5.3.0 (OFL-1.1, só no build; vai para o servidor como arquivos <code>.woff2</code>).</p>
+    </section>
+
+    <section>
+      <h2>3. Pré-requisitos</h2>
+      <p>Os mesmos das entregas anteriores. Rode <code>pnpm install</code> (ou <code>pnpm bootstrap</code>) para baixar a fonte. Não há variável de ambiente nem migração nova.</p>
+      <p class="warn"><strong>Git Bash/macOS:</strong> NOT RUN.</p>
+    </section>
+
+    <section>
+      <h2>4. Passo a passo (no seu computador)</h2>
+      <ol>
+        <li><code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm install</code></li>
+        <li><code>pnpm db:start</code> → <code>pnpm dev</code></li>
+        <li>Abra <code>http://127.0.0.1:8000/fauvovet/login</code> e entre com <code>ana.titular@aurora.exemplo.test</code>.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>5. Como testar</h2>
+      <h3>Automático</h3>
+<pre><code>pnpm verify --e2e</code></pre>
+      <h3>Manual</h3>
+      <ol>
+        <li>Percorra Painel, Agenda (Dia e Semana), Pacientes, uma ficha, Responsáveis, Equipe, Unidades e Aparência, no computador e no celular.</li>
+        <li>Em <em>Aparência</em>, troque a cor primária (ex.: <code>#1d4e89</code>): menu, botões, faixa do painel e logo mudam juntos.</li>
+        <li>Mude o modo para <em>Escuro</em> e confira a legibilidade.</li>
+        <li>No celular: barra inferior, lupa no topo e menu da conta pelo avatar. Nenhuma tela deve rolar para o lado.</li>
+        <li>No sistema operacional, ative "reduzir movimento": as animações somem.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>6. Performance e usabilidade</h2>
+      <table>
+        <tr><th>Medida</th><th>Antes</th><th>Depois</th></tr>
+        <tr><td>Transferido na 1ª visita (login/painel)</td><td>~98 KB</td><td>~149 KB (a fonte fica em cache nas visitas seguintes)</td></tr>
+        <tr><td>LCP de laboratório (desktop / celular)</td><td>—</td><td>≤ 120 ms / ≤ 100 ms</td></tr>
+        <tr><td>CLS</td><td>0</td><td>0 a 0,006 (troca de fonte; bem abaixo de 0,1)</td></tr>
+        <tr><td>p95 servidor: painel · agenda dia · pacientes</td><td>47,8 · 49,6 · 36,8 ms</td><td>53,7 · 54,9 · 38,3 ms</td></tr>
+        <tr><td>CSS (gzip)</td><td>—</td><td>9,6 KB</td></tr>
+      </table>
+      <p>Acessibilidade: o axe (WCAG 2.2 AA) não acusou violações em todas as telas cobertas, no computador e no celular, nos modos claro e escuro. Áreas de toque continuam com no mínimo 44 px. Rolagem lateral verificada em 16 telas no celular: nenhuma.</p>
+    </section>
+
+    <section>
+      <h2>7. Implantação na Locaweb (sem migração)</h2>
+      <p>Não há mudança no banco. Ainda assim é preciso rodar o <strong>otimizar</strong>, para o servidor recompilar as telas, porque o cache antigo mostraria o visual anterior.</p>
+      <ol>
+        <li><strong>Terminal:</strong> <code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm install</code> → <code>pnpm db:start</code> → <code>pnpm verify --e2e</code> → <code>pnpm deploy:package</code> → <code>pnpm deploy:copiar</code></li>
+        <li><strong>Terminal:</strong> <code>pnpm deploy:token</code> (guarde o TOKEN e copie a linha <code>DEPLOY_TOKEN_SHA256=…</code>).</li>
+        <li><strong>FileZilla:</strong> em <code>/app-fauvovet/.env</code>, <code>DEPLOY_TOOLS_ENABLED=true</code> + linha nova do token → enviar de volta → apagar <code>bootstrap/cache/config.php</code> (se existir).</li>
+        <li><strong>FileZilla:</strong> <code>C:\fauvovet-deploy\app-fauvovet</code> → <code>/app-fauvovet</code>, tudo <strong>exceto <code>storage</code></strong>, com <em>Sobrescrever</em>.</li>
+        <li><strong>FileZilla:</strong> <code>C:\fauvovet-deploy\public_html\fauvovet</code> → <code>/public_html/fauvovet</code>, tudo com <em>Sobrescrever</em>. A pasta <code>build/assets</code> agora traz arquivos <code>.woff2</code> (a fonte).</li>
+        <li><strong>Terminal</strong> (sem HTTPS: <code>http</code> + <code>export FAUVOVET_ALLOW_HTTP=1</code>):
+<pre><code> export FAUVOVET_DEPLOY_TOKEN='TOKEN_NOVO'
+pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet diagnostico   # pending_migrations: 0
+pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet otimizar      # tudo 0</code></pre>
+          <small>Não é preciso rodar "migrar" nesta versão.</small>
+        </li>
+        <li><strong>FileZilla:</strong> <code>DEPLOY_TOOLS_ENABLED=false</code> → enviar de volta → apagar <code>bootstrap/cache/config.php</code>.</li>
+        <li><strong>Terminal:</strong> <code>SMOKE_URL=https://dradeboragaldino.com.br/fauvovet pnpm smoke</code> (5 PASS) → <code>unset FAUVOVET_DEPLOY_TOKEN FAUVOVET_ALLOW_HTTP</code></li>
+        <li><strong>Navegador:</strong> abra o sistema e aperte <kbd>Ctrl</kbd>+<kbd>F5</kbd> uma vez para não usar o visual antigo em cache. Confira se a fonte nova aparece (letras mais arredondadas).</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>8. Rollback</h2>
+      <ul>
+        <li><strong>Código:</strong> reenvie o pacote anterior (<code>.deploy/fauvovet-8f91a50</code>, a versão da agenda) e rode o <strong>otimizar</strong> de novo (com as ferramentas ligadas), para recompilar as telas antigas. Como não há mudança de banco, a volta é completa e sem perda de dados.</li>
+        <li><strong>Local:</strong> <code>git revert</code> do commit desta entrega.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>9. Troubleshooting</h2>
+      <table>
+        <tr><th>Sintoma</th><th>Causa e solução</th></tr>
+        <tr><td>Visual antigo depois de publicar</td><td>Cache de telas no servidor (rode o <em>otimizar</em>) ou cache do navegador (<kbd>Ctrl</kbd>+<kbd>F5</kbd>).</td></tr>
+        <tr><td>Fonte "comum" em vez da nova</td><td>A pasta <code>build/assets</code> não foi enviada por completo (faltam os <code>.woff2</code>). Reenvie <code>public_html/fauvovet/build</code>.</td></tr>
+        <tr><td>Página sem cores ou estilo</td><td><code>build/</code> não enviada ou <code>APP_URL</code> errado. Veja a seção 9 do tutorial.</td></tr>
+        <tr><td>Cores estranhas depois de mudar a Aparência</td><td>A interface usa as duas cores da clínica. Escolha uma primária mais escura para ter um degradê mais sóbrio.</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>10. Evidências e status</h2>
+      <table>
+        <tr><th>Verificação</th><th>Status</th><th>Detalhe</th></tr>
+        <tr><td><code>pnpm verify --e2e</code></td><td class="pass">PASS</td><td>9/9 etapas; PHPUnit 100/100; E2E 47 + 1 ignorado de propósito</td></tr>
+        <tr><td>Acessibilidade axe (claro/escuro, desktop/celular)</td><td class="pass">PASS</td><td>sem violações, medido no estado final</td></tr>
+        <tr><td>Rolagem lateral no celular (16 telas)</td><td class="pass">PASS</td><td>nenhuma, depois das correções</td></tr>
+        <tr><td>Fonte servida em <code>/fauvovet</code></td><td class="pass">PASS</td><td>URLs relativas no CSS (<code>./plus-jakarta-sans-…woff2</code>)</td></tr>
+        <tr><td>Publicação desta versão</td><td class="notrun">NOT RUN</td><td>A cargo do proprietário (seção 7)</td></tr>
+      </table>
+      <p><strong>Commit:</strong> registrado no <code>docs/PROGRESS.md</code> após a sincronização.</p>
+      <p><strong>Próximo passo:</strong> retomar o roadmap com o <strong>atendimento/prontuário</strong>, já no novo visual.</p>
+    </section>
+  </main>
+</body>
+</html>

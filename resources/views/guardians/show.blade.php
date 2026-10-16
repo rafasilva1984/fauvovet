@@ -9,18 +9,22 @@
 @endphp
 
 @section('content')
-    <x-page-header :title="$guardian->name" :description="$guardian->status === 'archived' ? 'Responsável arquivado' : 'Responsável'">
+    <x-profile-header :title="$guardian->name" eyebrow="Responsável" :description="$guardian->status === 'archived' ? 'Responsável arquivado' : null">
+        <x-slot:meta>
+            <x-badge tone="tint">{{ $guardian->patients->count() }} {{ $guardian->patients->count() === 1 ? 'paciente' : 'pacientes' }}</x-badge>
+            @if ($guardian->phone)<x-badge>{{ \App\Models\Guardian::formatPhone($guardian->phone) }}</x-badge>@endif
+        </x-slot:meta>
         @if ($canWrite)
             <div class="flex flex-wrap gap-2">
-                <a href="{{ route('patients.create', ['responsavel' => $guardian->id]) }}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-on-brand shadow-sm hover:brightness-110"><x-icon name="plus" /> Novo paciente</a>
-                <a href="{{ route('guardians.edit', $guardian) }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line px-4 text-sm font-semibold hover:bg-surface-2">Editar</a>
+                <a href="{{ route('patients.create', ['responsavel' => $guardian->id]) }}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand fv-gradient px-4 text-sm font-semibold text-on-brand shadow-glow transition hover:brightness-110"><x-icon name="plus" /> Novo paciente</a>
+                <a href="{{ route('guardians.edit', $guardian) }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line bg-surface px-4 text-sm font-semibold shadow-card transition hover:border-brand/40 hover:bg-tint">Editar</a>
             </div>
         @endif
-    </x-page-header>
+    </x-profile-header>
 
     <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
         <x-card>
-            <h2 class="mb-4 text-lg font-semibold">Contato</h2>
+            <h2 class="mb-4 text-lg font-bold tracking-tight">Contato</h2>
             <dl class="grid gap-4">
                 @include('guardians._contact', ['guardian' => $guardian])
                 <div><dt class="text-sm text-muted">{{ $guardian->person_type === 'PJ' ? 'CNPJ' : 'CPF' }}</dt><dd class="font-medium tabular-nums">{{ $docShown ?? '—' }}</dd></div>
@@ -32,7 +36,7 @@
         </x-card>
 
         <section aria-labelledby="pacientes-titulo">
-            <h2 id="pacientes-titulo" class="mb-3 text-lg font-semibold">Pacientes</h2>
+            <h2 id="pacientes-titulo" class="mb-3 text-lg font-bold tracking-tight">Pacientes</h2>
             @if ($guardian->patients->isEmpty())
                 <x-empty-state title="Nenhum paciente vinculado" icon="paw" />
             @else

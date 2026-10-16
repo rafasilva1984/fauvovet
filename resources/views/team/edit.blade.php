@@ -2,7 +2,7 @@
 @section('title', 'Acesso de '.$member->user->name)
 
 @section('content')
-    <x-page-header :title="$member->user->name" :description="$member->user->email" />
+    <x-profile-header :title="$member->user->name" eyebrow="Acesso à clínica" :description="$member->user->email" />
 
     @if ($isSelf || $locked)
         <x-alert tone="info" class="mb-6">
@@ -52,7 +52,7 @@
                 @unless ($isSelf || $locked)
                     <x-button>Salvar acesso</x-button>
                 @endunless
-                <a href="{{ route('team.index') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line px-4 text-sm font-semibold text-ink hover:bg-surface-2">Voltar à equipe</a>
+                <a href="{{ route('team.index') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line bg-surface px-4 text-sm font-semibold text-ink shadow-card transition hover:border-brand/40 hover:bg-tint">Voltar à equipe</a>
             </div>
         </form>
     </x-card>

@@ -2,7 +2,7 @@
 @section('title', 'Aparência')
 
 @section('content')
-    <x-page-header title="Aparência" description="Cores e modo de exibição da sua clínica. Valem para todos os usuários do ambiente. Logo e timbre de documentos chegam em breve." />
+    <x-page-header title="Aparência" icon="palette" eyebrow="Configurações" description="Cores e modo de exibição da sua clínica. Valem para todos os usuários do ambiente. Logo e timbre de documentos chegam em breve." />
     <form method="POST" action="{{ route('settings.appearance.update') }}" class="grid gap-6 lg:grid-cols-2" novalidate
         x-data="themeEditor" data-primary="{{ old('primary', $theme['primary']) }}" data-secondary="{{ old('secondary', $theme['secondary']) }}"
         data-default-primary="{{ $default['primary'] }}" data-default-secondary="{{ $default['secondary'] }}">
@@ -43,7 +43,7 @@
         <section aria-label="Pré-visualização">
             <x-card class="flex flex-col gap-4">
                 <p class="text-xs font-semibold uppercase tracking-wide text-muted">Pré-visualização</p>
-                <div class="flex items-center gap-3"><x-logo :size="40" /><span class="text-lg font-semibold">{{ $fvTenant?->trade_name }}</span></div>
+                <div class="flex items-center gap-3"><x-logo :size="40" /><span class="text-lg font-bold tracking-tight">{{ $fvTenant?->trade_name }}</span></div>
                 <div class="flex flex-wrap gap-2">
                     <span class="inline-flex min-h-10 items-center rounded-xl bg-brand px-4 text-sm font-semibold text-on-brand">Botão primário</span>
                     <span class="inline-flex min-h-10 items-center rounded-xl bg-accent px-4 text-sm font-semibold text-on-accent">Destaque</span>

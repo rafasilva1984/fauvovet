@@ -2,7 +2,7 @@
 @section('title', 'Editar '.$patient->name)
 
 @section('content')
-    <x-page-header :title="'Editar '.$patient->name" />
+    <x-page-header :title="'Editar '.$patient->name" icon="paw" eyebrow="Paciente" />
     <x-card class="max-w-3xl">
         <form method="POST" action="{{ route('patients.update', $patient) }}" class="flex flex-col gap-6" novalidate>
             @csrf
@@ -15,7 +15,7 @@
             </div>
             <div class="flex flex-col gap-3 sm:flex-row">
                 <x-button>Salvar alterações</x-button>
-                <a href="{{ route('patients.show', $patient) }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line px-4 text-sm font-semibold hover:bg-surface-2">Cancelar</a>
+                <a href="{{ route('patients.show', $patient) }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line bg-surface px-4 text-sm font-semibold shadow-card transition hover:border-brand/40 hover:bg-tint">Cancelar</a>
             </div>
         </form>
     </x-card>

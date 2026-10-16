@@ -22,41 +22,43 @@
                 : ucfirst($day->locale('pt_BR')->translatedFormat('l, d \d\e F \d\e Y'));
             $isToday = $day->isSameDay(now($tz));
         @endphp
-        <x-page-header title="Agenda" :description="$unit->name.' · fuso '.$tz">
+        <x-page-header title="Agenda" icon="calendar" :eyebrow="$unit->name" :description="'Horários no fuso '.$tz.'.'">
             @if ($fvCan('schedule:write'))
-                <a href="{{ route('agenda.create', ['unidade' => $unit->id, 'data' => $day->format('Y-m-d')]) }}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-on-brand shadow-sm hover:brightness-110"><x-icon name="plus" /> Novo agendamento</a>
+                <a href="{{ route('agenda.create', ['unidade' => $unit->id, 'data' => $day->format('Y-m-d')]) }}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand fv-gradient px-4 text-sm font-semibold text-on-brand shadow-glow transition hover:brightness-110"><x-icon name="plus" /> Novo agendamento</a>
             @endif
         </x-page-header>
 
-        <form method="GET" action="{{ route('agenda.index') }}" class="mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_10rem_auto] lg:items-end">
+        <form method="GET" action="{{ route('agenda.index') }}" class="mb-4 grid grid-cols-2 items-end gap-3 rounded-[1.25rem] border border-line bg-surface p-3 shadow-card sm:p-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_11rem_auto]">
             @if ($units->count() > 1)
-                <x-select name="unidade" label="Unidade" :options="$units->pluck('name', 'id')->all()" :value="$unit->id" />
+                <x-select name="unidade" label="Unidade" :options="$units->pluck('name', 'id')->all()" :value="$unit->id" class="col-span-2 lg:col-span-1" />
             @else
                 <input type="hidden" name="unidade" value="{{ $unit->id }}">
             @endif
             <x-select name="profissional" label="Profissional" :options="$professionals->mapWithKeys(fn ($m) => [$m->id => $m->user->name])->all()" :value="$proId" placeholder="Todos" />
             <x-field name="data" label="Data" type="date" :value="$day->format('Y-m-d')" />
             <input type="hidden" name="visao" value="{{ $week ? 'semana' : 'dia' }}">
-            <x-button variant="secondary">Ver</x-button>
+            <x-button variant="secondary" class="col-span-2 lg:col-span-1">Ver</x-button>
         </form>
 
         <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-            <nav aria-label="Navegar na agenda" class="flex flex-wrap items-center gap-2">
-                <a href="{{ $q(['data' => $day->copy()->subDays($step)->format('Y-m-d')]) }}" class="inline-flex min-h-11 items-center rounded-xl border border-line px-3 text-sm font-semibold hover:bg-surface-2">← {{ $week ? 'Semana anterior' : 'Dia anterior' }}</a>
-                <a href="{{ $q(['data' => now($tz)->format('Y-m-d')]) }}" class="inline-flex min-h-11 items-center rounded-xl border border-line px-3 text-sm font-semibold hover:bg-surface-2" @if ($isToday) aria-current="date" @endif>Hoje</a>
-                <a href="{{ $q(['data' => $day->copy()->addDays($step)->format('Y-m-d')]) }}" class="inline-flex min-h-11 items-center rounded-xl border border-line px-3 text-sm font-semibold hover:bg-surface-2">{{ $week ? 'Próxima semana' : 'Próximo dia' }} →</a>
+            <nav aria-label="Navegar na agenda" class="flex flex-wrap items-center gap-1 rounded-2xl border border-line bg-surface p-1 shadow-card">
+                <a href="{{ $q(['data' => $day->copy()->subDays($step)->format('Y-m-d')]) }}" class="inline-flex min-h-11 items-center gap-1 rounded-xl px-3 text-sm font-semibold hover:bg-surface-2"><x-icon name="chevron-left" :size="16" /> {{ $week ? 'Semana anterior' : 'Dia anterior' }}</a>
+                <a href="{{ $q(['data' => now($tz)->format('Y-m-d')]) }}" class="inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold {{ $isToday ? 'bg-tint text-link' : 'hover:bg-surface-2' }}" @if ($isToday) aria-current="date" @endif>Hoje</a>
+                <a href="{{ $q(['data' => $day->copy()->addDays($step)->format('Y-m-d')]) }}" class="inline-flex min-h-11 items-center gap-1 rounded-xl px-3 text-sm font-semibold hover:bg-surface-2">{{ $week ? 'Próxima semana' : 'Próximo dia' }} <x-icon name="chevron-right" :size="16" /></a>
             </nav>
-            <div class="flex flex-wrap gap-2">
-                <a href="{{ $q(['visao' => null]) }}" class="inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold {{ $week ? 'border border-line hover:bg-surface-2' : 'bg-brand text-on-brand' }}" @unless ($week) aria-current="page" @endunless>Dia</a>
-                <a href="{{ $q(['visao' => 'semana']) }}" class="inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold {{ $week ? 'bg-brand text-on-brand' : 'border border-line hover:bg-surface-2' }}" @if ($week) aria-current="page" @endif>Semana</a>
-                <a href="{{ $q(['canceladas' => $showCancelled ? null : 1]) }}" class="inline-flex min-h-11 items-center rounded-xl border border-line px-3 text-sm font-semibold hover:bg-surface-2">{{ $showCancelled ? 'Ocultar cancelados' : 'Mostrar cancelados' }}</a>
+            <div class="flex flex-wrap items-center gap-2">
+                <div class="flex rounded-2xl border border-line bg-surface p-1 shadow-card">
+                <a href="{{ $q(['visao' => null]) }}" class="inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold {{ $week ? 'hover:bg-surface-2' : 'bg-brand fv-gradient text-on-brand shadow-glow' }}" @unless ($week) aria-current="page" @endunless>Dia</a>
+                <a href="{{ $q(['visao' => 'semana']) }}" class="inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold {{ $week ? 'bg-brand fv-gradient text-on-brand shadow-glow' : 'hover:bg-surface-2' }}" @if ($week) aria-current="page" @endif>Semana</a>
+                </div>
+                <a href="{{ $q(['canceladas' => $showCancelled ? null : 1]) }}" class="inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold text-muted hover:bg-surface-2 hover:text-ink">{{ $showCancelled ? 'Ocultar cancelados' : 'Mostrar cancelados' }}</a>
             </div>
         </div>
 
         @if ($waiting->isNotEmpty())
             <section aria-labelledby="fila-titulo" class="mb-6">
-                <x-card class="border-warning/40">
-                    <h2 id="fila-titulo" class="mb-3 flex items-center gap-2 text-lg font-semibold"><x-icon name="clock" /> Fila de espera agora ({{ $waiting->count() }})</h2>
+                <x-card class="border-warning/30 bg-warning-bg/40">
+                    <h2 id="fila-titulo" class="mb-3 flex items-center gap-2 text-lg font-bold"><span class="flex size-9 items-center justify-center rounded-xl bg-warning-bg text-warning"><x-icon name="clock" :size="18" /></span> Fila de espera agora ({{ $waiting->count() }})</h2>
                     <ol class="divide-y divide-line">
                         @foreach ($waiting as $w)
                             @php
@@ -72,14 +74,14 @@
             </section>
         @endif
 
-        <h2 class="mb-3 text-lg font-semibold">{{ $title }}</h2>
+        <h2 class="mb-4 text-lg font-bold tracking-tight">{{ $title }} <span class="ml-1 align-middle text-sm font-semibold text-muted">· {{ $appointments->count() }} {{ $appointments->count() === 1 ? 'agendamento' : 'agendamentos' }}</span></h2>
         @if (! $week)
             @if ($appointments->isEmpty())
                 <x-empty-state title="Nenhum agendamento neste dia" icon="clock">
                     @if ($fvCan('schedule:write'))<a class="font-semibold text-link underline underline-offset-4" href="{{ route('agenda.create', ['unidade' => $unit->id, 'data' => $day->format('Y-m-d')]) }}">Agendar</a>@endif
                 </x-empty-state>
             @else
-                <ul class="flex flex-col gap-3">
+                <ul class="flex flex-col gap-3 sm:gap-2">
                     @foreach ($appointments as $a)
                         <li>@include('agenda._item', ['a' => $a, 'tz' => $tz])</li>
                     @endforeach
@@ -93,14 +95,14 @@
                         $items = $byDay->get($d->format('Y-m-d'), collect());
                     @endphp
                     <section aria-label="{{ $d->locale('pt_BR')->translatedFormat('l, d/m') }}" class="flex min-w-0 flex-col gap-2">
-                        <a href="{{ $q(['visao' => null, 'data' => $d->format('Y-m-d')]) }}" class="flex items-baseline justify-between rounded-xl px-2 py-1 text-sm font-semibold hover:bg-surface-2 {{ $d->isSameDay(now($tz)) ? 'text-link' : '' }}">
+                        <a href="{{ $q(['visao' => null, 'data' => $d->format('Y-m-d')]) }}" class="flex items-baseline justify-between rounded-xl px-3 py-2 text-sm font-bold {{ $d->isSameDay(now($tz)) ? 'bg-brand fv-gradient text-on-brand shadow-glow' : 'bg-surface shadow-card hover:bg-tint' }}">
                             <span>{{ ucfirst($d->locale('pt_BR')->translatedFormat('D d/m')) }}</span>
-                            <span class="text-xs font-normal text-muted">{{ $items->count() }}</span>
+                            <span class="text-xs font-semibold opacity-80">{{ $items->count() }}</span>
                         </a>
                         @forelse ($items as $a)
                             @include('agenda._week-item', ['a' => $a, 'tz' => $tz])
                         @empty
-                            <p class="px-2 text-xs text-muted">—</p>
+                            <p class="rounded-xl border border-dashed border-line px-3 py-3 text-center text-xs text-muted">Livre</p>
                         @endforelse
                     </section>
                 @endfor
