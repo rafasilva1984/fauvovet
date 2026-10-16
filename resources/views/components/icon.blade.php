@@ -39,6 +39,12 @@
         @case('clock')
             <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
         @break
+        @case('calendar')
+            <rect x="3.5" y="5" width="17" height="15.5" rx="2" /><path d="M3.5 10h17M8 3v4M16 3v4" />
+        @break
+        @case('list')
+            <path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01" />
+        @break
         @case('copy')
             <rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" />
         @break

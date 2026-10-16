@@ -18,9 +18,10 @@ Ordem conforme CLAUDE.md §11. Atualizado em 2026-10-15 (stack PHP/MySQL — ADR
 - [x] Gestão de equipe: convite por link de uso único, papéis, unidades por membro, desativação (15/10/2026).
 - [ ] Recuperação de senha, MFA do titular (dependem de e-mail transacional/TOTP).
 - [x] Responsáveis e pacientes: cadastro rápido, 16 espécies + exóticos, vínculos N:N, busca, óbito, aviso de duplicado (15/10/2026).
-- [ ] Agenda (calendário por unidade/profissional, status, encaixe) ← próximo
+- [x] Agenda: dia/semana por unidade e profissional, fuso da unidade, tipos, status, conflito, encaixe, fila de espera (16/10/2026).
+- [ ] Atendimento/prontuário: anamnese, exame físico, sinais vitais, alergias, peso, evolução; finalizar bloqueia e correções viram adendos ← próximo
 
-Depois: atendimento/prontuário com bloqueio e adendos, anexos privados, modelos básicos + PDF (dompdf).
+Depois: anexos privados, modelos básicos + PDF (dompdf).
 
 ## Fase 2 — Busca clínica e importação documental
 

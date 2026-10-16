@@ -3,10 +3,12 @@
 @php
     $nav = array_values(array_filter([
         ['route' => 'dashboard', 'label' => 'Painel', 'icon' => 'home', 'perm' => 'tenant:read'],
+        ['route' => 'agenda.index', 'label' => 'Agenda', 'icon' => 'calendar', 'perm' => 'schedule:read'],
         ['route' => 'patients.index', 'label' => 'Pacientes', 'icon' => 'paw', 'perm' => 'patients:read'],
         ['route' => 'guardians.index', 'label' => 'Responsáveis', 'icon' => 'users', 'perm' => 'patients:read'],
         ['route' => 'units.index', 'label' => 'Unidades', 'icon' => 'building', 'perm' => 'units:read'],
         ['route' => 'team.index', 'label' => 'Equipe', 'icon' => 'shield', 'perm' => 'members:read'],
+        ['route' => 'settings.appointment-types', 'label' => 'Tipos de atendimento', 'icon' => 'list', 'perm' => 'schedule:configure'],
         ['route' => 'settings.appearance', 'label' => 'Aparência', 'icon' => 'palette', 'perm' => 'theme:update'],
     ], fn ($n) => $fvCan($n['perm'])));
     $tenantName = $fvTenant?->trade_name ?? '';
@@ -29,7 +31,7 @@
             @include('layouts.partials.context', ['tenantName' => $tenantName, 'unitLabel' => $unitLabel])
             <nav aria-label="Principal" class="flex flex-1 flex-col gap-1">
                 @foreach ($nav as $item)
-                    @php($active = request()->routeIs($item['route'], strtok($item['route'], '.').'.*'))
+                    @php($active = request()->routeIs($item['route'], preg_replace('/\.index$/', '', $item['route']).'.*'))
                     <a href="{{ route($item['route']) }}" @if ($active) aria-current="page" @endif
                         class="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition {{ $active ? 'bg-brand text-on-brand' : 'text-ink hover:bg-surface-2' }}">
                         <x-icon :name="$item['icon']" /> {{ $item['label'] }}
@@ -96,7 +98,7 @@
         {{-- Navegação inferior (celular) --}}
         <nav aria-label="Principal" class="fixed inset-x-0 bottom-0 z-30 grid {{ $navCols }} border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
             @foreach ($navMobile as $item)
-                @php($active = request()->routeIs($item['route'], strtok($item['route'], '.').'.*'))
+                @php($active = request()->routeIs($item['route'], preg_replace('/\.index$/', '', $item['route']).'.*'))
                 <a href="{{ route($item['route']) }}" @if ($active) aria-current="page" @endif
                     class="flex min-h-14 flex-col items-center justify-center gap-0.5 text-[0.7rem] font-medium {{ $active ? 'text-link' : 'text-muted' }}">
                     <x-icon :name="$item['icon']" /> {{ $item['label'] }}

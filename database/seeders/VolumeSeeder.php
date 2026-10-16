@@ -4,13 +4,14 @@ namespace Database\Seeders;
 
 use App\Tenancy\TenantContext;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use RuntimeException;
 
 /**
  * Volume SINTÉTICO para benchmark (pnpm perf:check com PERF_VOLUME=N): N pacientes e ~N/1,5 responsáveis
- * fictícios na clínica B. Só em banco *_test; nunca em produção.
+ * fictícios na clínica B, mais N/2 agendamentos espalhados em ±30 dias. Só em banco *_test; nunca em produção.
  */
 class VolumeSeeder extends Seeder
 {
@@ -60,8 +61,33 @@ class VolumeSeeder extends Seeder
                 }
                 DB::table('patients')->insert($patients);
                 DB::table('guardian_patient')->insert($links);
+                $this->appointments($patients, $tenant, $now);
             }
         });
-        $this->command->info("Volume sintético: {$total} pacientes e {$nGuardians} responsáveis na clínica B.");
+        $this->command->info("Volume sintético: {$total} pacientes, {$nGuardians} responsáveis e ~".intdiv($total, 2).' agendamentos na clínica B.');
+    }
+
+    /**
+     * Metade dos pacientes do lote ganha um agendamento entre 30 dias atrás e 30 dias à frente (08h–18h, UTC−3).
+     *
+     * @param  list<array<string, mixed>>  $patients
+     */
+    private function appointments(array $patients, string $tenant, Carbon $now): void
+    {
+        $typeId = DB::table('appointment_types')->where('tenant_id', $tenant)->orderBy('name')->value('id');
+        $unitId = DB::table('units')->where('tenant_id', $tenant)->value('id');
+        $rows = [];
+        foreach ($patients as $i => $p) {
+            if ($i % 2 === 1) {
+                continue;
+            }
+            $start = $now->copy()->startOfDay()->addDays(mt_rand(-30, 30))->addHours(mt_rand(11, 20))->addMinutes(15 * mt_rand(0, 3));
+            $rows[] = [
+                'id' => (string) Str::ulid(), 'tenant_id' => $tenant, 'unit_id' => $unitId, 'patient_id' => $p['id'],
+                'appointment_type_id' => $typeId, 'starts_at' => $start, 'ends_at' => $start->copy()->addMinutes(30),
+                'status' => $start->isPast() ? 'completed' : 'scheduled', 'is_walk_in' => false, 'created_at' => $now, 'updated_at' => $now,
+            ];
+        }
+        DB::table('appointments')->insert($rows);
     }
 }

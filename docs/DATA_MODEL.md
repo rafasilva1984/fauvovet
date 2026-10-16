@@ -37,10 +37,17 @@
 | `patients`         | clínica | `species` = código de `App\Support\Species` + `species_detail` livre; nascimento real ou estimado (`birth_date_estimated`); `status` active/deceased/archived + `deceased_on`; sem dados clínicos                           |
 | `guardian_patient` | clínica | PK `(patient_id, guardian_id)`; FKs **compostas** para `guardians(tenant_id,id)` e `patients(tenant_id,id)`; `relationship` primary/co_guardian/authorized                                                                  |
 
+## 2026_10_16_000001_create_schedule_tables
+
+| Tabela              | Escopo  | Integridade                                                                                                                                                                                                                                                                                                      |
+| ------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `appointment_types` | clínica | nome único por clínica, duração 5–480 min, cor `#RRGGBB` com contraste ≥ 3:1 sobre branco, `active` (desativar em vez de apagar); 6 tipos padrão criados no primeiro uso da agenda                                                                                                                               |
+| `appointments`      | clínica | `starts_at`/`ends_at` **UTC** (DATETIME), fuso da unidade na tela; FKs **compostas** para unidade, paciente, tipo e profissional (`memberships`); 7 status + carimbos de tempo; `is_walk_in`; índices `(tenant_id, unit_id/professional/patient, starts_at)` com nomes curtos (limite de 64 caracteres do MySQL) |
+
 Tabelas de clínica registradas no firewall: `TenantQueryFirewall::TENANT_TABLES` (um teste falha se uma tabela com
 `tenant_id` não estiver na lista).
 
 ## Planejado (não migrado)
 
-Agenda, prontuário (com alergias, peso histórico, vacinas) etc. conforme CLAUDE.md §6.3, cada um com `tenant_id`, FKs compostas,
+Prontuário (com alergias, peso histórico, vacinas) etc. conforme CLAUDE.md §6.3, cada um com `tenant_id`, FKs compostas,
 model `BelongsToTenant` + `TenantOwned` e testes de isolamento.

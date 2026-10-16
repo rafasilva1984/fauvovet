@@ -8,9 +8,14 @@
 
 @section('content')
     <x-page-header :title="$patient->name" :description="$speciesText">
-        @if ($canWrite)
-            <a href="{{ route('patients.edit', $patient) }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line px-4 text-sm font-semibold hover:bg-surface-2">Editar</a>
-        @endif
+        <div class="flex flex-wrap gap-2">
+            @if ($fvCan('schedule:write') && $patient->status === 'active')
+                <a href="{{ route('agenda.create', ['paciente' => $patient->id]) }}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-on-brand shadow-sm hover:brightness-110"><x-icon name="calendar" /> Agendar</a>
+            @endif
+            @if ($canWrite)
+                <a href="{{ route('patients.edit', $patient) }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line px-4 text-sm font-semibold hover:bg-surface-2">Editar</a>
+            @endif
+        </div>
     </x-page-header>
 
     @if ($patient->status === 'deceased')
@@ -38,6 +43,21 @@
                 <div><dt class="text-sm text-muted">Microchip</dt><dd class="font-medium tabular-nums">{{ $patient->microchip ?: '—' }}</dd></div>
                 <div class="sm:col-span-2"><dt class="text-sm text-muted">Sinais particulares</dt><dd class="whitespace-pre-line font-medium">{{ $patient->marks ?: '—' }}</dd></div>
             </dl>
+            @if ($appointments !== null)
+                <h3 class="mb-2 mt-6 font-semibold">Próximos agendamentos</h3>
+                @if ($appointments->isEmpty())
+                    <p class="text-sm text-muted">Nenhum agendamento a partir de hoje.</p>
+                @else
+                    <ul class="divide-y divide-line">
+                        @foreach ($appointments as $ap)
+                            <li class="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
+                                <a href="{{ route('agenda.show', $ap) }}" class="font-medium text-link underline underline-offset-4 tabular-nums">{{ $ap->starts_at->timezone($ap->unit->timezone)->format('d/m/Y H:i') }} · {{ $ap->type->name }}</a>
+                                <span class="text-muted">{{ $ap->professional?->user?->name ?? 'sem profissional' }} · {{ \App\Models\Appointment::STATUS[$ap->status] }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            @endif
             <p class="mt-5 rounded-xl bg-surface-2 px-4 py-3 text-sm text-muted">Alergias, peso, vacinas e prontuário ficarão no módulo clínico (próximas entregas), visíveis só para a equipe clínica.</p>
         </x-card>
 

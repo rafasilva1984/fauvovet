@@ -76,6 +76,8 @@ try {
     'GET /pacientes?q=nome': ['/pacientes?q=souza', true],
     'GET /pacientes?q=fone': ['/pacientes?q=98765', true],
     'GET /responsaveis?q=nome': ['/responsaveis?q=lima', true],
+    'GET /agenda (dia)': ['/agenda', true],
+    'GET /agenda (semana)': ['/agenda?visao=semana', true],
   };
   const report = {
     date: new Date().toISOString(),

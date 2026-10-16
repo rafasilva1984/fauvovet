@@ -62,6 +62,21 @@ test('acessibilidade WCAG AA (axe): pacientes e responsáveis', async ({ page })
   }
 });
 
+test('acessibilidade WCAG AA (axe): agenda', async ({ page }) => {
+  await loginInto(page, USERS.ana);
+  for (const path of [
+    'agenda',
+    'agenda?visao=semana',
+    'agenda/novo?buscar=thor',
+    'agenda/novo?paciente=01K7FV0000000000000PTA0003',
+    'agenda/01K7FV0000000000000APA0002',
+    'configuracoes/tipos-de-atendimento',
+  ]) {
+    await page.goto(path);
+    await axe(page);
+  }
+});
+
 test('modo escuro mantém contraste AA', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.goto('login');

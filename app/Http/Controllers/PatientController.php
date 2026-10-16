@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Appointment;
 use App\Models\Guardian;
 use App\Models\Patient;
 use App\Services\PatientRegistry;
@@ -111,7 +112,13 @@ final class PatientController extends Controller
             ->whereNotIn('id', $patient->guardians->pluck('id'))
             ->orderBy('name')->limit(10)->get(['id', 'name', 'phone', 'email']);
 
-        return view('patients.show', ['patient' => $patient, 'term' => $term, 'candidates' => $candidates]);
+        $appointments = $this->context->can('schedule:read')
+            ? Appointment::query()->where('patient_id', $patient->id)->where('starts_at', '>=', now()->subDays(1))
+                ->whereNotIn('status', ['cancelled'])->with(['type:id,name', 'unit:id,name,timezone', 'professional.user:id,name'])
+                ->orderBy('starts_at')->limit(5)->get()
+            : null;
+
+        return view('patients.show', ['patient' => $patient, 'term' => $term, 'candidates' => $candidates, 'appointments' => $appointments]);
     }
 
     public function edit(Patient $patient): View

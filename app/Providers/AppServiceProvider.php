@@ -38,7 +38,7 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('invite-create', fn (Request $r) => Limit::perHour(60)->by('user:'.$r->user()?->getAuthIdentifier()));
 
         // Dados das telas autenticadas (clínica ativa, tema, permissões) — calculados 1x por requisição.
-        View::composer(['layouts.app', 'dashboard', 'units.*', 'team.*', 'settings.*', 'patients.*', 'guardians.*'], function ($view): void {
+        View::composer(['layouts.app', 'dashboard', 'units.*', 'team.*', 'settings.*', 'patients.*', 'guardians.*', 'agenda.*'], function ($view): void {
             if (app(TenantContext::class)->id() !== null) {
                 $view->with(app(LayoutData::class)->toArray());
             }

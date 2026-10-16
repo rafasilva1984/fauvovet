@@ -23,6 +23,8 @@
             --fv-on-secondary: {{ Contrast::textOn($secondary) }};
         }
     </style>
+    {{-- Estilos por tela (ex.: cores dos tipos de atendimento), sempre com o nonce e valores validados. --}}
+    @stack('styles')
 </head>
 <body class="min-h-dvh">
     <a href="#conteudo" class="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-surface focus:px-4 focus:py-2 focus:shadow-card">Pular para o conteúdo</a>

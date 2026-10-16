@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\AppearanceController;
+use App\Http\Controllers\AppointmentTypeController;
 use App\Http\Controllers\Auth\ContextController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
@@ -57,6 +59,23 @@ Route::middleware('auth')->group(function () {
         Route::middleware('permission:patients:read')->group(function () {
             Route::get('/pacientes/{patient}', [PatientController::class, 'show'])->name('patients.show');
             Route::get('/responsaveis/{guardian}', [GuardianController::class, 'show'])->name('guardians.show');
+        });
+        Route::middleware('permission:schedule:read')->group(function () {
+            Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda.index');
+        });
+        Route::middleware('permission:schedule:write')->group(function () {
+            Route::get('/agenda/novo', [AgendaController::class, 'create'])->name('agenda.create');
+            Route::post('/agenda', [AgendaController::class, 'store'])->name('agenda.store');
+            Route::get('/agenda/{appointment}/editar', [AgendaController::class, 'edit'])->name('agenda.edit');
+            Route::put('/agenda/{appointment}', [AgendaController::class, 'update'])->name('agenda.update');
+            Route::post('/agenda/{appointment}/status', [AgendaController::class, 'transition'])->name('agenda.transition');
+        });
+        Route::get('/agenda/{appointment}', [AgendaController::class, 'show'])->middleware('permission:schedule:read')->name('agenda.show');
+        Route::middleware('permission:schedule:configure')->group(function () {
+            Route::get('/configuracoes/tipos-de-atendimento', [AppointmentTypeController::class, 'index'])->name('settings.appointment-types');
+            Route::post('/configuracoes/tipos-de-atendimento', [AppointmentTypeController::class, 'store'])->name('settings.appointment-types.store');
+            Route::get('/configuracoes/tipos-de-atendimento/{appointmentType}/editar', [AppointmentTypeController::class, 'edit'])->name('settings.appointment-types.edit');
+            Route::put('/configuracoes/tipos-de-atendimento/{appointmentType}', [AppointmentTypeController::class, 'update'])->name('settings.appointment-types.update');
         });
         Route::get('/equipe', [TeamController::class, 'index'])->middleware('permission:members:read')->name('team.index');
         Route::post('/equipe/convites', [TeamController::class, 'invite'])->middleware(['permission:members:manage', 'throttle:invite-create'])->name('team.invite');

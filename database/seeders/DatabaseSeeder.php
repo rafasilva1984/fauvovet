@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Appointment;
+use App\Models\AppointmentType;
 use App\Models\Guardian;
 use App\Models\Membership;
 use App\Models\Patient;
@@ -9,6 +11,7 @@ use App\Models\Tenant;
 use App\Models\TenantTheme;
 use App\Models\Unit;
 use App\Models\User;
+use App\Services\ScheduleService;
 use App\Tenancy\TenantContext;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -53,6 +56,13 @@ class DatabaseSeeder extends Seeder
         ['id' => '01K7FV0000000000000PTA0003', 'tenant' => self::TENANT_A, 'name' => 'Kiwi', 'species' => 'bird', 'species_detail' => 'Calopsita', 'breed' => null, 'sex' => 'unknown', 'neutered' => 'unknown', 'birth_date' => null, 'microchip' => null, 'g' => ['01K7FV0000000000000GRDA002' => 'primary']],
         ['id' => '01K7FV0000000000000PTB0001', 'tenant' => self::TENANT_B, 'name' => 'Jabu', 'species' => 'reptile', 'species_detail' => 'Jabuti-piranga', 'breed' => null, 'sex' => 'female', 'neutered' => 'no', 'birth_date' => '2010-01-01', 'microchip' => null, 'g' => ['01K7FV0000000000000GRDB001' => 'primary']],
         ['id' => '01K7FV0000000000000PTB0002', 'tenant' => self::TENANT_B, 'name' => 'Nina', 'species' => 'canine', 'species_detail' => null, 'breed' => 'Shih Tzu', 'sex' => 'female', 'neutered' => 'yes', 'birth_date' => '2018-05-20', 'microchip' => null, 'g' => ['01K7FV0000000000000GRDB001' => 'primary']],
+    ];
+
+    /** Agendamentos fictícios de HOJE (horário local da unidade): [id, paciente, unidade, usuário profissional, hora, status]. */
+    public const APPOINTMENTS = [
+        ['01K7FV0000000000000APA0001', '01K7FV0000000000000PTA0001', '01K7FV000000000000000TNA01', 'bruno', '09:00', 'scheduled'],
+        ['01K7FV0000000000000APA0002', '01K7FV0000000000000PTA0002', '01K7FV000000000000000TNA01', 'ana', '10:00', 'confirmed'],
+        ['01K7FV0000000000000APB0001', '01K7FV0000000000000PTB0001', '01K7FV000000000000000TNB01', 'diana', '14:00', 'scheduled'],
     ];
 
     public function run(TenantContext $context): void
@@ -107,6 +117,7 @@ class DatabaseSeeder extends Seeder
                         $guardian->fill(['name' => $g['name'], 'person_type' => 'PF', 'phone' => $g['phone'], 'email' => $g['email'], 'document_number' => $g['document_number'], 'status' => 'active'])->save();
                     }
                 }
+                app(ScheduleService::class)->ensureDefaultTypes();
                 foreach (self::PATIENTS as $pt) {
                     if ($pt['tenant'] === $tenantId) {
                         $patient = Patient::query()->find($pt['id']) ?? new Patient;
@@ -119,6 +130,25 @@ class DatabaseSeeder extends Seeder
                 }
             });
         }
-        $this->command->info('Seed fictício: 2 clínicas, '.count(self::UNITS).' unidades, '.count(self::USERS).' usuários, '.count(self::GUARDIANS).' responsáveis, '.count(self::PATIENTS).' pacientes (senha = SEED_PASSWORD).');
+        foreach ([self::TENANT_A, self::TENANT_B] as $tenantId) {
+            $context->runForTenant($tenantId, function () use ($tenantId, $users) {
+                $type = AppointmentType::query()->where('name', 'Consulta')->firstOrFail();
+                foreach (self::APPOINTMENTS as [$id, $patientId, $unitId, $userKey, $time, $status]) {
+                    if (array_column(self::UNITS, 'tenant', 'id')[$unitId] !== $tenantId) {
+                        continue;
+                    }
+                    $start = ScheduleService::toUtc(now('America/Sao_Paulo')->format('Y-m-d'), $time, 'America/Sao_Paulo');
+                    $appointment = Appointment::query()->find($id) ?? new Appointment;
+                    $appointment->id = $id;
+                    $appointment->fill([
+                        'unit_id' => $unitId, 'patient_id' => $patientId, 'appointment_type_id' => $type->id,
+                        'professional_membership_id' => Membership::query()->where('user_id', $users[$userKey]->id)->value('id'),
+                        'starts_at' => $start, 'ends_at' => $start->copy()->addMinutes($type->duration_minutes),
+                        'status' => $status, 'is_walk_in' => false,
+                    ])->save();
+                }
+            });
+        }
+        $this->command->info('Seed fictício: 2 clínicas, '.count(self::UNITS).' unidades, '.count(self::USERS).' usuários, '.count(self::GUARDIANS).' responsáveis, '.count(self::PATIENTS).' pacientes, '.count(self::APPOINTMENTS).' agendamentos hoje (senha = SEED_PASSWORD).');
     }
 }

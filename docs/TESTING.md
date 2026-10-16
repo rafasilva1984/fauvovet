@@ -13,14 +13,14 @@ Bancos locais: `fauvovet_dev` (dev, seed fictício) e `fauvovet_test` (recriado 
 
 ## Comandos e escopo
 
-| Comando                      | Escopo                                                                                                                                                                                      |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm test`                  | PHPUnit: `tests/Unit` (papéis, CPF/CNPJ, contraste) e `tests/Feature` (auth, cadastro, RBAC, deploy/cabeçalhos, **isolamento**) contra MySQL real                                           |
-| `pnpm test:tenant-isolation` | `tests/Feature/Isolation` — 5 barreiras de isolamento, 2 clínicas                                                                                                                           |
-| `pnpm test:e2e`              | `e2e/` — Desktop Chrome 1366×900 e Pixel 7; servidor PHP em `/fauvovet` com sessão em banco; axe WCAG 2.2 AA (claro/escuro); erros de CSP no console; cookie real; 419 sem CSRF; Web Vitals |
-| `pnpm analyse`               | PHPStan/Larastan nível 6                                                                                                                                                                    |
-| `pnpm perf:check`            | p50/p95/p99 de login/painel/unidades/equipe/pacientes/buscas (PHP embutido com opcache). `PERF_VOLUME=20000` acrescenta pacientes sintéticos na clínica B (só banco `_test`)                |
-| `pnpm verify [--e2e]`        | Pint → Prettier → PHPStan → PHPUnit → composer audit → docs → segredos → build → (E2E)                                                                                                      |
+| Comando                      | Escopo                                                                                                                                                                                           |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pnpm test`                  | PHPUnit: `tests/Unit` (papéis, CPF/CNPJ, contraste) e `tests/Feature` (auth, cadastro, RBAC, deploy/cabeçalhos, **isolamento**) contra MySQL real                                                |
+| `pnpm test:tenant-isolation` | `tests/Feature/Isolation` — 5 barreiras de isolamento, 2 clínicas                                                                                                                                |
+| `pnpm test:e2e`              | `e2e/` — Desktop Chrome 1366×900 e Pixel 7; servidor PHP em `/fauvovet` com sessão em banco; axe WCAG 2.2 AA (claro/escuro); erros de CSP no console; cookie real; 419 sem CSRF; Web Vitals      |
+| `pnpm analyse`               | PHPStan/Larastan nível 6                                                                                                                                                                         |
+| `pnpm perf:check`            | p50/p95/p99 de login/painel/unidades/equipe/pacientes/buscas (PHP embutido com opcache). `PERF_VOLUME=20000` acrescenta pacientes e ~N/2 agendamentos sintéticos na clínica B (só banco `_test`) |
+| `pnpm verify [--e2e]`        | Pint → Prettier → PHPStan → PHPUnit → composer audit → docs → segredos → build → (E2E)                                                                                                           |
 
 ## Guardas
 

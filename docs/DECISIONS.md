@@ -127,3 +127,15 @@ modelo de outro projeto dele já operado na Locaweb (Laravel + Vite, Node só pa
   qualidade em português (stopwords, acentos) antes de prometer paridade com `tsvector` (ver `docs/IDEAS.md`).
 - O código Node/NestJS/Next anterior permanece no histórico do Git (commits `7d303af`, `4a9ade7`).
 - **Reversível:** se a hospedagem mudar para VPS, a aplicação Laravel roda igual; o isolamento em camadas continua válido.
+
+## ADR-011 — Agenda em UTC com fuso por unidade; migrações MySQL não são transacionais (2026-10-16)
+
+- **Decisão:** horários da agenda gravados em `DATETIME` UTC; a tela converte do/para o fuso da **unidade**
+  (`units.timezone`). Conflito de horário é por **vínculo** de profissional (a mesma pessoa em duas clínicas tem dois
+  vínculos e agendas independentes). Encaixe (`is_walk_in`) permite sobreposição consciente.
+- **Por quê:** unidades em estados diferentes (ex.: Manaus UTC−4) e atendimento domiciliar; UTC evita ambiguidade.
+  Conflito por vínculo preserva o isolamento: a agenda de uma clínica nunca revela ocupação em outra.
+- **Risco registrado:** no MySQL, DDL não roda em transação — uma migração que falhe no meio deixa tabelas parciais.
+  Achado real nesta entrega (nome de índice > 64 caracteres falhou no ensaio local). Mitigação: toda migração roda
+  em `pnpm verify` (banco `_test` do zero) antes do pacote; nomes de índice explícitos e curtos; backup obrigatório
+  antes de `migrar` no servidor.

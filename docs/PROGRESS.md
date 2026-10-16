@@ -1,6 +1,6 @@
 # FauvoVet — Checkpoint e ponto de retomada
 
-> **Atualizado em:** 2026-10-15 23:59 (America/Sao_Paulo) · **Fase:** 1 — MVP clínico (em andamento; Fase 0 concluída exceto HTTPS/backup)
+> **Atualizado em:** 2026-10-16 01:30 (America/Sao_Paulo) · **Fase:** 1 — MVP clínico (em andamento; Fase 0 concluída exceto HTTPS/backup)
 > **Regra:** atualizar a cada incremento, bloqueio e antes de encerrar qualquer sessão.
 
 ## Mudança de rumo nesta sessão
@@ -12,7 +12,7 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
 
 ## Situação atual
 
-- **Branch/remote:** `main` → `origin`. Reescrita sincronizada em `34ee508`; tutorial em `7d1546c`; deploy/domínio em `df8a793`; equipe em `5bc5577` (CI success); CI (PHP 8.3) run 38796096959: **success** (bootstrap + verify --e2e).
+- **Branch/remote:** `main` → `origin`. Reescrita sincronizada em `34ee508`; tutorial em `7d1546c`; deploy/domínio em `df8a793`; equipe em `5bc5577`; pacientes em `7aee4ec` (CI success); CI (PHP 8.3) run 38796096959: **success** (bootstrap + verify --e2e).
 - **Implementado e testado (local):** login seguro (Argon2id, bloqueio, rate limit, mensagem uniforme), sessão no
   servidor, CSRF, CSP com nonce, escolha de clínica/unidade, RBAC (8 papéis), cadastro de clínica PF/PJ, unidades
   (lista/criação/detalhe), equipe (leitura), aparência por clínica (AA), auditoria somente inclusão, páginas de erro
@@ -22,11 +22,15 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
 - **Gestão de equipe (Fase 1): PUBLICADA na Locaweb pelo proprietário** (smoke 5/5 + página de convite no ar): convite por link de uso único
   (token 256 bits, só SHA-256 no banco, 7 dias, revogável, sem envio de e-mail — o titular copia/envia), aceite com conta
   nova ou existente, edição de papéis/unidades/situação, desativação imediata, regras titular × gestão, auditoria.
-- **Responsáveis e pacientes (Fase 1, implementado e testado localmente; ainda não publicado):** cadastro rápido
+- **Responsáveis e pacientes (Fase 1): PUBLICADO na Locaweb pelo proprietário** (`/pacientes` respondendo, smoke 5/5): cadastro rápido
   paciente+responsável, 16 espécies + detalhe livre (exóticos), idade aproximada → data estimada, vínculos N:N com FK
   composta, busca por nome/telefone/microchip, aviso de duplicado (só na clínica), óbito/arquivamento, CPF mascarado
   sem permissão de escrita, auditoria. Busca de cadastro, NÃO a busca clínica da Fase 2.
-- **Não implementado:** prontuário (alergias, peso, vacinas), agenda, busca clínica; MFA, recuperação de senha, e-mail transacional; backup automático.
+- **Agenda (Fase 1, implementado e testado localmente; ainda não publicado):** dia/semana por unidade e
+  profissional, fuso da unidade (UTC no banco, ADR-011), 6 tipos padrão configuráveis, 7 status com transições
+  validadas, conflito por profissional (serializado com lock) e encaixe, fila de espera com minutos, reagendar,
+  iniciar/concluir só para quem atende, painel "hoje", agenda na ficha do paciente.
+- **Não implementado:** prontuário (alergias, peso, vacinas), busca clínica, lembretes, visão mensal/salas/recorrência; MFA, recuperação de senha, e-mail transacional; backup automático.
 - **PUBLICADO (teste) na Locaweb em 15/10/2026** pelo proprietário, seguindo o tutorial: `http://dradeboragaldino.com.br/fauvovet`.
   Domínio corrigido em todo o repositório (era "gakdino"; o certo é **galdino**). `pnpm smoke` contra o servidor real:
   **5/5 PASS** (143–245 ms). **HTTPS inválido**: certificado `*.websiteseguro.com` não cobre o domínio → sem dados reais
@@ -34,7 +38,7 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
 - **Tutorial de deploy didático:** o proprietário achou o passo a passo de `DEPLOY_LOCAWEB.md` difícil de seguir (faltava
   configuração do banco e o que copiar para onde). Reescrito como guia completo, etapas A–H, com glossário, mapa de pastas,
   folha de anotações e troubleshooting; novo comando `pnpm deploy:copiar` (pacote → `C:\fauvovet-deploy`, fora do OneDrive).
-- **Último guia HTML:** [`docs/changes/2026-10-15-pacientes-responsaveis.html`](changes/2026-10-15-pacientes-responsaveis.html)
+- **Último guia HTML:** [`docs/changes/2026-10-16-agenda.html`](changes/2026-10-16-agenda.html)
 
 ## Ambiente (verificado)
 
@@ -66,6 +70,16 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
   índice `(tenant_id, status, name)`).
 - Migração nova: `2026_10_15_000004_create_guardians_and_patients_tables` → publicação exige backup + `migrar`.
 
+## Comandos executados e resultados (agenda)
+
+- `pnpm verify --e2e` → **9/9 PASS**; PHPUnit **100/100** (794 asserções; 15 novos em `AgendaTest`); isolamento
+  **29/29**; E2E **47 PASS + 1 ignorado de propósito**; axe sem violações nas 6 telas novas.
+- `pnpm perf:check` (seed) → p95 agenda dia 49,6 ms, semana 49,5 ms. `PERF_VOLUME=20000` (~10 mil agendamentos) →
+  dia 105,8 ms, semana 196,9 ms (era 353 ms antes do item compacto).
+- Defeito achado no ensaio local: nome de índice > 64 caracteres quebrava a migração (MySQL não desfaz DDL) →
+  nomes explícitos; risco registrado na ADR-011.
+- Migração nova: `2026_10_16_000001_create_schedule_tables` → publicação exige backup + `migrar`.
+
 ## Pendências que dependem do proprietário
 
 1. **Ativar certificado SSL para `dradeboragaldino.com.br`** no painel (bloqueia dados reais). Depois: `.env` com
@@ -83,22 +97,25 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 
 ## Próxima ação exata
 
-1. Proprietário (quando quiser): publicar seguindo `docs/changes/2026-10-15-pacientes-responsaveis.html` › seção 7.
-   **Sem HTTPS, nada de dados reais** (nomes/telefones/CPF são dados pessoais).
-2. Próximo incremento: **agenda** — tabelas `appointment_types` (duração, cor) e `appointments` (unidade,
-   profissional = membership, paciente, início/fim UTC, status agendado/confirmado/aguardando/em atendimento/concluído/
-   faltou/cancelado), detecção de conflito por profissional, visão dia/semana por unidade, fuso da unidade, testes A/B.
-3. Depois: atendimento/prontuário (alergias, peso, evolução, bloqueio + adendos).
+1. Proprietário (quando quiser): publicar seguindo `docs/changes/2026-10-16-agenda.html` › seção 7. Sem HTTPS, só
+   dados fictícios.
+2. Próximo incremento: **atendimento/prontuário** — `encounters` (paciente, agendamento opcional, profissional,
+   unidade, status rascunho/finalizado), campos queixa/anamnese/exame físico/sinais vitais (JSON validado), peso
+   (`patient_weights`), alergias/alertas (`patient_alerts`), hipóteses × diagnósticos confirmados, conduta;
+   finalizar bloqueia e correções viram `encounter_addenda`; permissão `clinical:*`; auditoria de VISUALIZAÇÃO;
+   "Iniciar atendimento" na agenda abre o prontuário; testes A/B.
+3. Depois: documentos/receitas com PDF (dompdf) e modelos por clínica.
 
 ## Histórico de incrementos
 
-| Data       | Incremento                                                                                           | HTML                                                                                         | Testes                                                         | Commit/branch                      | Sync GitHub            | Próximo passo                         |
-| ---------- | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | ---------------------------------- | ---------------------- | ------------------------------------- |
-| 2026-10-15 | Preparação das instruções (sem implementação)                                                        | Não aplicável                                                                                | Não executados                                                 | `0b24a5c` (main)                   | Já no remoto           | Iniciar Fase 0                        |
-| 2026-10-15 | Fundação: monorepo, RLS, API multi-tenant                                                            | [2026-10-15-fundacao-api-multitenant.html](changes/2026-10-15-fundacao-api-multitenant.html) | verify PASS (unit 17, integração 42)                           | `7d303af` (main)                   | PASS (push confirmado) | Web: login/contexto/shell             |
-| 2026-10-15 | Web: login, cadastro, contexto, shell responsivo, painel, unidades, equipe, aparência                | [2026-10-15-web-shell-login.html](changes/2026-10-15-web-shell-login.html)                   | unit 21, integração 42, E2E 22                                 | main — hash na próxima atualização | push nesta sessão      | E2E na CI; Fase 1 (equipe, pacientes) |
-| 2026-10-15 | **Reescrita PHP/Laravel + MySQL** (hospedagem sem SSH)                                               | [2026-10-15-reescrita-php-mysql.html](changes/2026-10-15-reescrita-php-mysql.html)           | verify --e2e 9/9 (PHPUnit 55, E2E 28)                          | main — hash na próxima atualização | push nesta sessão      | 1º deploy na Locaweb                  |
-| 2026-10-15 | Tutorial didático de deploy na Locaweb + `pnpm deploy:copiar`                                        | [2026-10-15-tutorial-deploy-locaweb.html](changes/2026-10-15-tutorial-deploy-locaweb.html)   | verify PASS; deploy:copiar 5 cenários                          | main — hash na próxima atualização | push nesta sessão      | Proprietário executa o deploy         |
-| 2026-10-15 | **Primeira publicação na Locaweb** (pelo proprietário) + correção do domínio para `dradeboragaldino` | [2026-10-15-tutorial-deploy-locaweb.html](changes/2026-10-15-tutorial-deploy-locaweb.html)   | smoke produção 5/5 PASS (HTTP); HTTPS inválido                 | main                               | push nesta sessão      | SSL do domínio; Fase 1 — equipe       |
-| 2026-10-15 | **Fase 1 — Gestão de equipe**: convites por link, papéis, unidades, desativação                      | [2026-10-15-equipe-convites.html](changes/2026-10-15-equipe-convites.html)                   | verify --e2e 9/9 (PHPUnit 71, isolamento 21, E2E 33)           | main — hash na próxima atualização | push nesta sessão      | Responsáveis e pacientes              |
-| 2026-10-15 | **Fase 1 — Responsáveis e pacientes**: cadastro rápido, espécies amplas, vínculos N:N, busca, óbito  | [2026-10-15-pacientes-responsaveis.html](changes/2026-10-15-pacientes-responsaveis.html)     | verify --e2e 9/9 (PHPUnit 85, isolamento 25, E2E 39); perf 20k | main — hash na próxima atualização | push nesta sessão      | Agenda                                |
+| Data       | Incremento                                                                                           | HTML                                                                                         | Testes                                                             | Commit/branch                      | Sync GitHub            | Próximo passo                         |
+| ---------- | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ | ---------------------------------- | ---------------------- | ------------------------------------- |
+| 2026-10-15 | Preparação das instruções (sem implementação)                                                        | Não aplicável                                                                                | Não executados                                                     | `0b24a5c` (main)                   | Já no remoto           | Iniciar Fase 0                        |
+| 2026-10-15 | Fundação: monorepo, RLS, API multi-tenant                                                            | [2026-10-15-fundacao-api-multitenant.html](changes/2026-10-15-fundacao-api-multitenant.html) | verify PASS (unit 17, integração 42)                               | `7d303af` (main)                   | PASS (push confirmado) | Web: login/contexto/shell             |
+| 2026-10-15 | Web: login, cadastro, contexto, shell responsivo, painel, unidades, equipe, aparência                | [2026-10-15-web-shell-login.html](changes/2026-10-15-web-shell-login.html)                   | unit 21, integração 42, E2E 22                                     | main — hash na próxima atualização | push nesta sessão      | E2E na CI; Fase 1 (equipe, pacientes) |
+| 2026-10-15 | **Reescrita PHP/Laravel + MySQL** (hospedagem sem SSH)                                               | [2026-10-15-reescrita-php-mysql.html](changes/2026-10-15-reescrita-php-mysql.html)           | verify --e2e 9/9 (PHPUnit 55, E2E 28)                              | main — hash na próxima atualização | push nesta sessão      | 1º deploy na Locaweb                  |
+| 2026-10-15 | Tutorial didático de deploy na Locaweb + `pnpm deploy:copiar`                                        | [2026-10-15-tutorial-deploy-locaweb.html](changes/2026-10-15-tutorial-deploy-locaweb.html)   | verify PASS; deploy:copiar 5 cenários                              | main — hash na próxima atualização | push nesta sessão      | Proprietário executa o deploy         |
+| 2026-10-15 | **Primeira publicação na Locaweb** (pelo proprietário) + correção do domínio para `dradeboragaldino` | [2026-10-15-tutorial-deploy-locaweb.html](changes/2026-10-15-tutorial-deploy-locaweb.html)   | smoke produção 5/5 PASS (HTTP); HTTPS inválido                     | main                               | push nesta sessão      | SSL do domínio; Fase 1 — equipe       |
+| 2026-10-15 | **Fase 1 — Gestão de equipe**: convites por link, papéis, unidades, desativação                      | [2026-10-15-equipe-convites.html](changes/2026-10-15-equipe-convites.html)                   | verify --e2e 9/9 (PHPUnit 71, isolamento 21, E2E 33)               | main — hash na próxima atualização | push nesta sessão      | Responsáveis e pacientes              |
+| 2026-10-15 | **Fase 1 — Responsáveis e pacientes**: cadastro rápido, espécies amplas, vínculos N:N, busca, óbito  | [2026-10-15-pacientes-responsaveis.html](changes/2026-10-15-pacientes-responsaveis.html)     | verify --e2e 9/9 (PHPUnit 85, isolamento 25, E2E 39); perf 20k     | main — hash na próxima atualização | push nesta sessão      | Agenda                                |
+| 2026-10-16 | **Fase 1 — Agenda**: dia/semana, fuso por unidade, tipos, status, conflito/encaixe, fila de espera   | [2026-10-16-agenda.html](changes/2026-10-16-agenda.html)                                     | verify --e2e 9/9 (PHPUnit 100, isolamento 29, E2E 47); perf volume | main — hash na próxima atualização | push nesta sessão      | Atendimento/prontuário                |

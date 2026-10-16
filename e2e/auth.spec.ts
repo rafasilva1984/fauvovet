@@ -41,7 +41,17 @@ test('veterinário escolhe unidade e vê navegação conforme o papel, sem erros
   await page.waitForURL(/\/painel$/);
   const nav = page.getByRole('navigation', { name: 'Principal' }).locator('visible=true');
   await expect(nav.getByRole('link', { name: 'Painel' })).toBeVisible();
-  await expect(nav.getByRole('link', { name: 'Unidades' })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Agenda' })).toBeVisible();
+  if (isMobile) {
+    // Celular: até 4 itens na barra; Unidades fica em "Mais opções" no menu da conta.
+    await page.getByRole('button', { name: 'Abrir menu da conta' }).click();
+    await expect(
+      page.getByRole('navigation', { name: 'Mais opções' }).getByRole('link', { name: 'Unidades' }),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Fechar', exact: true }).click();
+  } else {
+    await expect(nav.getByRole('link', { name: 'Unidades' })).toBeVisible();
+  }
   await expect(nav.getByRole('link', { name: 'Equipe' })).toHaveCount(0);
   await expect(nav.getByRole('link', { name: 'Aparência' })).toHaveCount(0);
   if (!isMobile) await expect(page.getByText('Aurora — Zona Sul').first()).toBeVisible();
