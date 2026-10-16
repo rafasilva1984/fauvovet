@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FauvoVet — Gestão de equipe: convites, papéis e desativação</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #1a2935; background: #f4f7f8; line-height: 1.65; font-size: 17px; }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 16px 80px; }
+    header { border-radius: 20px; padding: 32px; color: white; background: linear-gradient(120deg, #0b4652, #1a7375); }
+    header p { color: #e1f5f0; margin-bottom: 0; }
+    h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.2; margin: 0; }
+    h2 { font-size: 1.3rem; margin: 0 0 12px; }
+    h3 { font-size: 1.12rem; margin: 28px 0 8px; padding-top: 16px; border-top: 1px dashed #c9d6d8; }
+    h4 { font-size: 1rem; margin: 18px 0 6px; }
+    section { margin-top: 20px; background: #fff; padding: 24px; border: 1px solid #dee7e8; border-radius: 14px; }
+    p, li { overflow-wrap: anywhere; }
+    code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { background: #eaf1f2; padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+    pre code { background: none; padding: 0; }
+    kbd { border: 1px solid #b8c6c9; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: #fff; font-size: 0.9em; }
+    pre { overflow-x: auto; border-radius: 8px; padding: 14px; color: #e9fbff; background: #172b32; font-size: 0.9rem; line-height: 1.5; }
+    .tag { display: inline-block; font-size: 0.8rem; font-weight: 700; border: 1px solid #f5cf83; background: #fff8e4; color: #7a4b12; border-radius: 30px; padding: 3px 10px; }
+    .where { display: inline-block; font-size: 0.78rem; font-weight: 700; border-radius: 30px; padding: 2px 10px; margin-right: 6px; vertical-align: middle; }
+    .w-term { background: #1f3b44; color: #d9fbff; }
+    .w-web { background: #e1effd; color: #0f3e72; }
+    .w-fz { background: #fde8e1; color: #7a2a0f; }
+    .w-np { background: #ece5fb; color: #42237a; }
+    .w-panel { background: #e2f6e8; color: #145c2e; }
+    .note { border-left: 4px solid #338b96; background: #eef7f8; padding: 10px 12px; border-radius: 6px; }
+    .warn { border-left: 4px solid #c27c0e; background: #fff8e4; padding: 10px 12px; border-radius: 6px; }
+    .stop { border-left: 4px solid #b3261e; background: #fdecea; padding: 10px 12px; border-radius: 6px; }
+    .ok { border-left: 4px solid #1d7a45; background: #e8f6ee; padding: 10px 12px; border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid #e0e7e8; text-align: left; vertical-align: top; }
+    small { color: #52646d; }
+    .pass { color: #116b3a; font-weight: 700; }
+    .notrun { color: #8a5a00; font-weight: 700; }
+    ol.steps > li { margin-bottom: 12px; }
+    .map { font-size: 0.85rem; }
+    nav ol { columns: 2; column-gap: 32px; }
+    @media (max-width: 640px) { nav ol { columns: 1; } body { font-size: 16px; } section { padding: 18px; } header { padding: 22px; } }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e4eef0; background: #0f1a1e; }
+      section { background: #15242a; border-color: #23373e; }
+      th, td { border-color: #23373e; }
+      code { background: #213840; }
+      kbd { background: #1d3138; border-color: #3b5760; }
+      .warn { background: #2a2210; } .note { background: #12303a; } .stop { background: #3a1614; } .ok { background: #12301f; }
+      small { color: #9fb3ba; }
+      h3 { border-color: #2c454c; }
+      .pass { color: #5fd28f; } .notrun { color: #f0b54a; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="tag">INCREMENTO IMPLEMENTADO — FASE 1 · GESTÃO DE EQUIPE</span>
+      <h1>Equipe: convite por link de uso único, papéis, unidades e desativação de membros</h1>
+      <p>ID: <strong>2026-10-15-equipe-convites</strong> · Data: <strong>15/10/2026</strong> · Versão: <strong>0.3.0</strong> · Módulo: <strong>A. Administração local (usuários, convite, funções e permissões)</strong> · Estado: <strong>implementado e testado localmente; publicação na Locaweb a cargo do proprietário (seção 7)</strong></p>
+    </header>
+
+    <section>
+      <h2>1. Objetivo</h2>
+      <p>Até agora a tela <strong>Equipe</strong> só listava quem tinha acesso. Esta entrega permite ao titular (e, com limites, à gestão):</p>
+      <ul>
+        <li>trazer pessoas para a equipe da clínica;</li>
+        <li>definir o que cada uma pode fazer (papéis) e em quais unidades trabalha;</li>
+        <li>tirar o acesso de quem saiu, tudo auditado.</li>
+      </ul>
+      <p class="warn"><strong>Não há envio de e-mail.</strong> A hospedagem ainda não tem um provedor de e-mail configurado, então o sistema <strong>gera um link</strong> e quem convida o envia pelo canal que preferir (há um atalho para o WhatsApp). Nada é enviado automaticamente.</p>
+      <p><strong>Critério de aceite:</strong></p>
+      <ul>
+        <li>o titular convida;</li>
+        <li>a pessoa abre o link e cria a conta, ou entra com a conta que já tem;</li>
+        <li>ela cai no painel da clínica certa;</li>
+        <li>o link não funciona uma segunda vez;</li>
+        <li>desativar corta o acesso na hora;</li>
+        <li>nada disso atravessa para outra clínica.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>2. O que mudou</h2>
+      <h3>Telas</h3>
+      <ul>
+        <li><strong>/equipe</strong>:
+          <ul>
+            <li>membros, com o botão <em>Editar</em>;</li>
+            <li>convites pendentes, com o botão <em>Cancelar</em>;</li>
+            <li>formulário <em>Convidar pessoa</em> (e-mail + papéis);</li>
+            <li>painel com o link gerado, botão <em>Copiar link</em> e <em>Enviar pelo WhatsApp</em>. O link aparece só nesse momento.</li>
+          </ul>
+        </li>
+        <li><strong>/equipe/{membro}</strong>: papéis, unidades em que pode trabalhar (nenhuma marcada = todas) e situação (ativo/desativado).</li>
+        <li><strong>/convite/{código}</strong> (pública): mostra a clínica e os papéis. A pessoa cria a conta (nome, CRMV opcional, senha com 12+ caracteres) ou, se já tem conta, entra e volta para aceitar. Link inválido, expirado, cancelado ou já usado mostra a mesma página "Convite indisponível".</li>
+      </ul>
+      <h3>Regras de segurança</h3>
+      <ul>
+        <li>O link tem 43 caracteres aleatórios (256 bits). O banco guarda <strong>só o SHA-256</strong> dele. O link vale 7 dias, funciona uma única vez e pode ser cancelado. Convidar o mesmo e-mail de novo invalida o link anterior.</li>
+        <li><strong>Somente o titular</strong> concede ou retira os papéis Titular e Gestão, e só ele edita quem os tem. A gestão convida e edita os demais papéis.</li>
+        <li>Ninguém altera o próprio acesso. A clínica nunca fica sem um titular ativo.</li>
+        <li>Quem está logado com <strong>outro e-mail</strong> não consegue aceitar o convite (403). Quem tem conta com o e-mail convidado precisa entrar com a senha dela.</li>
+        <li>Membro desativado perde o acesso na <strong>requisição seguinte</strong>, mesmo com a sessão aberta.</li>
+        <li>Unidades atribuídas precisam ser da mesma clínica. Isso é verificado no formulário e também no banco (chave estrangeira composta).</li>
+        <li>Auditoria: <code>member.invited</code>, <code>invitation.revoked</code>, <code>invitation.accepted</code> e <code>member.updated</code> (antes/depois). O e-mail entra só como impressão digital.</li>
+      </ul>
+      <h3>Arquivos</h3>
+      <ul>
+        <li>Migração nova: <code>database/migrations/2026_10_15_000003_create_invitations_table.php</code> (tabela <code>invitations</code>).</li>
+        <li>Código: <code>app/Models/Invitation.php</code>, <code>app/Services/TeamService.php</code>, <code>app/Http/Controllers/InvitationController.php</code>; <code>TeamController</code> reescrito.</li>
+        <li>Permissão nova <code>members:manage</code> (titular e gestão), em <code>Roles</code>. Tabela incluída no firewall de SQL.</li>
+        <li>Login volta ao link de convite depois de entrar (<code>redirect()-&gt;intended</code>).</li>
+        <li>Telas: <code>team/index</code>, <code>team/edit</code>, <code>team/_roles</code>, <code>invitations/show</code>, <code>invitations/invalid</code>. Componente Alpine <code>copyLink</code>; ícones <code>copy</code>, <code>mail</code>, <code>check</code>.</li>
+        <li>Testes: <code>tests/Feature/TeamManagementTest.php</code> (16), <code>e2e/team.spec.ts</code> e verificação de acessibilidade (axe) das telas novas.</li>
+        <li>Documentação: correção do domínio para <strong>dradeboragaldino.com.br</strong> em todo o repositório; registro da primeira publicação.</li>
+      </ul>
+      <p>Dependências novas: nenhuma.</p>
+    </section>
+
+    <section>
+      <h2>3. Pré-requisitos</h2>
+      <p>Os mesmos da entrega anterior: Ubuntu (WSL2) com PHP 8.3+, Composer, Node 24 + pnpm e o MySQL local (<code>pnpm db:start</code>). Nenhuma variável de ambiente nova.</p>
+      <p class="warn"><strong>Git Bash/macOS:</strong> NOT RUN, como antes.</p>
+    </section>
+
+    <section>
+      <h2>4. Passo a passo (no seu computador)</h2>
+      <ol>
+        <li><code>cd ~/code/fauvovet</code></li>
+        <li><code>git pull --ff-only</code></li>
+        <li><code>pnpm db:start</code></li>
+        <li><code>pnpm db:migrate</code> — cria a tabela <code>invitations</code> no banco local de desenvolvimento. Resultado esperado: <code>2026_10_15_000003_create_invitations_table ... DONE</code>.</li>
+        <li><code>pnpm dev</code> e abra <code>http://127.0.0.1:8000/fauvovet/login</code>. Entre com <code>ana.titular@aurora.exemplo.test</code>; a senha fictícia é a do seu <code>.env</code> local (<code>SEED_PASSWORD</code>; o padrão do <code>.env.example</code> é <code>fauvovet-demo-2026</code>).</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>5. Como testar</h2>
+      <h3>Automático</h3>
+<pre><code>pnpm verify --e2e
+pnpm test:tenant-isolation</code></pre>
+      <h3>Manual (local ou no servidor)</h3>
+      <ol>
+        <li>Como titular, em <strong>Equipe</strong>, convide um e-mail fictício com o papel <em>Recepção</em> e clique em <em>Copiar link</em>.</li>
+        <li>Saia. Abra o link: deve aparecer o nome da clínica. Crie a conta e confira que você cai no Painel com a mensagem "Convite aceito".</li>
+        <li>Saia e abra o mesmo link de novo: deve aparecer "Convite indisponível".</li>
+        <li>Como titular, edite o novo membro e marque <em>Desativado</em>. Ao tentar navegar com a conta dele, ele é mandado para "Seu acesso a esta clínica não está mais ativo".</li>
+        <li>Para testar o isolamento, entre como <code>diana.titular@horizonte.exemplo.test</code> (clínica B). Os membros e convites da clínica A não aparecem, e o endereço <code>/equipe/&lt;id de um membro da A&gt;</code> responde 404.</li>
+        <li>No celular: os formulários de convite e de edição cabem na tela sem rolagem lateral, e as caixas de seleção têm área de toque de 44 px.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>6. Performance e usabilidade</h2>
+      <p><code>pnpm perf:check</code> (servidor local, mesmo método da linha de base):</p>
+      <table>
+        <tr><th>Rota</th><th>p50</th><th>p95</th><th>p99</th></tr>
+        <tr><td>GET /login</td><td>17,9 ms</td><td>22,9 ms</td><td>337,8 ms*</td></tr>
+        <tr><td>GET /painel</td><td>34,1 ms</td><td>47,4 ms</td><td>344,5 ms*</td></tr>
+        <tr><td>GET /unidades</td><td>28,5 ms</td><td>33,5 ms</td><td>38,5 ms</td></tr>
+        <tr><td>GET /equipe (agora com convites)</td><td>31,5 ms</td><td>37,1 ms</td><td>40,0 ms</td></tr>
+      </table>
+      <p><small>* O p99 alto é a primeira requisição, que aquece o PHP; ela também aparecia na linha de base. O p95 de /equipe ficou igual ao anterior (35 → 37 ms): a lista de convites usa o índice <code>(tenant_id, email)</code> e tem limite de 100 itens.</small></p>
+      <p>Usabilidade:</p>
+      <ul>
+        <li>Convidar leva 3 ações: e-mail, papel e botão. Copiar o link, mais 1 toque.</li>
+        <li>Quem é convidado preenche só nome e senha; o e-mail já vem do convite.</li>
+        <li>O axe (WCAG 2.2 AA) não acusou violações no painel do link, na edição do membro nem na página de aceite, em desktop e celular.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>7. Implantação na Locaweb (atualização com 1 migração)</h2>
+      <p>Esta versão tem <strong>migração nova</strong>, por isso o backup do banco é obrigatório. O roteiro é a seção 7 do <a href="2026-10-15-tutorial-deploy-locaweb.html">tutorial de deploy</a>:</p>
+      <ol>
+        <li><strong>Terminal:</strong> <code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm db:start</code> → <code>pnpm verify --e2e</code> (tudo PASS) → <code>pnpm deploy:package</code> → <code>pnpm deploy:copiar</code> (<strong>sem</strong> <code>--primeira-instalacao</code>).</li>
+        <li><strong>Painel Locaweb:</strong> faça o backup (exportação) do banco MySQL.</li>
+        <li><strong>Terminal:</strong> <code>pnpm deploy:token</code>. Guarde o TOKEN novo e copie a linha <code>DEPLOY_TOKEN_SHA256=…</code>.</li>
+        <li><strong>FileZilla:</strong>
+          <ul>
+            <li>em <code>/app-fauvovet/.env</code> (Exibir/Editar), mude para <code>DEPLOY_TOOLS_ENABLED=true</code> e troque a linha <code>DEPLOY_TOKEN_SHA256</code> pela nova;</li>
+            <li>salve e envie de volta;</li>
+            <li>apague <code>/app-fauvovet/bootstrap/cache/config.php</code>.</li>
+          </ul>
+        </li>
+        <li><strong>FileZilla:</strong> deixe o lado esquerdo em <code>C:\fauvovet-deploy\app-fauvovet</code> e o direito em <code>/app-fauvovet</code>.
+          <ul>
+            <li>Selecione tudo, <strong>exceto <code>storage</code></strong>, e envie com <em>Sobrescrever</em>.</li>
+            <li>O pacote não traz <code>.env</code>, então o do servidor é preservado.</li>
+          </ul>
+        </li>
+        <li><strong>FileZilla:</strong> lado esquerdo <code>C:\fauvovet-deploy\public_html\fauvovet</code>, lado direito <code>/public_html/fauvovet</code>. Envie tudo com <em>Sobrescrever</em>.</li>
+        <li><strong>Terminal</strong> (se ainda sem HTTPS, use <code>http://</code> e <code>export FAUVOVET_ALLOW_HTTP=1</code>):
+<pre><code> export FAUVOVET_DEPLOY_TOKEN='TOKEN_NOVO'
+pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet diagnostico   # pending_migrations: 1
+pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet migrar        # exit_code: 0
+pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet otimizar      # tudo 0</code></pre>
+        </li>
+        <li><strong>FileZilla:</strong> <code>DEPLOY_TOOLS_ENABLED=false</code> no <code>.env</code> → enviar de volta → apagar <code>bootstrap/cache/config.php</code>.</li>
+        <li><strong>Terminal:</strong> <code>SMOKE_URL=https://dradeboragaldino.com.br/fauvovet pnpm smoke</code> (5 PASS) → <code>unset FAUVOVET_DEPLOY_TOKEN FAUVOVET_ALLOW_HTTP</code>.</li>
+        <li><strong>Windows:</strong> apague <code>C:\fauvovet-deploy</code>.</li>
+        <li>No navegador, abra <strong>Equipe</strong> e confira que aparecem os botões <em>Convidar pessoa</em> e <em>Editar</em>.</li>
+      </ol>
+      <p class="stop">O HTTPS do domínio ainda não é válido: o servidor apresenta o certificado genérico <code>*.websiteseguro.com</code>, que não cobre <code>dradeboragaldino.com.br</code>. Sem HTTPS, o link de convite e a senha criada trafegam sem criptografia. Use apenas e-mails e pessoas de teste até ativar o SSL do domínio no painel (passos em <code>docs/DEPLOY_LOCAWEB.md</code> › HTTPS).</p>
+    </section>
+
+    <section>
+      <h2>8. Rollback</h2>
+      <ul>
+        <li><strong>Código:</strong> reenvie o pacote anterior (<code>.deploy/fauvovet-df8a793</code> ou o que estiver publicado), como na seção 8 do tutorial.
+          <ul>
+            <li>A tabela <code>invitations</code> pode ficar no banco: a versão anterior simplesmente não a usa.</li>
+          </ul>
+        </li>
+        <li><strong>Banco:</strong> só se for preciso apagar a tabela, restaure o backup do passo 2. Vínculos criados por convites depois do backup também serão perdidos.</li>
+        <li><strong>Local:</strong> <code>git revert</code> do commit desta entrega e <code>node scripts/php.mjs artisan migrate:rollback --step=1</code> (somente no banco de desenvolvimento).</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>9. Troubleshooting</h2>
+      <table>
+        <tr><th>Sintoma</th><th>Causa e solução</th></tr>
+        <tr><td>"Este convite foi enviado para outro e-mail"</td><td>Você está logado com outra conta. Clique em <em>Sair da conta atual</em> e abra o link de novo.</td></tr>
+        <tr><td>"Convite indisponível" num link novo</td><td>Link copiado pela metade (são 43 caracteres depois de <code>/convite/</code>), já usado, cancelado, com mais de 7 dias, ou alguém convidou o mesmo e-mail de novo. Gere outro em Equipe.</td></tr>
+        <tr><td>"Esta pessoa já faz parte da equipe ativa"</td><td>Ela já tem acesso. Para mudar papéis, use <em>Editar</em>. Para reativar quem foi desativado, edite e marque <em>Ativo</em> (ou convide de novo).</td></tr>
+        <tr><td>"Somente o titular pode conceder os papéis Titular ou Gestão"</td><td>Quem está logado tem papel de Gestão. Peça ao titular.</td></tr>
+        <tr><td>Botão <em>Copiar link</em> não copia</td><td>Alguns navegadores bloqueiam a área de transferência fora do HTTPS. O texto do link fica selecionado: use <kbd>Ctrl</kbd>+<kbd>C</kbd>.</td></tr>
+        <tr><td>Erro 500 ao abrir Equipe no servidor</td><td>A migração não rodou (<code>pending_migrations</code> continua 1). Repita o passo 7 da seção 7.</td></tr>
+        <tr><td>Erro 429 na página do convite</td><td>Mais de 30 tentativas por minuto do mesmo IP. Aguarde 1 minuto.</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>10. Evidências e status</h2>
+      <table>
+        <tr><th>Verificação</th><th>Status</th><th>Detalhe</th></tr>
+        <tr><td><code>pnpm verify --e2e</code></td><td class="pass">PASS</td><td>9/9 etapas: Pint, Prettier, PHPStan 6, PHPUnit, composer audit, docs, segredos, build, E2E</td></tr>
+        <tr><td>PHPUnit</td><td class="pass">PASS</td><td>71 testes / 440 asserções (16 novos de equipe)</td></tr>
+        <tr><td>Isolamento (<code>--group=tenant-isolation</code>)</td><td class="pass">PASS</td><td>21 testes (3 novos: unidade de outra clínica, vínculo/convite de outra clínica → 404, convite da B só cria vínculo na B)</td></tr>
+        <tr><td>E2E Playwright (desktop + celular)</td><td class="pass">PASS</td><td>33 passaram, 1 ignorado de propósito (desativar/reativar roda só no desktop para não disputar o mesmo registro)</td></tr>
+        <tr><td>Acessibilidade axe (telas novas)</td><td class="pass">PASS</td><td>painel do link, edição de membro, aceite de convite</td></tr>
+        <tr><td>Smoke do servidor real (versão anterior)</td><td class="pass">PASS</td><td>5/5 em <code>http://dradeboragaldino.com.br/fauvovet</code> (143–245 ms)</td></tr>
+        <tr><td>HTTPS válido no domínio</td><td class="notrun">NOT RUN</td><td>Certificado não cobre o domínio; depende do proprietário ativar o SSL no painel</td></tr>
+        <tr><td>Publicação desta versão na Locaweb</td><td class="notrun">NOT RUN</td><td>A cargo do proprietário (seção 7)</td></tr>
+      </table>
+      <p><strong>Commit:</strong> registrado no <code>docs/PROGRESS.md</code> após a sincronização.</p>
+      <p><strong>Próximo passo:</strong> responsáveis (tutores) e pacientes, com espécies amplas (inclusive exóticos), vínculo muitos-para-muitos e testes de isolamento.</p>
+    </section>
+  </main>
+</body>
+</html>

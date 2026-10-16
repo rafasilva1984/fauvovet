@@ -39,5 +39,14 @@
         @case('clock')
             <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
         @break
+        @case('copy')
+            <rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" />
+        @break
+        @case('mail')
+            <rect x="3" y="5" width="18" height="14" rx="2" /><path d="m4 7 8 6 8-6" />
+        @break
+        @case('check')
+            <path d="m5 12.5 4.5 4.5L19 7.5" />
+        @break
     @endswitch
 </svg>

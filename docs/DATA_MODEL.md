@@ -23,6 +23,12 @@
 | `tenant_themes`    | clínica           | tokens `#RRGGBB` validados (AA) e modo                                                                                                            |
 | `audit_events`     | clínica (ou nulo) | somente inclusão (model bloqueia UPDATE/DELETE); eventos sem clínica (ex.: falha de login) nunca aparecem para clínicas; IP só como HMAC truncado |
 
+## 2026_10_15_000003_create_invitations_table
+
+| Tabela        | Escopo  | Integridade                                                                                                                                                                               |
+| ------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `invitations` | clínica | `token_hash` = SHA-256 do token (único; o token em claro nunca é salvo); `expires_at` (7 dias); `accepted_*`/`revoked_*` com autor; `UNIQUE (tenant_id, id)`; índice `(tenant_id, email)` |
+
 Tabelas de clínica registradas no firewall: `TenantQueryFirewall::TENANT_TABLES` (um teste falha se uma tabela com
 `tenant_id` não estiver na lista).
 

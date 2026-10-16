@@ -4,6 +4,7 @@ use App\Http\Controllers\AppearanceController;
 use App\Http\Controllers\Auth\ContextController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UnitController;
@@ -18,6 +19,12 @@ Route::middleware('guest')->group(function () {
     Route::post('/cadastro', [OnboardingController::class, 'store'])->middleware('throttle:signup')->name('register.store');
 });
 
+// Convite de equipe (link de uso único): funciona com ou sem sessão; limite de tentativas por IP.
+Route::middleware('throttle:invitation')->where(['token' => '[A-Za-z0-9_-]{43}'])->group(function () {
+    Route::get('/convite/{token}', [InvitationController::class, 'show'])->name('invitations.show');
+    Route::post('/convite/{token}', [InvitationController::class, 'accept'])->name('invitations.accept');
+});
+
 Route::middleware('auth')->group(function () {
     Route::post('/sair', [LoginController::class, 'destroy'])->name('logout');
     Route::get('/contexto', [ContextController::class, 'show'])->name('context.show');
@@ -29,7 +36,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/unidades', [UnitController::class, 'index'])->middleware('permission:units:read')->name('units.index');
         Route::post('/unidades', [UnitController::class, 'store'])->middleware('permission:units:create')->name('units.store');
         Route::get('/unidades/{unit}', [UnitController::class, 'show'])->middleware('permission:units:read')->name('units.show');
-        Route::get('/equipe', TeamController::class)->middleware('permission:members:read')->name('team.index');
+        Route::get('/equipe', [TeamController::class, 'index'])->middleware('permission:members:read')->name('team.index');
+        Route::post('/equipe/convites', [TeamController::class, 'invite'])->middleware(['permission:members:manage', 'throttle:invite-create'])->name('team.invite');
+        Route::delete('/equipe/convites/{invitation}', [TeamController::class, 'revoke'])->middleware('permission:members:manage')->name('team.invite.revoke');
+        Route::get('/equipe/{membership}', [TeamController::class, 'edit'])->middleware('permission:members:manage')->name('team.edit');
+        Route::put('/equipe/{membership}', [TeamController::class, 'update'])->middleware('permission:members:manage')->name('team.update');
         Route::get('/configuracoes/aparencia', [AppearanceController::class, 'edit'])->middleware('permission:theme:update')->name('settings.appearance');
         Route::put('/configuracoes/aparencia', [AppearanceController::class, 'update'])->middleware('permission:theme:update')->name('settings.appearance.update');
     });

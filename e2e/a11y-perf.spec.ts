@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { USERS, loginInto } from './helpers';
+import { USERS, loginInto, logout } from './helpers';
 
 async function axe(page: Page) {
   const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze();
@@ -23,6 +23,26 @@ test('acessibilidade WCAG AA (axe): login, cadastro, contexto, painel, unidades,
     await page.goto(path);
     await axe(page);
   }
+});
+
+test('acessibilidade WCAG AA (axe): convite, edição de membro e aceite de convite', async ({
+  page,
+  isMobile,
+}, testInfo) => {
+  await loginInto(page, USERS.ana);
+  await page.goto('equipe');
+  await page
+    .getByLabel('E-mail da pessoa')
+    .fill(`a11y-${testInfo.project.name}-${Date.now() % 1_000_000}@exemplo.test`);
+  await page.getByRole('checkbox', { name: 'Estoque' }).check();
+  await page.getByRole('button', { name: 'Gerar link de convite' }).click();
+  await axe(page); // painel do link + lista de convites pendentes
+  const link = await page.getByLabel('Link de convite').inputValue();
+  await page.getByRole('link', { name: /Editar acesso de Carla/ }).click();
+  await axe(page);
+  await logout(page, isMobile);
+  await page.goto(link);
+  await axe(page);
 });
 
 test('modo escuro mantém contraste AA', async ({ page }) => {

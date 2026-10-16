@@ -25,6 +25,23 @@ Alpine.data('passwordField', () => ({
   },
 }));
 
+/** Copia o link de convite para a área de transferência (com alternativa: selecionar o texto). */
+Alpine.data('copyLink', () => ({
+  copied: false,
+  async copy() {
+    const input = this.$refs.link;
+    try {
+      await navigator.clipboard.writeText(input.value);
+      this.copied = true;
+    } catch {
+      input.select();
+    }
+  },
+  get label() {
+    return this.copied ? 'Link copiado' : 'Copiar link';
+  },
+}));
+
 Alpine.data('personType', () => ({
   type: 'PJ',
   init() {

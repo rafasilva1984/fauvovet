@@ -75,10 +75,11 @@ final class LoginController extends Controller
         if (count($memberships) === 1 && count($memberships[0]['units']) <= 1) {
             $this->contexts->select($request, $user, $memberships[0]['membership_id'], null);
 
-            return redirect()->route('dashboard');
+            return redirect()->intended(route('dashboard'));
         }
 
-        return redirect()->route('context.show');
+        // intended: ex.: link de convite aberto antes do login.
+        return redirect()->intended(route('context.show'));
     }
 
     public function destroy(Request $request): RedirectResponse

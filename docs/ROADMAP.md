@@ -10,13 +10,16 @@ Ordem conforme CLAUDE.md §11. Atualizado em 2026-10-15 (stack PHP/MySQL — ADR
 - [x] Isolamento em 5 camadas + suíte com duas clínicas.
 - [x] Interface responsiva (Blade + Alpine CSP + Tailwind), E2E desktop/celular, axe AA.
 - [x] Kit de deploy sem SSH (pacote, token, migração/diagnóstico via HTTP, smoke) ensaiado localmente.
-- [ ] **Primeiro deploy de teste na Locaweb** (aguarda dados do painel: PHP, MySQL, HTTPS). ← próximo
+- [x] Primeiro deploy de teste na Locaweb (15/10/2026, `dradeboragaldino.com.br/fauvovet`, smoke 5/5).
 - [ ] HTTPS ativo + backup/restauração testados (bloqueante para dados reais).
 
 ## Fase 1 — MVP clínico operável
 
-Gestão de equipe (convite, papéis, desativação), recuperação de senha, MFA do titular; responsáveis e pacientes
-(espécies amplas), agenda, atendimento/prontuário com bloqueio e adendos, anexos privados, modelos básicos + PDF (dompdf).
+- [x] Gestão de equipe: convite por link de uso único, papéis, unidades por membro, desativação (15/10/2026).
+- [ ] Recuperação de senha, MFA do titular (dependem de e-mail transacional/TOTP).
+- [ ] Responsáveis e pacientes ← próximo
+
+Depois: responsáveis e pacientes (espécies amplas), agenda, atendimento/prontuário com bloqueio e adendos, anexos privados, modelos básicos + PDF (dompdf).
 
 ## Fase 2 — Busca clínica e importação documental
 

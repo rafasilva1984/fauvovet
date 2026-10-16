@@ -18,11 +18,14 @@ final class Roles
         'pet_services' => 'Banho e tosa',
     ];
 
+    /** Papéis administrativos: só o titular pode conceder, retirar ou editar quem os possui. */
+    public const ADMIN_ROLES = ['tenant_owner', 'tenant_manager'];
+
     private const BASE = ['tenant:read', 'units:read'];
 
     private const MATRIX = [
-        'tenant_owner' => ['tenant:update', 'theme:update', 'units:create', 'members:read', 'audit:read', 'clinical:read', 'clinical:write'],
-        'tenant_manager' => ['units:create', 'members:read', 'audit:read'],
+        'tenant_owner' => ['tenant:update', 'theme:update', 'units:create', 'members:read', 'members:manage', 'audit:read', 'clinical:read', 'clinical:write'],
+        'tenant_manager' => ['units:create', 'members:read', 'members:manage', 'audit:read'],
         'veterinarian' => ['clinical:read', 'clinical:write'],
         'clinical_assistant' => ['clinical:read'],
         'receptionist' => [],

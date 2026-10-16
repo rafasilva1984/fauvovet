@@ -34,6 +34,8 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinutes(15, 10)->by('email:'.mb_strtolower((string) $r->input('email'))),
         ]);
         RateLimiter::for('signup', fn (Request $r) => Limit::perHour(10)->by('ip:'.$r->ip()));
+        RateLimiter::for('invitation', fn (Request $r) => Limit::perMinute(30)->by('ip:'.$r->ip()));
+        RateLimiter::for('invite-create', fn (Request $r) => Limit::perHour(60)->by('user:'.$r->user()?->getAuthIdentifier()));
 
         // Dados das telas autenticadas (clínica ativa, tema, permissões) — calculados 1x por requisição.
         View::composer(['layouts.app', 'dashboard', 'units.*', 'team.*', 'settings.*'], function ($view): void {
