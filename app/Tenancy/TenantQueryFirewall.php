@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Log;
 final class TenantQueryFirewall
 {
     /** Tabelas cujas linhas pertencem a uma clínica (manter em sincronia com as migrações). */
-    public const TENANT_TABLES = ['units', 'memberships', 'membership_units', 'tenant_themes', 'audit_events', 'invitations'];
+    public const TENANT_TABLES = ['units', 'memberships', 'membership_units', 'tenant_themes', 'audit_events', 'invitations', 'guardians', 'patients', 'guardian_patient'];
 
     public function __construct(private readonly TenantContext $context) {}
 

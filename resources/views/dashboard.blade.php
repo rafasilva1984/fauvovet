@@ -16,6 +16,17 @@
         'unit.created' => 'criou uma unidade',
         'tenant.theme_updated' => 'alterou a aparência',
         'tenant.created' => 'criou a clínica',
+        'patient.created' => 'cadastrou um paciente',
+        'patient.updated' => 'atualizou um paciente',
+        'patient.deceased' => 'registrou um óbito',
+        'patient.guardian_linked' => 'vinculou um responsável',
+        'patient.guardian_unlinked' => 'desvinculou um responsável',
+        'guardian.created' => 'cadastrou um responsável',
+        'guardian.updated' => 'atualizou um responsável',
+        'member.invited' => 'convidou uma pessoa',
+        'invitation.accepted' => 'aceitou um convite',
+        'invitation.revoked' => 'cancelou um convite',
+        'member.updated' => 'alterou um acesso',
     ];
 @endphp
 
@@ -29,6 +40,14 @@
     </div>
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        @if ($patientCount !== null)
+            <a href="{{ route('patients.index') }}">
+                <x-card class="flex items-center gap-4 transition hover:border-brand/40">
+                    <span class="flex size-11 items-center justify-center rounded-xl bg-surface-2 text-link"><x-icon name="paw" /></span>
+                    <span><span class="block text-2xl font-semibold tabular-nums">{{ $patientCount }}</span><span class="text-sm text-muted">{{ $patientCount === 1 ? 'paciente ativo' : 'pacientes ativos' }}</span></span>
+                </x-card>
+            </a>
+        @endif
         <a href="{{ route('units.index') }}">
             <x-card class="flex items-center gap-4 transition hover:border-brand/40">
                 <span class="flex size-11 items-center justify-center rounded-xl bg-surface-2 text-link"><x-icon name="building" /></span>
@@ -52,13 +71,19 @@
     <div class="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <section aria-labelledby="atendimento">
             <h2 id="atendimento" class="mb-3 text-lg font-semibold">Atendimento</h2>
-            <x-empty-state title="Módulos clínicos em construção" icon="clock">
-                Cadastro de tutores e pacientes, agenda e prontuário chegam na Fase 1 do roadmap. Nada nesta tela é simulado: os números acima vêm do seu ambiente real.
+            <x-empty-state title="Agenda e prontuário em construção" icon="clock">
+                Responsáveis e pacientes já podem ser cadastrados. Agenda, atendimento e prontuário são as próximas entregas da Fase 1. Nada nesta tela é simulado: os números acima vêm do seu ambiente real.
             </x-empty-state>
         </section>
         <section aria-labelledby="atalhos">
             <h2 id="atalhos" class="mb-3 text-lg font-semibold">Atalhos</h2>
             <div class="flex flex-col gap-2">
+                @if ($fvCan('patients:write'))
+                    <a href="{{ route('patients.create') }}" class="flex min-h-12 items-center gap-3 rounded-xl border border-line bg-surface px-4 text-sm font-medium hover:bg-surface-2"><x-icon name="plus" /> Novo paciente</a>
+                @endif
+                @if ($fvCan('patients:read'))
+                    <a href="{{ route('patients.index') }}" class="flex min-h-12 items-center gap-3 rounded-xl border border-line bg-surface px-4 text-sm font-medium hover:bg-surface-2"><x-icon name="search" /> Buscar paciente ou responsável</a>
+                @endif
                 @if ($fvCan('units:create'))
                     <a href="{{ route('units.index') }}#nova" class="flex min-h-12 items-center gap-3 rounded-xl border border-line bg-surface px-4 text-sm font-medium hover:bg-surface-2"><x-icon name="plus" /> Nova unidade</a>
                 @endif

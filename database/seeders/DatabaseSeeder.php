@@ -2,13 +2,16 @@
 
 namespace Database\Seeders;
 
+use App\Models\Guardian;
 use App\Models\Membership;
+use App\Models\Patient;
 use App\Models\Tenant;
 use App\Models\TenantTheme;
 use App\Models\Unit;
 use App\Models\User;
 use App\Tenancy\TenantContext;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 /**
@@ -34,6 +37,22 @@ class DatabaseSeeder extends Seeder
         'davi' => ['id' => '01K7FV00000000000000ESRA04', 'email' => 'davi.financeiro@aurora.exemplo.test', 'name' => 'Davi Financeiro (fictício)', 'm' => [self::TENANT_A => ['finance']]],
         'diana' => ['id' => '01K7FV00000000000000ESRB01', 'email' => 'diana.titular@horizonte.exemplo.test', 'name' => 'Diana Titular (fictícia)', 'm' => [self::TENANT_B => ['tenant_owner', 'veterinarian']]],
         'eva' => ['id' => '01K7FV00000000000000ESRC01', 'email' => 'eva.plantonista@exemplo.test', 'name' => 'Eva Plantonista (fictícia)', 'm' => [self::TENANT_A => ['veterinarian'], self::TENANT_B => ['veterinarian']]],
+    ];
+
+    /** Responsáveis fictícios (telefones e CPF de exemplo, sem relação com pessoas reais). */
+    public const GUARDIANS = [
+        ['id' => '01K7FV0000000000000GRDA001', 'tenant' => self::TENANT_A, 'name' => 'Marina Souza (fictícia)', 'phone' => '11987654321', 'email' => 'marina@aurora.exemplo.test', 'document_number' => '52998224725'],
+        ['id' => '01K7FV0000000000000GRDA002', 'tenant' => self::TENANT_A, 'name' => 'Rafael Lima (fictício)', 'phone' => '11912345678', 'email' => null, 'document_number' => null],
+        ['id' => '01K7FV0000000000000GRDB001', 'tenant' => self::TENANT_B, 'name' => 'Helena Prado (fictícia)', 'phone' => '31988887777', 'email' => 'helena@horizonte.exemplo.test', 'document_number' => null],
+    ];
+
+    /** Pacientes fictícios de espécies variadas; 'g' = [id do responsável => vínculo]. */
+    public const PATIENTS = [
+        ['id' => '01K7FV0000000000000PTA0001', 'tenant' => self::TENANT_A, 'name' => 'Thor', 'species' => 'canine', 'species_detail' => null, 'breed' => 'SRD', 'sex' => 'male', 'neutered' => 'yes', 'birth_date' => '2019-03-10', 'microchip' => '985112000000001', 'g' => ['01K7FV0000000000000GRDA001' => 'primary']],
+        ['id' => '01K7FV0000000000000PTA0002', 'tenant' => self::TENANT_A, 'name' => 'Mia', 'species' => 'feline', 'species_detail' => null, 'breed' => 'Persa', 'sex' => 'female', 'neutered' => 'yes', 'birth_date' => '2021-08-01', 'microchip' => null, 'g' => ['01K7FV0000000000000GRDA001' => 'primary', '01K7FV0000000000000GRDA002' => 'co_guardian']],
+        ['id' => '01K7FV0000000000000PTA0003', 'tenant' => self::TENANT_A, 'name' => 'Kiwi', 'species' => 'bird', 'species_detail' => 'Calopsita', 'breed' => null, 'sex' => 'unknown', 'neutered' => 'unknown', 'birth_date' => null, 'microchip' => null, 'g' => ['01K7FV0000000000000GRDA002' => 'primary']],
+        ['id' => '01K7FV0000000000000PTB0001', 'tenant' => self::TENANT_B, 'name' => 'Jabu', 'species' => 'reptile', 'species_detail' => 'Jabuti-piranga', 'breed' => null, 'sex' => 'female', 'neutered' => 'no', 'birth_date' => '2010-01-01', 'microchip' => null, 'g' => ['01K7FV0000000000000GRDB001' => 'primary']],
+        ['id' => '01K7FV0000000000000PTB0002', 'tenant' => self::TENANT_B, 'name' => 'Nina', 'species' => 'canine', 'species_detail' => null, 'breed' => 'Shih Tzu', 'sex' => 'female', 'neutered' => 'yes', 'birth_date' => '2018-05-20', 'microchip' => null, 'g' => ['01K7FV0000000000000GRDB001' => 'primary']],
     ];
 
     public function run(TenantContext $context): void
@@ -81,8 +100,25 @@ class DatabaseSeeder extends Seeder
                         $m->fill(['roles' => $u['m'][$tenantId], 'status' => 'active'])->save();
                     }
                 }
+                foreach (self::GUARDIANS as $g) {
+                    if ($g['tenant'] === $tenantId) {
+                        $guardian = Guardian::query()->find($g['id']) ?? new Guardian;
+                        $guardian->id = $g['id'];
+                        $guardian->fill(['name' => $g['name'], 'person_type' => 'PF', 'phone' => $g['phone'], 'email' => $g['email'], 'document_number' => $g['document_number'], 'status' => 'active'])->save();
+                    }
+                }
+                foreach (self::PATIENTS as $pt) {
+                    if ($pt['tenant'] === $tenantId) {
+                        $patient = Patient::query()->find($pt['id']) ?? new Patient;
+                        $patient->id = $pt['id'];
+                        $patient->fill(collect($pt)->only(['name', 'species', 'species_detail', 'breed', 'sex', 'neutered', 'birth_date', 'microchip'])->all() + ['status' => 'active'])->save();
+                        foreach ($pt['g'] as $guardianId => $relationship) {
+                            DB::table('guardian_patient')->insertOrIgnore(['tenant_id' => $tenantId, 'guardian_id' => $guardianId, 'patient_id' => $pt['id'], 'relationship' => $relationship, 'created_at' => now(), 'updated_at' => now()]);
+                        }
+                    }
+                }
             });
         }
-        $this->command->info('Seed fictício: 2 clínicas, '.count(self::UNITS).' unidades, '.count(self::USERS).' usuários (senha = SEED_PASSWORD).');
+        $this->command->info('Seed fictício: 2 clínicas, '.count(self::UNITS).' unidades, '.count(self::USERS).' usuários, '.count(self::GUARDIANS).' responsáveis, '.count(self::PATIENTS).' pacientes (senha = SEED_PASSWORD).');
     }
 }

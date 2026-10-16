@@ -29,10 +29,18 @@
 | ------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `invitations` | clínica | `token_hash` = SHA-256 do token (único; o token em claro nunca é salvo); `expires_at` (7 dias); `accepted_*`/`revoked_*` com autor; `UNIQUE (tenant_id, id)`; índice `(tenant_id, email)` |
 
+## 2026_10_15_000004_create_guardians_and_patients_tables
+
+| Tabela             | Escopo  | Integridade                                                                                                                                                                                                                 |
+| ------------------ | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `guardians`        | clínica | documento e telefones só com dígitos; CPF/CNPJ **não único** (aviso de duplicado só dentro da clínica); `status` active/archived; índices `(tenant_id, status, name)`, `(tenant_id, phone)`, `(tenant_id, document_number)` |
+| `patients`         | clínica | `species` = código de `App\Support\Species` + `species_detail` livre; nascimento real ou estimado (`birth_date_estimated`); `status` active/deceased/archived + `deceased_on`; sem dados clínicos                           |
+| `guardian_patient` | clínica | PK `(patient_id, guardian_id)`; FKs **compostas** para `guardians(tenant_id,id)` e `patients(tenant_id,id)`; `relationship` primary/co_guardian/authorized                                                                  |
+
 Tabelas de clínica registradas no firewall: `TenantQueryFirewall::TENANT_TABLES` (um teste falha se uma tabela com
 `tenant_id` não estiver na lista).
 
 ## Planejado (não migrado)
 
-Pacientes, responsáveis, agenda, prontuário etc. conforme CLAUDE.md §6.3, cada um com `tenant_id`, FKs compostas,
+Agenda, prontuário (com alergias, peso histórico, vacinas) etc. conforme CLAUDE.md §6.3, cada um com `tenant_id`, FKs compostas,
 model `BelongsToTenant` + `TenantOwned` e testes de isolamento.

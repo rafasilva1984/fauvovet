@@ -45,6 +45,23 @@ test('acessibilidade WCAG AA (axe): convite, edição de membro e aceite de conv
   await axe(page);
 });
 
+test('acessibilidade WCAG AA (axe): pacientes e responsáveis', async ({ page }) => {
+  await loginInto(page, USERS.ana);
+  for (const path of [
+    'pacientes',
+    'pacientes?q=rafael',
+    'pacientes/novo',
+    'pacientes/01K7FV0000000000000PTA0002?vincular=marina',
+    'pacientes/01K7FV0000000000000PTA0002/editar',
+    'responsaveis',
+    'responsaveis/novo',
+    'responsaveis/01K7FV0000000000000GRDA001',
+  ]) {
+    await page.goto(path);
+    await axe(page);
+  }
+});
+
 test('modo escuro mantém contraste AA', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.goto('login');

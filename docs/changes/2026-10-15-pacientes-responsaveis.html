@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FauvoVet — Responsáveis e pacientes</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #1a2935; background: #f4f7f8; line-height: 1.65; font-size: 17px; }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 16px 80px; }
+    header { border-radius: 20px; padding: 32px; color: white; background: linear-gradient(120deg, #0b4652, #1a7375); }
+    header p { color: #e1f5f0; margin-bottom: 0; }
+    h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.2; margin: 0; }
+    h2 { font-size: 1.3rem; margin: 0 0 12px; }
+    h3 { font-size: 1.12rem; margin: 28px 0 8px; padding-top: 16px; border-top: 1px dashed #c9d6d8; }
+    h4 { font-size: 1rem; margin: 18px 0 6px; }
+    section { margin-top: 20px; background: #fff; padding: 24px; border: 1px solid #dee7e8; border-radius: 14px; }
+    p, li { overflow-wrap: anywhere; }
+    code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { background: #eaf1f2; padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+    pre code { background: none; padding: 0; }
+    kbd { border: 1px solid #b8c6c9; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: #fff; font-size: 0.9em; }
+    pre { overflow-x: auto; border-radius: 8px; padding: 14px; color: #e9fbff; background: #172b32; font-size: 0.9rem; line-height: 1.5; }
+    .tag { display: inline-block; font-size: 0.8rem; font-weight: 700; border: 1px solid #f5cf83; background: #fff8e4; color: #7a4b12; border-radius: 30px; padding: 3px 10px; }
+    .where { display: inline-block; font-size: 0.78rem; font-weight: 700; border-radius: 30px; padding: 2px 10px; margin-right: 6px; vertical-align: middle; }
+    .w-term { background: #1f3b44; color: #d9fbff; }
+    .w-web { background: #e1effd; color: #0f3e72; }
+    .w-fz { background: #fde8e1; color: #7a2a0f; }
+    .w-np { background: #ece5fb; color: #42237a; }
+    .w-panel { background: #e2f6e8; color: #145c2e; }
+    .note { border-left: 4px solid #338b96; background: #eef7f8; padding: 10px 12px; border-radius: 6px; }
+    .warn { border-left: 4px solid #c27c0e; background: #fff8e4; padding: 10px 12px; border-radius: 6px; }
+    .stop { border-left: 4px solid #b3261e; background: #fdecea; padding: 10px 12px; border-radius: 6px; }
+    .ok { border-left: 4px solid #1d7a45; background: #e8f6ee; padding: 10px 12px; border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid #e0e7e8; text-align: left; vertical-align: top; }
+    small { color: #52646d; }
+    .pass { color: #116b3a; font-weight: 700; }
+    .notrun { color: #8a5a00; font-weight: 700; }
+    ol.steps > li { margin-bottom: 12px; }
+    .map { font-size: 0.85rem; }
+    nav ol { columns: 2; column-gap: 32px; }
+    @media (max-width: 640px) { nav ol { columns: 1; } body { font-size: 16px; } section { padding: 18px; } header { padding: 22px; } }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e4eef0; background: #0f1a1e; }
+      section { background: #15242a; border-color: #23373e; }
+      th, td { border-color: #23373e; }
+      code { background: #213840; }
+      kbd { background: #1d3138; border-color: #3b5760; }
+      .warn { background: #2a2210; } .note { background: #12303a; } .stop { background: #3a1614; } .ok { background: #12301f; }
+      small { color: #9fb3ba; }
+      h3 { border-color: #2c454c; }
+      .pass { color: #5fd28f; } .notrun { color: #f0b54a; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="tag">INCREMENTO IMPLEMENTADO — FASE 1 · RESPONSÁVEIS E PACIENTES</span>
+      <h1>Cadastro de responsáveis (tutores) e pacientes de todas as espécies</h1>
+      <p>ID: <strong>2026-10-15-pacientes-responsaveis</strong> · Data: <strong>15/10/2026</strong> · Versão: <strong>0.4.0</strong> · Módulo: <strong>B. Responsáveis, clientes e pacientes</strong> · Estado: <strong>implementado e testado localmente; publicação na Locaweb a cargo do proprietário (seção 7)</strong></p>
+    </header>
+
+    <section>
+      <h2>1. Objetivo</h2>
+      <p>Primeiro módulo de atendimento: a recepção e a equipe clínica passam a cadastrar <strong>quem traz o animal</strong> e <strong>o animal</strong>. É a base para a agenda e o prontuário, que vêm a seguir.</p>
+      <p><strong>Critérios de aceite:</strong></p>
+      <ul>
+        <li>cadastrar paciente e responsável numa única tela (cadastro rápido);</li>
+        <li>suportar cães, gatos, aves, répteis e exóticos;</li>
+        <li>um animal pode ter vários responsáveis, e um responsável vários animais;</li>
+        <li>buscar por nome, telefone ou microchip;</li>
+        <li>avisar sobre possível cadastro duplicado;</li>
+        <li>registrar óbito;</li>
+        <li>nada disso aparece para outra clínica.</li>
+      </ul>
+      <p class="note">Ficam <strong>fora</strong> desta entrega, por serem dados clínicos ou dependerem de outros módulos: alergias, peso histórico, foto, vacinas, consentimentos e mesclagem de cadastros. Eles virão com o prontuário, visíveis só para a equipe clínica.</p>
+    </section>
+
+    <section>
+      <h2>2. O que mudou</h2>
+      <h3>Telas e menu</h3>
+      <ul>
+        <li>Menu ganhou <strong>Pacientes</strong> e <strong>Responsáveis</strong>.
+          <ul>
+            <li>No celular, a barra inferior mostra até 4 itens; os demais (por exemplo, Equipe e Aparência para o titular) ficam no botão de menu, em "Mais opções".</li>
+          </ul>
+        </li>
+        <li><strong>/pacientes</strong>:
+          <ul>
+            <li>busca única por paciente, responsável, telefone (bastam os últimos 4 dígitos) ou microchip;</li>
+            <li>filtro por espécie e opção "incluir óbitos e arquivados";</li>
+            <li>25 por página.</li>
+          </ul>
+        </li>
+        <li><strong>/pacientes/novo</strong>: paciente e responsável na mesma tela.
+          <ul>
+            <li>Do responsável, basta nome e telefone ou e-mail.</li>
+            <li>Sem data de nascimento, aceita a <strong>idade aproximada</strong> (anos/meses) e grava uma data estimada, mostrada com "~".</li>
+          </ul>
+        </li>
+        <li><strong>/pacientes/{id}</strong>:
+          <ul>
+            <li>identificação;</li>
+            <li>responsáveis, com telefone clicável e atalho para o WhatsApp;</li>
+            <li>vincular outro responsável (busca) e desvincular (o paciente nunca fica sem responsável).</li>
+          </ul>
+        </li>
+        <li><strong>/pacientes/{id}/editar</strong>: inclui situação (ativo/óbito/arquivado) e data do óbito.</li>
+        <li><strong>/responsaveis</strong>, <strong>/responsaveis/novo</strong>, <strong>/responsaveis/{id}</strong> (com os pacientes e o botão "Novo paciente"), <strong>/responsaveis/{id}/editar</strong>.</li>
+        <li><strong>Painel</strong>: contagem de pacientes ativos e atalhos "Novo paciente" e "Buscar paciente ou responsável".</li>
+      </ul>
+      <h3>Regras</h3>
+      <ul>
+        <li><strong>Espécies:</strong> cão, gato, ave, réptil, roedor, coelho, furão, outro pequeno mamífero, peixe, anfíbio, equino, bovino, ovino/caprino, suíno, silvestre/exótico e outra. Há também um campo livre para a espécie exata (ex.: Calopsita, Jabuti-piranga).</li>
+        <li><strong>Permissões:</strong>
+          <ul>
+            <li>titular, gestão, veterinário, assistente clínico e recepção <strong>cadastram e editam</strong>;</li>
+            <li>financeiro e banho/tosa <strong>só consultam</strong>;</li>
+            <li>estoque não acessa.</li>
+          </ul>
+        </li>
+        <li><strong>CPF/CNPJ</strong> aparece completo só para quem pode editar; os demais veem só os 4 últimos dígitos.</li>
+        <li><strong>Duplicidade:</strong> mesmo CPF ou telefone de um responsável, ou mesmo nome e espécie para o mesmo responsável, gera um aviso com link para o cadastro existente e a opção "cadastrar mesmo assim". O aviso <strong>nunca</strong> considera outra clínica.</li>
+        <li><strong>Auditoria</strong> (sem dados pessoais, só identificadores e campos alterados): <code>guardian.created/updated</code>, <code>patient.created/updated/deceased</code>, <code>patient.guardian_linked/unlinked</code>.</li>
+      </ul>
+      <h3>Arquivos</h3>
+      <ul>
+        <li><strong>Migração:</strong> <code>2026_10_15_000004_create_guardians_and_patients_tables.php</code> (<code>guardians</code>, <code>patients</code>, <code>guardian_patient</code> com FKs compostas).</li>
+        <li><strong>Código:</strong> <code>app/Models/Guardian.php</code>, <code>app/Models/Patient.php</code>, <code>app/Support/Species.php</code>, <code>app/Services/PatientRegistry.php</code>, <code>app/Http/Controllers/PatientController.php</code>, <code>GuardianController.php</code>; permissões <code>patients:read</code>/<code>patients:write</code> em <code>Roles</code>; 3 tabelas novas no firewall de SQL.</li>
+        <li><strong>Telas:</strong> <code>patients/*</code>, <code>guardians/*</code>, componentes <code>x-select</code> e <code>x-textarea</code>, <code>partials/pagination</code>, ícones <code>paw</code> e <code>search</code>.</li>
+        <li><strong>Seed fictício:</strong> 3 responsáveis e 5 pacientes (Thor, Mia, Kiwi na clínica A; Jabu e Nina na B). <code>VolumeSeeder</code> para benchmark.</li>
+        <li><strong>Testes:</strong> <code>tests/Feature/PatientRegistryTest.php</code> (14, sendo 4 de isolamento), <code>e2e/patients.spec.ts</code>, axe nas 8 telas novas. <code>pnpm perf:check</code> mede as rotas novas e aceita <code>PERF_VOLUME</code>.</li>
+      </ul>
+      <p>Dependências novas: nenhuma.</p>
+    </section>
+
+    <section>
+      <h2>3. Pré-requisitos</h2>
+      <p>Os mesmos das entregas anteriores, sem variáveis de ambiente novas.</p>
+      <p class="warn"><strong>Git Bash/macOS:</strong> NOT RUN, como antes.</p>
+    </section>
+
+    <section>
+      <h2>4. Passo a passo (no seu computador)</h2>
+      <ol>
+        <li><code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm db:start</code></li>
+        <li><code>pnpm db:migrate</code> → esperado: <code>2026_10_15_000004_create_guardians_and_patients_tables ... DONE</code></li>
+        <li><code>pnpm db:seed</code> → esperado: <code>Seed fictício: 2 clínicas, 3 unidades, 6 usuários, 3 responsáveis, 5 pacientes</code></li>
+        <li><code>pnpm dev</code> → abra <code>http://127.0.0.1:8000/fauvovet/login</code> e entre como <code>carla.recepcao@aurora.exemplo.test</code> (recepção). A senha é o <code>SEED_PASSWORD</code> do <code>.env</code>; o padrão é <code>fauvovet-demo-2026</code>.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>5. Como testar</h2>
+      <h3>Automático</h3>
+<pre><code>pnpm verify --e2e
+pnpm test:tenant-isolation</code></pre>
+      <h3>Manual</h3>
+      <ol>
+        <li><strong>Pacientes → Novo paciente.</strong>
+          <ul>
+            <li>Preencha: nome "Teste", espécie <em>Ave</em>, tipo "Calopsita", idade 2 anos.</li>
+            <li>Responsável: um nome fictício e o telefone <code>(11) 98765-4321</code>.</li>
+            <li>Salve: aparece o aviso de possível duplicado (Marina Souza tem esse telefone). Marque "cadastrar mesmo assim" e salve de novo.</li>
+          </ul>
+        </li>
+        <li>Na ficha, em <em>Vincular outro responsável</em>, busque "Rafael" e clique em <em>Vincular</em>.</li>
+        <li>Na lista de Pacientes, busque <code>4321</code>: aparecem os pacientes do responsável com esse final de telefone.</li>
+        <li>Edite um paciente e marque <em>Óbito</em> sem data: o sistema pede a data. Com a data, o paciente some da lista padrão e volta com "Incluir óbitos e arquivados".</li>
+        <li>Entre como <code>davi.financeiro@aurora.exemplo.test</code>: vê a lista, mas não o botão "Novo paciente", e o CPF da Marina aparece só com os últimos dígitos.</li>
+        <li>Para testar o isolamento, entre como <code>diana.titular@horizonte.exemplo.test</code> (clínica B): só aparecem Jabu e Nina. Busque "Marina" e "Thor": nada. Abra <code>/pacientes/01K7FV0000000000000PTA0001</code> (Thor, clínica A): 404.</li>
+        <li>No celular: os formulários ficam em uma coluna, a barra inferior mostra Painel, Pacientes, Responsáveis e Unidades, e o resto fica no menu.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>6. Performance e usabilidade</h2>
+      <p><code>pnpm perf:check</code> no servidor local (PHP embutido com opcache, MySQL 5.7). A clínica medida é a B.</p>
+      <table>
+        <tr><th>Rota</th><th>Seed (5 pacientes) p95</th><th>Com <code>PERF_VOLUME=20000</code> p95</th></tr>
+        <tr><td>GET /painel</td><td>40,7 ms</td><td>72,2 ms</td></tr>
+        <tr><td>GET /pacientes</td><td>39,7 ms</td><td>74,9 ms</td></tr>
+        <tr><td>GET /pacientes?q=souza (nome de responsável)</td><td>34,6 ms</td><td>204,6 ms</td></tr>
+        <tr><td>GET /pacientes?q=98765 (telefone)</td><td>33,6 ms</td><td>180,3 ms</td></tr>
+        <tr><td>GET /responsaveis?q=lima</td><td>34,5 ms</td><td>175,8 ms</td></tr>
+        <tr><td>GET /equipe · /unidades · /login</td><td>38 · 33 · 22 ms</td><td>39 · 36 · 21 ms</td></tr>
+      </table>
+      <p>O volume de 20.000 pacientes e 13.334 responsáveis é 100% sintético e foi gerado só no banco <code>_test</code>.</p>
+      <p class="ok"><strong>Defeito encontrado e corrigido pela medição:</strong> a primeira versão da busca usava uma subconsulta correlacionada (<code>EXISTS</code>). Com 20 mil pacientes, <strong>ela não terminava dentro do limite de tempo</strong>. A busca foi reescrita em 2 passos: primeiro os responsáveis que casam com o termo, depois os pacientes deles. Os índices viraram <code>(tenant_id, status, name)</code>. Resultado: cerca de 200 ms no p95.</p>
+      <p>Esta é uma busca de cadastro (nome, telefone, microchip), <strong>não</strong> a busca clínica inteligente da Fase 2. Com muito mais volume, o próximo passo seria busca por prefixo ou FULLTEXT; o tema está registrado na Fase 2.</p>
+      <p>Usabilidade:</p>
+      <ul>
+        <li>No cadastro rápido, os campos obrigatórios são 4: nome do paciente, espécie, nome do responsável e telefone ou e-mail. O resto é opcional e pode ser completado depois.</li>
+        <li>Telefone aceita qualquer formatação; o sistema guarda só os dígitos.</li>
+        <li>O axe (WCAG 2.2 AA) não acusou violações nas 8 telas novas, em desktop e celular.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>7. Implantação na Locaweb (atualização com 1 migração)</h2>
+      <p>Mesmo roteiro da versão anterior, que é a seção 7 do <a href="2026-10-15-tutorial-deploy-locaweb.html">tutorial</a>. <strong>Faça o backup do banco antes</strong>.</p>
+      <ol>
+        <li><strong>Terminal:</strong> <code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm db:start</code> → <code>pnpm verify --e2e</code> (tudo PASS) → <code>pnpm deploy:package</code> → <code>pnpm deploy:copiar</code></li>
+        <li><strong>Painel Locaweb:</strong> backup (exportação) do banco MySQL.</li>
+        <li><strong>Terminal:</strong> <code>pnpm deploy:token</code>. Guarde o TOKEN e copie a linha <code>DEPLOY_TOKEN_SHA256=…</code>.</li>
+        <li><strong>FileZilla:</strong> em <code>/app-fauvovet/.env</code>, coloque <code>DEPLOY_TOOLS_ENABLED=true</code> e a nova linha <code>DEPLOY_TOKEN_SHA256</code>. Salve, envie de volta e apague <code>/app-fauvovet/bootstrap/cache/config.php</code>; se ele não existir, siga em frente.</li>
+        <li><strong>FileZilla:</strong> deixe o lado esquerdo em <code>C:\fauvovet-deploy\app-fauvovet</code> e o direito em <code>/app-fauvovet</code>. Envie tudo, <strong>exceto <code>storage</code></strong>, com <em>Sobrescrever</em>.</li>
+        <li><strong>FileZilla:</strong> lado esquerdo <code>C:\fauvovet-deploy\public_html\fauvovet</code>, lado direito <code>/public_html/fauvovet</code>. Envie tudo com <em>Sobrescrever</em>.</li>
+        <li><strong>Terminal</strong> (sem HTTPS: troque <code>https</code> por <code>http</code> e rode antes <code>export FAUVOVET_ALLOW_HTTP=1</code>):
+<pre><code> export FAUVOVET_DEPLOY_TOKEN='TOKEN_NOVO'
+pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet diagnostico   # pending_migrations: 1
+pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet migrar        # exit_code: 0
+pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet otimizar      # tudo 0</code></pre>
+        </li>
+        <li><strong>FileZilla:</strong> <code>DEPLOY_TOOLS_ENABLED=false</code> → enviar de volta → apagar <code>bootstrap/cache/config.php</code>. Agora ele <strong>existe</strong>, porque o otimizar acabou de criá-lo; aperte F5 se não aparecer.</li>
+        <li><strong>Terminal:</strong> <code>SMOKE_URL=https://dradeboragaldino.com.br/fauvovet pnpm smoke</code> (5 PASS) → <code>unset FAUVOVET_DEPLOY_TOKEN FAUVOVET_ALLOW_HTTP</code></li>
+        <li><strong>Navegador:</strong> o menu deve mostrar <em>Pacientes</em> e <em>Responsáveis</em>.</li>
+      </ol>
+      <p class="stop"><strong>Sem HTTPS válido, não cadastre tutores ou animais reais.</strong> Nome, telefone e CPF são dados pessoais (LGPD) e trafegariam sem criptografia. Use apenas dados fictícios até ativar o SSL do domínio.</p>
+    </section>
+
+    <section>
+      <h2>8. Rollback</h2>
+      <ul>
+        <li><strong>Código:</strong> reenvie o pacote anterior (<code>.deploy/fauvovet-5bc5577</code>, a versão de equipe). As tabelas novas podem ficar no banco; a versão anterior não as usa.</li>
+        <li><strong>Banco:</strong> restaure o backup do passo 2. Isso apaga responsáveis e pacientes cadastrados depois dele.</li>
+        <li><strong>Local:</strong> <code>git revert</code> do commit e <code>node scripts/php.mjs artisan migrate:rollback --step=1</code> (só no banco de desenvolvimento).</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>9. Troubleshooting</h2>
+      <table>
+        <tr><th>Sintoma</th><th>Causa e solução</th></tr>
+        <tr><td>Menu sem Pacientes/Responsáveis</td><td>O papel do usuário não tem acesso (Estoque), ou o pacote novo não foi enviado. Confira em Equipe.</td></tr>
+        <tr><td>Erro 500 ao abrir Pacientes no servidor</td><td>A migração não rodou (<code>pending_migrations</code> continua 1). Repita o passo 7 da seção 7.</td></tr>
+        <tr><td>"Informe telefone ou e-mail para contato"</td><td>O responsável precisa de pelo menos um meio de contato.</td></tr>
+        <tr><td>"Telefone com DDD: 10 ou 11 dígitos"</td><td>Inclua o DDD, por exemplo (11) 98765-4321.</td></tr>
+        <tr><td>"O paciente precisa de ao menos um responsável"</td><td>Vincule outro responsável antes de remover o último.</td></tr>
+        <tr><td>Aviso "Possível cadastro repetido"</td><td>Abra o link para conferir. Se for outra pessoa ou animal, marque "cadastrar mesmo assim".</td></tr>
+        <tr><td>Paciente sumiu da lista</td><td>Está como óbito ou arquivado. Marque "Incluir óbitos e arquivados".</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>10. Evidências e status</h2>
+      <table>
+        <tr><th>Verificação</th><th>Status</th><th>Detalhe</th></tr>
+        <tr><td><code>pnpm verify --e2e</code></td><td class="pass">PASS</td><td>9/9 etapas</td></tr>
+        <tr><td>PHPUnit</td><td class="pass">PASS</td><td>85 testes / 622 asserções (14 novos)</td></tr>
+        <tr><td>Isolamento (<code>--group=tenant-isolation</code>)</td><td class="pass">PASS</td><td>25 testes (4 novos: 404 por ID/URL, busca e duplicidade sem outra clínica, vínculo cruzado recusado na validação e pela FK composta em modo sistema, contagem do painel)</td></tr>
+        <tr><td>E2E Playwright (desktop + celular)</td><td class="pass">PASS</td><td>39 passaram + 1 ignorado de propósito</td></tr>
+        <tr><td>Acessibilidade axe (8 telas novas)</td><td class="pass">PASS</td><td>desktop e celular</td></tr>
+        <tr><td>Benchmark com 20.000 pacientes sintéticos</td><td class="pass">PASS</td><td>buscas com p95 ≤ 205 ms (local), depois da correção</td></tr>
+        <tr><td>Versão anterior (equipe) no servidor</td><td class="pass">PASS</td><td>publicada pelo proprietário; smoke 5/5; página de convite respondendo</td></tr>
+        <tr><td>Publicação desta versão</td><td class="notrun">NOT RUN</td><td>A cargo do proprietário (seção 7)</td></tr>
+        <tr><td>HTTPS válido</td><td class="notrun">NOT RUN</td><td>Adiado pelo proprietário; bloqueia dados reais</td></tr>
+      </table>
+      <p><strong>Commit:</strong> registrado no <code>docs/PROGRESS.md</code> após a sincronização.</p>
+      <p><strong>Próximo passo:</strong> agenda (calendário por unidade e profissional, tipos e duração de atendimento, status agendado → confirmado → em atendimento → concluído/faltou/cancelado, encaixe), ligada ao paciente.</p>
+    </section>
+  </main>
+</body>
+</html>

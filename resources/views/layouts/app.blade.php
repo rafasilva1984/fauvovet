@@ -3,14 +3,19 @@
 @php
     $nav = array_values(array_filter([
         ['route' => 'dashboard', 'label' => 'Painel', 'icon' => 'home', 'perm' => 'tenant:read'],
+        ['route' => 'patients.index', 'label' => 'Pacientes', 'icon' => 'paw', 'perm' => 'patients:read'],
+        ['route' => 'guardians.index', 'label' => 'Responsáveis', 'icon' => 'users', 'perm' => 'patients:read'],
         ['route' => 'units.index', 'label' => 'Unidades', 'icon' => 'building', 'perm' => 'units:read'],
-        ['route' => 'team.index', 'label' => 'Equipe', 'icon' => 'users', 'perm' => 'members:read'],
+        ['route' => 'team.index', 'label' => 'Equipe', 'icon' => 'shield', 'perm' => 'members:read'],
         ['route' => 'settings.appearance', 'label' => 'Aparência', 'icon' => 'palette', 'perm' => 'theme:update'],
     ], fn ($n) => $fvCan($n['perm'])));
     $tenantName = $fvTenant?->trade_name ?? '';
     $unitLabel = $fvUnitName ?? 'Todas as unidades';
     $user = auth()->user();
-    $navCols = ['', 'grid-cols-1', 'grid-cols-2', 'grid-cols-3', 'grid-cols-4'][count($nav)] ?? 'grid-cols-4';
+    // Celular: até 4 itens na barra inferior; os demais ficam no menu da conta ("Mais").
+    $navMobile = array_slice($nav, 0, 4);
+    $navMore = array_slice($nav, 4);
+    $navCols = ['', 'grid-cols-1', 'grid-cols-2', 'grid-cols-3', 'grid-cols-4'][count($navMobile)];
 @endphp
 
 @section('body')
@@ -24,7 +29,7 @@
             @include('layouts.partials.context', ['tenantName' => $tenantName, 'unitLabel' => $unitLabel])
             <nav aria-label="Principal" class="flex flex-1 flex-col gap-1">
                 @foreach ($nav as $item)
-                    @php($active = request()->routeIs($item['route'].'*'))
+                    @php($active = request()->routeIs($item['route'], strtok($item['route'], '.').'.*'))
                     <a href="{{ route($item['route']) }}" @if ($active) aria-current="page" @endif
                         class="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition {{ $active ? 'bg-brand text-on-brand' : 'text-ink hover:bg-surface-2' }}">
                         <x-icon :name="$item['icon']" /> {{ $item['label'] }}
@@ -67,6 +72,13 @@
                     <button type="button" x-on:click="close" aria-label="Fechar" class="flex size-11 items-center justify-center rounded-xl hover:bg-surface-2"><x-icon name="close" /></button>
                 </div>
                 @include('layouts.partials.context', ['tenantName' => $tenantName, 'unitLabel' => $unitLabel])
+                @if ($navMore)
+                    <nav aria-label="Mais opções" class="mt-4 grid grid-cols-2 gap-2">
+                        @foreach ($navMore as $item)
+                            <a href="{{ route($item['route']) }}" class="flex min-h-12 items-center gap-2 rounded-xl border border-line px-3 text-sm font-medium hover:bg-surface-2"><x-icon :name="$item['icon']" /> {{ $item['label'] }}</a>
+                        @endforeach
+                    </nav>
+                @endif
                 <form method="POST" action="{{ route('logout') }}" class="mt-4">
                     @csrf
                     <x-button variant="secondary" class="w-full"><x-icon name="logout" /> Sair</x-button>
@@ -83,8 +95,8 @@
 
         {{-- Navegação inferior (celular) --}}
         <nav aria-label="Principal" class="fixed inset-x-0 bottom-0 z-30 grid {{ $navCols }} border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
-            @foreach ($nav as $item)
-                @php($active = request()->routeIs($item['route'].'*'))
+            @foreach ($navMobile as $item)
+                @php($active = request()->routeIs($item['route'], strtok($item['route'], '.').'.*'))
                 <a href="{{ route($item['route']) }}" @if ($active) aria-current="page" @endif
                     class="flex min-h-14 flex-col items-center justify-center gap-0.5 text-[0.7rem] font-medium {{ $active ? 'text-link' : 'text-muted' }}">
                     <x-icon :name="$item['icon']" /> {{ $item['label'] }}

@@ -45,6 +45,12 @@
         @case('mail')
             <rect x="3" y="5" width="18" height="14" rx="2" /><path d="m4 7 8 6 8-6" />
         @break
+        @case('paw')
+            <circle cx="6.5" cy="10" r="1.8" /><circle cx="10" cy="6" r="1.8" /><circle cx="14" cy="6" r="1.8" /><circle cx="17.5" cy="10" r="1.8" /><path d="M12 11c-3 0-5.5 3.6-5.5 6 0 1.6 1.3 2.5 2.8 2.5 1 0 1.7-.5 2.7-.5s1.7.5 2.7.5c1.5 0 2.8-.9 2.8-2.5 0-2.4-2.5-6-5.5-6Z" />
+        @break
+        @case('search')
+            <circle cx="11" cy="11" r="6.5" /><path d="m20 20-4.2-4.2" />
+        @break
         @case('check')
             <path d="m5 12.5 4.5 4.5L19 7.5" />
         @break

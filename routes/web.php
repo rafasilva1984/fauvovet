@@ -4,8 +4,10 @@ use App\Http\Controllers\AppearanceController;
 use App\Http\Controllers\Auth\ContextController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\PatientController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UnitController;
 use Illuminate\Support\Facades\Route;
@@ -36,6 +38,26 @@ Route::middleware('auth')->group(function () {
         Route::get('/unidades', [UnitController::class, 'index'])->middleware('permission:units:read')->name('units.index');
         Route::post('/unidades', [UnitController::class, 'store'])->middleware('permission:units:create')->name('units.store');
         Route::get('/unidades/{unit}', [UnitController::class, 'show'])->middleware('permission:units:read')->name('units.show');
+        Route::middleware('permission:patients:read')->group(function () {
+            Route::get('/pacientes', [PatientController::class, 'index'])->name('patients.index');
+            Route::get('/responsaveis', [GuardianController::class, 'index'])->name('guardians.index');
+        });
+        Route::middleware('permission:patients:write')->group(function () {
+            Route::get('/pacientes/novo', [PatientController::class, 'create'])->name('patients.create');
+            Route::post('/pacientes', [PatientController::class, 'store'])->name('patients.store');
+            Route::get('/pacientes/{patient}/editar', [PatientController::class, 'edit'])->name('patients.edit');
+            Route::put('/pacientes/{patient}', [PatientController::class, 'update'])->name('patients.update');
+            Route::post('/pacientes/{patient}/responsaveis', [PatientController::class, 'link'])->name('patients.guardians.link');
+            Route::delete('/pacientes/{patient}/responsaveis/{guardian}', [PatientController::class, 'unlink'])->name('patients.guardians.unlink');
+            Route::get('/responsaveis/novo', [GuardianController::class, 'create'])->name('guardians.create');
+            Route::post('/responsaveis', [GuardianController::class, 'store'])->name('guardians.store');
+            Route::get('/responsaveis/{guardian}/editar', [GuardianController::class, 'edit'])->name('guardians.edit');
+            Route::put('/responsaveis/{guardian}', [GuardianController::class, 'update'])->name('guardians.update');
+        });
+        Route::middleware('permission:patients:read')->group(function () {
+            Route::get('/pacientes/{patient}', [PatientController::class, 'show'])->name('patients.show');
+            Route::get('/responsaveis/{guardian}', [GuardianController::class, 'show'])->name('guardians.show');
+        });
         Route::get('/equipe', [TeamController::class, 'index'])->middleware('permission:members:read')->name('team.index');
         Route::post('/equipe/convites', [TeamController::class, 'invite'])->middleware(['permission:members:manage', 'throttle:invite-create'])->name('team.invite');
         Route::delete('/equipe/convites/{invitation}', [TeamController::class, 'revoke'])->middleware('permission:members:manage')->name('team.invite.revoke');

@@ -24,14 +24,14 @@ final class Roles
     private const BASE = ['tenant:read', 'units:read'];
 
     private const MATRIX = [
-        'tenant_owner' => ['tenant:update', 'theme:update', 'units:create', 'members:read', 'members:manage', 'audit:read', 'clinical:read', 'clinical:write'],
-        'tenant_manager' => ['units:create', 'members:read', 'members:manage', 'audit:read'],
-        'veterinarian' => ['clinical:read', 'clinical:write'],
-        'clinical_assistant' => ['clinical:read'],
-        'receptionist' => [],
-        'finance' => [],
+        'tenant_owner' => ['tenant:update', 'theme:update', 'units:create', 'members:read', 'members:manage', 'audit:read', 'patients:read', 'patients:write', 'clinical:read', 'clinical:write'],
+        'tenant_manager' => ['units:create', 'members:read', 'members:manage', 'audit:read', 'patients:read', 'patients:write'],
+        'veterinarian' => ['patients:read', 'patients:write', 'clinical:read', 'clinical:write'],
+        'clinical_assistant' => ['patients:read', 'patients:write', 'clinical:read'],
+        'receptionist' => ['patients:read', 'patients:write'],
+        'finance' => ['patients:read'],
         'stock' => [],
-        'pet_services' => [],
+        'pet_services' => ['patients:read'],
     ];
 
     /** @return list<string> */
