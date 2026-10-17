@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FauvoVet — Dados de demonstração</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #1a2935; background: #f4f7f8; line-height: 1.65; font-size: 17px; }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 16px 80px; }
+    header { border-radius: 20px; padding: 32px; color: white; background: linear-gradient(120deg, #0b4652, #1a7375); }
+    header p { color: #e1f5f0; margin-bottom: 0; }
+    h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.2; margin: 0; }
+    h2 { font-size: 1.3rem; margin: 0 0 12px; }
+    h3 { font-size: 1.12rem; margin: 28px 0 8px; padding-top: 16px; border-top: 1px dashed #c9d6d8; }
+    h4 { font-size: 1rem; margin: 18px 0 6px; }
+    section { margin-top: 20px; background: #fff; padding: 24px; border: 1px solid #dee7e8; border-radius: 14px; }
+    p, li { overflow-wrap: anywhere; }
+    code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { background: #eaf1f2; padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+    pre code { background: none; padding: 0; }
+    kbd { border: 1px solid #b8c6c9; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: #fff; font-size: 0.9em; }
+    pre { overflow-x: auto; border-radius: 8px; padding: 14px; color: #e9fbff; background: #172b32; font-size: 0.9rem; line-height: 1.5; }
+    .tag { display: inline-block; font-size: 0.8rem; font-weight: 700; border: 1px solid #f5cf83; background: #fff8e4; color: #7a4b12; border-radius: 30px; padding: 3px 10px; }
+    .where { display: inline-block; font-size: 0.78rem; font-weight: 700; border-radius: 30px; padding: 2px 10px; margin-right: 6px; vertical-align: middle; }
+    .w-term { background: #1f3b44; color: #d9fbff; }
+    .w-web { background: #e1effd; color: #0f3e72; }
+    .w-fz { background: #fde8e1; color: #7a2a0f; }
+    .w-np { background: #ece5fb; color: #42237a; }
+    .w-panel { background: #e2f6e8; color: #145c2e; }
+    .note { border-left: 4px solid #338b96; background: #eef7f8; padding: 10px 12px; border-radius: 6px; }
+    .warn { border-left: 4px solid #c27c0e; background: #fff8e4; padding: 10px 12px; border-radius: 6px; }
+    .stop { border-left: 4px solid #b3261e; background: #fdecea; padding: 10px 12px; border-radius: 6px; }
+    .ok { border-left: 4px solid #1d7a45; background: #e8f6ee; padding: 10px 12px; border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid #e0e7e8; text-align: left; vertical-align: top; }
+    small { color: #52646d; }
+    .pass { color: #116b3a; font-weight: 700; }
+    .notrun { color: #8a5a00; font-weight: 700; }
+    ol.steps > li { margin-bottom: 12px; }
+    .map { font-size: 0.85rem; }
+    .shots { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .shots figure { margin: 0; }
+    .shots img { width: 100%; height: auto; border-radius: 12px; border: 1px solid #dee7e8; display: block; }
+    .shots figcaption { font-size: 0.85rem; color: #52646d; margin-top: 4px; }
+    .shots .tall img { max-height: 520px; object-fit: cover; object-position: top; }
+    nav ol { columns: 2; column-gap: 32px; }
+    @media (max-width: 640px) { nav ol { columns: 1; } body { font-size: 16px; } section { padding: 18px; } header { padding: 22px; } }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e4eef0; background: #0f1a1e; }
+      section { background: #15242a; border-color: #23373e; }
+      th, td { border-color: #23373e; }
+      code { background: #213840; }
+      kbd { background: #1d3138; border-color: #3b5760; }
+      .warn { background: #2a2210; } .note { background: #12303a; } .stop { background: #3a1614; } .ok { background: #12301f; }
+      small { color: #9fb3ba; }
+      h3 { border-color: #2c454c; }
+      .pass { color: #5fd28f; } .notrun { color: #f0b54a; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="tag">INCREMENTO IMPLEMENTADO — DADOS DE DEMONSTRAÇÃO</span>
+      <h1>Dados de demonstração: um clique para ver vacinação, busca avançada e casos científicos com conteúdo</h1>
+      <p>ID: <strong>2026-10-18-dados-demonstracao</strong> · Data: <strong>18/10/2026</strong> · Versão: <strong>0.12.0</strong> · Módulo: <strong>Administração do tenant (ADR-016)</strong> · Estado: <strong>implementado e testado localmente; publicação a cargo do proprietário (seção 7)</strong></p>
+    </header>
+
+    <section>
+      <h2>1. Objetivo</h2>
+      <p>Com a clínica de produção vazia, as novidades (busca por diagnóstico/ano/idade, vacinas atrasadas, casos científicos) não aparecem. Esta entrega cria uma tela em que o <strong>titular</strong> carrega, na própria clínica, um conjunto de dados <strong>100% fictícios</strong>, e depois remove tudo com um clique.</p>
+      <p>Na Locaweb não há SSH, então um script de terminal não rodaria no servidor. Por isso a carga é um botão dentro do sistema, protegido por uma chave no <code>.env</code> do servidor.</p>
+      <div class="shots">
+        <figure><img src="img/2026-10-18-demo-carregada.jpg" alt="Tela Dados de demonstração com a demonstração carregada e atalhos (dados fictícios)" loading="lazy"><figcaption>Tela da demonstração com atalhos</figcaption></figure>
+        <figure class="tall"><img src="img/2026-10-18-demo-busca.jpg" alt="Busca de pacientes por dermatite atópica em cães com evidências (dados fictícios)" loading="lazy"><figcaption>Busca: dermatite atópica em cães</figcaption></figure>
+        <figure><img src="img/2026-10-18-demo-casos.jpg" alt="Lista de casos científicos de demonstração (dados fictícios)" loading="lazy"><figcaption>Casos científicos</figcaption></figure>
+        <figure class="tall"><img src="img/2026-10-18-demo-vacinas-celular.jpg" alt="Vacinas a vencer no celular (dados fictícios)" loading="lazy"><figcaption>Vacinas a vencer (celular)</figcaption></figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>2. O que mudou</h2>
+      <ul>
+        <li><strong>Menu → Configurações → Dados de demonstração</strong> (só titular; só aparece com <code>FAUVOVET_DEMO_DATA=true</code>; desligado, o endereço responde 404).</li>
+        <li><strong>Carregar demonstração</strong> cria na clínica ativa:
+          <ul>
+            <li>10 responsáveis com "(demo)" no nome e 22 pacientes: 10 cães, 6 gatos, calopsita, papagaio, jabuti, coelho, hamster e furão, de idades, sexos e castração variados;</li>
+            <li>32 atendimentos <strong>finalizados</strong> espalhados em ~3 anos, com diagnósticos suspeitos, confirmados e descartados (dermatite atópica, doença renal crônica, obesidade, cardiopatias, hipovitaminose A…), peso e temperatura;</li>
+            <li>5 alertas (alergia, doença crônica, medicação, comportamento);</li>
+            <li>15 vacinas: atrasadas, a vencer nesta semana/mês e em dia;</li>
+            <li>10 agendamentos de hoje até 6 dias à frente;</li>
+            <li>3 casos científicos: série aberta (dermatite atópica em cães, consentimentos variados), série <strong>encerrada</strong> (doença renal crônica em gatos idosos) e um relato (hipovitaminose A em jabuti).</li>
+          </ul>
+        </li>
+        <li>Depois de carregar, a tela mostra <strong>atalhos</strong> para buscas prontas, vacinas, casos e agenda.</li>
+        <li><strong>Remover demonstração</strong> (com confirmação) apaga os pacientes e responsáveis demo e <strong>tudo o que for registrado neles depois</strong> (atendimentos, vacinas, documentos, anexos e seus arquivos), mais os casos demo. Vínculos de pacientes reais com tutores demo são desfeitos; o paciente real fica.</li>
+        <li><strong>Como a demonstração é reconhecida:</strong> todo registro tem ID começando por <code>00DEM0</code> + código da clínica. Esse prefixo corresponde a uma data de 1970 e nunca é gerado pelo sistema, por isso a remoção não toca dados normais.</li>
+        <li><strong>Auditoria:</strong> <code>demo_data.loaded</code> e <code>demo_data.removed</code>.</li>
+        <li><strong>Arquivos:</strong>
+          <ul>
+            <li><code>app/Services/DemoDataService.php</code>, <code>app/Http/Controllers/DemoDataController.php</code>, <code>resources/views/settings/demo-data.blade.php</code>;</li>
+            <li>rotas em <code>routes/web.php</code> (<code>permission:tenant:update</code>), item de menu em <code>layouts/app.blade.php</code>;</li>
+            <li><code>config/fauvovet.php</code> (<code>demo_data</code>) e <code>.env.example</code> (<code>FAUVOVET_DEMO_DATA=false</code>);</li>
+            <li>testes <code>DemoDataTest</code> (5, sendo 1 de isolamento), E2E <code>demo.spec.ts</code> e axe da tela; o servidor de E2E liga a chave.</li>
+          </ul>
+        </li>
+      </ul>
+      <p>Migrações: nenhuma. Dependências novas: nenhuma.</p>
+    </section>
+
+    <section>
+      <h2>3. Pré-requisitos</h2>
+      <ul>
+        <li>As migrações de vacinação e de casos científicos aplicadas (entregas anteriores). Se ainda não publicou, este pacote leva as três de uma vez (seção 7).</li>
+        <li>Clínica com ao menos uma unidade (o cadastro inicial já cria).</li>
+        <li>Usuário com papel <strong>Titular</strong>.</li>
+      </ul>
+      <p class="warn"><strong>Git Bash/macOS:</strong> NOT RUN.</p>
+    </section>
+
+    <section>
+      <h2>4. Passo a passo (no seu computador)</h2>
+      <ol class="steps">
+        <li><span class="where w-term">Terminal</span> <code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm db:start</code> → <code>pnpm db:migrate</code></li>
+        <li><span class="where w-np">Editor</span> no arquivo <code>.env</code> do <strong>seu computador</strong>, acrescente a linha <code>FAUVOVET_DEMO_DATA=true</code>.</li>
+        <li><span class="where w-term">Terminal</span> <code>pnpm dev</code> → entre como <code>ana.titular@aurora.exemplo.test</code> → menu <em>Configurações → Dados de demonstração</em> → <em>Carregar demonstração</em>.</li>
+        <li>Use os atalhos da tela. Quando quiser, marque a confirmação e clique em <em>Remover demonstração</em>.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>5. Como testar</h2>
+<pre><code>pnpm verify --e2e
+pnpm test:tenant-isolation</code></pre>
+      <ol>
+        <li><strong>Chave desligada</strong> (padrão): o menu não mostra o item e <code>/configuracoes/dados-de-demonstracao</code> responde 404.</li>
+        <li><strong>Como Ana (titular), chave ligada:</strong>
+          <ul>
+            <li><em>Carregar demonstração</em> → "Demonstração carregada: 22 pacientes, 32 atendimentos, 15 vacinas, 10 agendamentos e 3 casos científicos";</li>
+            <li>clicar de novo não duplica ("já estão carregados");</li>
+            <li>atalho <em>dermatite atópica confirmada em cães</em>: Bento, Luna, Zeus (e o Thor do seed); a Pipoca, com dermatite <em>descartada</em>, fica fora;</li>
+            <li><em>Vacinas a vencer</em>: Amora, Bento e Pipoca atrasadas; Bidu, Luna e outros a vencer;</li>
+            <li><em>Casos científicos</em> → série de dermatite → <em>Planilha (CSV)</em>: 2 casos (os consentidos); "Bento" e o telefone das observações viram "[… omitido]".</li>
+          </ul>
+        </li>
+        <li><strong>Remover:</strong> inicie um atendimento num paciente demo e remova a demonstração. O atendimento novo também some; Thor, Mia e Kiwi continuam.</li>
+        <li><strong>Como Bruno (veterinário) ou Carla (recepção):</strong> a tela responde 403.</li>
+        <li><strong>Como Diana (clínica B):</strong> nenhum dado demo da A aparece; o endereço de um paciente demo da A responde 404; remover na B não mexe na A.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>6. Performance e usabilidade</h2>
+      <ul>
+        <li><strong>Carga:</strong> ~200 inserções diretas numa única transação (sem eventos de modelo); no laboratório local, a tela respondeu em menos de 1 s. Medição na Locaweb: NOT RUN.</li>
+        <li><strong>Remoção:</strong> ~15 comandos <code>DELETE</code> filtrados por clínica numa transação; os arquivos são apagados só depois de confirmar o banco.</li>
+        <li><strong>Tela:</strong> axe sem violações (vazia e carregada) e nada passa da borda no celular.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>7. Implantação na Locaweb (pacote único: vacinação + busca + casos + demonstração)</h2>
+      <p>É o mesmo roteiro da seção 7 do guia <a href="2026-10-18-casos-cientificos.html">Casos científicos</a>, com <strong>uma linha a mais no .env do servidor</strong> (passo 4).</p>
+      <ol class="steps">
+        <li><span class="where w-term">Terminal</span> <code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm db:start</code> → <code>pnpm verify --e2e</code> → <code>pnpm deploy:package</code> → <code>pnpm deploy:copiar</code></li>
+        <li><span class="where w-panel">Painel Locaweb</span> backup do banco.</li>
+        <li><span class="where w-term">Terminal</span> <code>pnpm deploy:token</code>.</li>
+        <li><span class="where w-fz">FileZilla</span> baixe o <code>.env</code> do servidor e abra no Bloco de Notas:
+          <ul>
+            <li><code>DEPLOY_TOOLS_ENABLED=true</code> + o token novo (como nas outras vezes);</li>
+            <li><strong>novo:</strong> acrescente no final a linha <code>FAUVOVET_DEMO_DATA=true</code>;</li>
+            <li>salve, envie de volta e apague <code>bootstrap/cache/config.php</code> (se existir).</li>
+          </ul>
+        </li>
+        <li><span class="where w-fz">FileZilla</span> <code>app-fauvovet</code> (tudo exceto <code>storage</code>) e <code>public_html/fauvovet</code>, com <em>Sobrescrever</em>.</li>
+        <li><span class="where w-term">Terminal</span> <code>diagnostico</code> (<code>pending_migrations</code>: 2 se vacinação e casos ainda não foram publicados) → <code>migrar</code> → <code>otimizar</code>.</li>
+        <li><span class="where w-fz">FileZilla</span> <code>DEPLOY_TOOLS_ENABLED=false</code> (mantenha <code>FAUVOVET_DEMO_DATA=true</code>) → enviar → apagar <code>bootstrap/cache/config.php</code>.</li>
+        <li><span class="where w-term">Terminal</span> <code>SMOKE_URL=https://dradeboragaldino.com.br/fauvovet pnpm smoke</code> (5 PASS).</li>
+        <li><span class="where w-web">Navegador</span> entre com o seu usuário titular → <em>Configurações → Dados de demonstração</em> → <em>Carregar demonstração</em> → use os atalhos.</li>
+      </ol>
+      <p class="stop"><strong>Antes de cadastrar o primeiro paciente real:</strong> (1) clique em <em>Remover demonstração</em>; (2) no <code>.env</code> do servidor, troque para <code>FAUVOVET_DEMO_DATA=false</code> e apague <code>bootstrap/cache/config.php</code>. Assim os dados fictícios não se misturam com prontuários reais, e ninguém consegue recarregá-los por engano.</p>
+    </section>
+
+    <section>
+      <h2>8. Rollback</h2>
+      <ul>
+        <li><strong>Só desligar:</strong> <code>FAUVOVET_DEMO_DATA=false</code> no <code>.env</code> do servidor + apagar <code>bootstrap/cache/config.php</code>. Os dados já carregados continuam até você removê-los, então remova <em>antes</em> de desligar.</li>
+        <li><strong>Código:</strong> reenvie o pacote anterior em <code>.deploy/</code> e rode o <em>otimizar</em>. Sem migração, não há nada a desfazer no banco.</li>
+        <li><strong>Banco:</strong> se algo der errado na carga, a transação é desfeita inteira; em último caso, restaure o backup do passo 2.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>9. Troubleshooting</h2>
+      <table>
+        <tr><th>Sintoma</th><th>Causa e solução</th></tr>
+        <tr><td>Item "Dados de demonstração" não aparece / página 404</td><td>Falta <code>FAUVOVET_DEMO_DATA=true</code> no <code>.env</code> do servidor, ou o <code>bootstrap/cache/config.php</code> antigo continua lá: apague-o (ou rode <em>otimizar</em>).</td></tr>
+        <tr><td>403 na página</td><td>Só o papel <strong>Titular</strong> tem acesso.</td></tr>
+        <tr><td>"Os dados de demonstração já estão carregados"</td><td>Já foram carregados nesta clínica. Remova antes, se quiser recarregar com as datas de hoje.</td></tr>
+        <tr><td>"Cadastre ao menos uma unidade…"</td><td>Crie uma unidade em <em>Clínica → Unidades</em>.</td></tr>
+        <tr><td>Vacinas demo não aparecem</td><td>A clínica renomeou ou desativou as vacinas padrão do catálogo; as que não forem encontradas são puladas.</td></tr>
+        <tr><td>Erro 500 ao carregar</td><td>As migrações de vacinação/casos não foram aplicadas: rode <code>diagnostico</code> e <code>migrar</code>.</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>10. Evidências e status</h2>
+      <table>
+        <tr><th>Verificação</th><th>Status</th><th>Detalhe</th></tr>
+        <tr><td><code>pnpm verify --e2e</code></td><td class="pass">PASS</td><td>9/9 etapas</td></tr>
+        <tr><td>PHPUnit</td><td class="pass">PASS</td><td>169 testes (5 novos)</td></tr>
+        <tr><td>Isolamento</td><td class="pass">PASS</td><td>41 testes (1 novo: demo da A invisível e intocável pela B)</td></tr>
+        <tr><td>E2E + axe + borda no celular</td><td class="pass">PASS</td><td>72 testes; carregar → busca → vacinas → caso encerrado → remover (desktop e celular). 1 instável já conhecido (vacinação no celular, oscilação de rede do WSL) passou na 2ª tentativa</td></tr>
+        <tr><td>Carga na Locaweb</td><td class="notrun">NOT RUN</td><td>Depende da publicação pelo proprietário</td></tr>
+      </table>
+      <p><strong>Commit:</strong> registrado no <code>docs/PROGRESS.md</code> após a sincronização.</p>
+      <p><strong>Próximo passo sugerido:</strong> publicar o pacote e explorar a demonstração; depois, busca em texto livre do prontuário e anexos (Fase 2).</p>
+    </section>
+  </main>
+</body>
+</html>

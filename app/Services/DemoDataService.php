@@ -1,0 +1,368 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\AppointmentType;
+use App\Models\Membership;
+use App\Models\Unit;
+use App\Models\Vaccine;
+use App\Tenancy\TenantContext;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use RuntimeException;
+
+/**
+ * Dados de DEMONSTRAÇÃO 100% fictícios para a clínica ativa: responsáveis, pacientes de várias espécies, atendimentos
+ * finalizados em 3 anos (com diagnósticos suspeitos/confirmados/descartados), pesos, alertas, vacinas (atrasadas, a
+ * vencer e em dia), agenda da semana e casos científicos — para visualizar busca avançada, vacinação e casos.
+ *
+ * Todo registro criado aqui tem ID com o prefixo {@see self::PREFIX} (ULID válido com data "1970", que nunca é gerado
+ * pelo sistema). A remoção apaga só pacientes/responsáveis/casos com esse prefixo e o que estiver ligado aos pacientes
+ * demo (inclusive o que a equipe registrou neles depois). Ligado apenas com FAUVOVET_DEMO_DATA=true (ADR-016).
+ */
+final class DemoDataService
+{
+    public const PREFIX = '00DEM0';
+
+    /** Responsáveis: [nome, celular, cidade/UF]. */
+    private const GUARDIANS = [
+        ['Beatriz Andrade (demo)', '11900000101', 'São Paulo', 'SP'],
+        ['Carlos Menezes (demo)', '11900000102', 'São Paulo', 'SP'],
+        ['Daniela Freitas (demo)', '11900000103', 'Guarulhos', 'SP'],
+        ['Eduardo Ramos (demo)', '11900000104', 'Osasco', 'SP'],
+        ['Fernanda Queiroz (demo)', '11900000105', 'São Paulo', 'SP'],
+        ['Gustavo Tavares (demo)', '11900000106', 'Santo André', 'SP'],
+        ['Helena Vasconcelos (demo)', '11900000107', 'São Paulo', 'SP'],
+        ['Igor Batista (demo)', '11900000108', 'Barueri', 'SP'],
+        ['Juliana Moreira (demo)', '11900000109', 'São Paulo', 'SP'],
+        ['Kátia Nogueira (demo)', '11900000110', 'Campinas', 'SP'],
+    ];
+
+    /**
+     * Pacientes: [nome, espécie, detalhe, raça, sexo, castrado, nascimento (Y-m-d ou null), responsável (índice)].
+     * Nomes sem "(demo)" para a tela ficar natural; o responsável identifica a demonstração.
+     */
+    private const PATIENTS = [
+        ['Bento', 'canine', null, 'Golden Retriever', 'male', 'yes', '2018-04-12', 0],
+        ['Luna', 'canine', null, 'Shih Tzu', 'female', 'yes', '2020-09-03', 0],
+        ['Pipoca', 'canine', null, 'SRD', 'female', 'no', '2023-01-20', 1],
+        ['Zeus', 'canine', null, 'Bulldog Francês', 'male', 'no', '2021-06-15', 1],
+        ['Amora', 'canine', null, 'Labrador', 'female', 'yes', '2016-11-02', 2],
+        ['Fred', 'canine', null, 'Lhasa Apso', 'male', 'yes', '2017-02-28', 3],
+        ['Mel', 'canine', null, 'SRD', 'female', 'yes', '2015-07-07', 4],
+        ['Toby', 'canine', null, 'Poodle', 'male', 'yes', '2012-03-18', 5],
+        ['Kiara', 'canine', null, 'Pastor Alemão', 'female', 'no', '2019-12-01', 6],
+        ['Bidu', 'canine', null, 'Beagle', 'male', 'unknown', '2024-02-10', 7],
+        ['Simba', 'feline', null, 'SRD', 'male', 'yes', '2011-05-05', 2],
+        ['Nina', 'feline', null, 'Persa', 'female', 'yes', '2013-10-10', 4],
+        ['Frajola', 'feline', null, 'SRD', 'male', 'yes', '2010-08-21', 5],
+        ['Mimi', 'feline', null, 'Siamês', 'female', 'yes', '2014-01-15', 8],
+        ['Tom', 'feline', null, 'Maine Coon', 'male', 'yes', '2019-03-30', 8],
+        ['Jade', 'feline', null, 'SRD', 'female', 'no', '2025-03-01', 9],
+        ['Pingo', 'bird', 'Calopsita', null, 'male', 'unknown', '2021-01-01', 3],
+        ['Sol', 'bird', 'Papagaio-verdadeiro', null, 'unknown', 'unknown', null, 6],
+        ['Tuga', 'reptile', 'Jabuti-piranga', null, 'female', 'no', '2008-01-01', 7],
+        ['Floco', 'rabbit', null, 'Mini Lop', 'male', 'yes', '2022-05-10', 9],
+        ['Paçoca', 'rodent', 'Hamster sírio', null, 'female', 'no', '2025-06-01', 1],
+        ['Zara', 'ferret', null, null, 'female', 'yes', '2022-09-09', 0],
+    ];
+
+    /**
+     * Atendimentos finalizados: [paciente, dias atrás, peso, queixa, exame físico, conduta, [[diagnóstico, código, situação]]].
+     * Datas espalhadas em ~3 anos para o filtro "ano de atendimento".
+     */
+    private const ENCOUNTERS = [
+        // Dermatologia canina: suspeita → confirmação, e um caso descartado (série científica de exemplo).
+        [0, 840, '31.200', 'Coceira nas patas e lambedura constante há 1 mês.', 'Eritema interdigital, otite bilateral leve.', 'Citologia de pele; banho terapêutico; retorno em 30 dias.', [['Dermatite atópica', 'L20', 'suspected']]],
+        [0, 800, '31.000', 'Retorno: prurido persiste mesmo com controle de pulgas.', 'Lesões em face e axilas.', 'Iniciado imunomodulador; dieta hipoalergênica de eliminação.', [['Dermatite atópica', 'L20', 'confirmed']]],
+        [0, 420, '30.400', 'Crise de coceira na primavera.', 'Eritema em abdômen.', 'Ajuste de dose; retorno em 60 dias.', [['Dermatite atópica', 'L20', 'confirmed'], ['Otite externa', 'H60', 'confirmed']]],
+        [1, 600, '6.800', 'Coça orelhas e balança a cabeça.', 'Secreção ceruminosa em conduto direito.', 'Limpeza otológica e medicação tópica por 10 dias.', [['Otite externa', 'H60', 'confirmed'], ['Dermatite atópica', 'L20', 'suspected']]],
+        [1, 150, '6.950', 'Lambedura das patas e vermelhidão.', 'Pododermatite leve.', 'Teste terapêutico com dieta; retorno.', [['Dermatite atópica', 'L20', 'confirmed']]],
+        [2, 210, '12.300', 'Feridas no dorso e muita coceira.', 'Pulgas visíveis; alopecia lombossacral.', 'Antipulgas e controle ambiental.', [['Dermatite alérgica à picada de pulga', 'L23', 'confirmed'], ['Dermatite atópica', 'L20', 'ruled_out']]],
+        [3, 330, '13.100', 'Coceira e vermelhidão nas dobras da face.', 'Piodermite de dobra facial.', 'Limpeza diária e antibiótico tópico.', [['Piodermite superficial', 'L08', 'confirmed'], ['Dermatite atópica', 'L20', 'suspected']]],
+        [3, 60, '13.400', 'Retorno: coceira voltou após o tratamento.', 'Eritema axilar e inguinal.', 'Exclusão de alergia alimentar; imunomodulador.', [['Dermatite atópica', 'L20', 'confirmed']]],
+        [8, 95, '29.800', 'Coceira intensa em orelhas e patas.', 'Otite bilateral, eritema interdigital.', 'Tratamento otológico e citologia.', [['Dermatite atópica', 'L20', 'suspected'], ['Otite externa', 'H60', 'confirmed']]],
+        // Endócrino / obesidade / geriatria canina.
+        [4, 700, '38.500', 'Ganho de peso e cansaço nos passeios.', 'ECC 8/9.', 'Plano de emagrecimento; ração light.', [['Obesidade', 'E66', 'confirmed']]],
+        [4, 380, '34.900', 'Retorno do plano de peso.', 'ECC 7/9.', 'Manter plano; aumentar atividade.', [['Obesidade', 'E66', 'confirmed']]],
+        [5, 510, '7.900', 'Bebe muita água e urina mais.', 'Abdômen penduloso, pelame ralo.', 'Exames de sangue e teste de supressão.', [['Hiperadrenocorticismo', 'E24', 'suspected']]],
+        [5, 470, '7.700', 'Resultado dos exames.', 'Sem alterações novas.', 'Iniciado tratamento; monitorar.', [['Hiperadrenocorticismo', 'E24', 'confirmed']]],
+        [6, 260, '18.600', 'Mau hálito e dificuldade para mastigar.', 'Cálculo dentário grau 3; gengivite.', 'Profilaxia dentária sob anestesia.', [['Doença periodontal', 'K05', 'confirmed']]],
+        [7, 45, '6.100', 'Tosse seca à noite e cansaço.', 'Sopro sistólico grau IV/VI em foco mitral.', 'Ecocardiograma; iniciar cardioprotetor.', [['Doença valvar mitral degenerativa', 'I34', 'confirmed']]],
+        [9, 20, '9.800', 'Vômito e diarreia há 2 dias.', 'Desidratação leve.', 'Fluidoterapia subcutânea e dieta leve.', [['Gastroenterite aguda', 'K52', 'confirmed'], ['Parvovirose', 'A08', 'ruled_out']]],
+        // Felinos: doença renal crônica (série científica encerrada) e outros.
+        [10, 760, '4.900', 'Emagrecimento e bebe muita água.', 'Rins pequenos à palpação; desidratação 5%.', 'Exames de sangue e urina.', [['Doença renal crônica', 'N18', 'suspected']]],
+        [10, 730, '4.700', 'Resultado dos exames: creatinina elevada.', 'Mucosas levemente pálidas.', 'Dieta renal; fluido subcutâneo em casa.', [['Doença renal crônica', 'N18', 'confirmed']]],
+        [10, 300, '4.500', 'Acompanhamento renal.', 'Estável.', 'Manter dieta; exames a cada 3 meses.', [['Doença renal crônica', 'N18', 'confirmed']]],
+        [11, 560, '3.600', 'Perda de apetite e vômitos ocasionais.', 'Halitose urêmica.', 'Exames; dieta renal.', [['Doença renal crônica', 'N18', 'confirmed']]],
+        [12, 640, '5.200', 'Bebe muita água; idoso.', 'Hipertensão aferida.', 'Anti-hipertensivo e dieta renal.', [['Doença renal crônica', 'N18', 'confirmed'], ['Hipertensão sistêmica', 'I10', 'confirmed']]],
+        [13, 180, '3.900', 'Emagrecimento apesar de comer bem.', 'Nódulo tireoidiano palpável; taquicardia.', 'Dosagem de T4.', [['Hipertireoidismo', 'E05', 'suspected'], ['Doença renal crônica', 'N18', 'suspected']]],
+        [14, 340, '7.400', 'Respiração rápida em repouso.', 'Galope à ausculta.', 'Ecocardiograma.', [['Cardiomiopatia hipertrófica', 'I42', 'suspected']]],
+        [14, 12, '7.300', 'Retorno com ecocardiograma.', 'Espessamento do septo confirmado.', 'Iniciar medicação; restrição de esforço.', [['Cardiomiopatia hipertrófica', 'I42', 'confirmed']]],
+        [15, 30, '2.900', 'Primeira consulta; espirros e secreção ocular.', 'Conjuntivite bilateral.', 'Colírio e vacinação após melhora.', [['Complexo respiratório felino', 'J06', 'confirmed']]],
+        // Exóticos.
+        [16, 400, '0.092', 'Arranca as próprias penas.', 'Falhas de penas no peito; ave ativa.', 'Enriquecimento ambiental; avaliar dieta.', [['Arrancamento de penas (comportamental)', null, 'suspected']]],
+        [17, 250, '0.410', 'Bico crescido e dificuldade para comer.', 'Sobrecrescimento de bico; plumagem opaca.', 'Desgaste do bico; correção da dieta.', [['Deficiência nutricional', 'E63', 'confirmed']]],
+        [18, 900, '2.150', 'Olhos inchados e não come há 1 semana.', 'Blefaroedema bilateral; secreção nasal.', 'Vitamina A injetável; ajuste de dieta e UVB.', [['Hipovitaminose A', 'E50', 'confirmed']]],
+        [18, 870, '2.200', 'Retorno: olhos abriram, voltou a comer.', 'Melhora clínica evidente.', 'Manter dieta e iluminação UVB.', [['Hipovitaminose A', 'E50', 'confirmed']]],
+        [19, 140, '1.650', 'Baba e não come ração.', 'Pontas dentárias em pré-molares.', 'Desgaste dentário; feno à vontade.', [['Má oclusão dentária', 'K07', 'confirmed']]],
+        [20, 25, '0.140', 'Diarreia e prostração.', 'Região perianal úmida.', 'Hidratação e probiótico.', [['Enterite', 'K52', 'suspected']]],
+        [21, 75, '0.950', 'Perda de pelo na cauda e coceira.', 'Alopecia simétrica.', 'Exames hormonais.', [['Doença adrenal do furão', 'E27', 'suspected']]],
+    ];
+
+    /** Vacinas: [paciente, vacina, dose, aplicada há N dias, próxima dose em N dias (negativo = atrasada)]. */
+    private const VACCINES = [
+        [0, 'Polivalente canina (V8/V10)', 4, 380, -15], [0, 'Antirrábica', 3, 200, 165],
+        [1, 'Polivalente canina (V8/V10)', 3, 360, 5], [1, 'Antirrábica', 2, 355, 10],
+        [2, 'Polivalente canina (V8/V10)', 2, 30, -9], [3, 'Polivalente canina (V8/V10)', 3, 340, 25],
+        [4, 'Antirrábica', 5, 390, -25], [6, 'Antirrábica', 6, 100, 265], [8, 'Leishmaniose visceral canina', 3, 350, 15],
+        [9, 'Polivalente canina (V8/V10)', 1, 20, 1], [10, 'Antirrábica', 8, 370, -5], [11, 'Polivalente felina (V4/V5)', 6, 300, 65],
+        [13, 'Polivalente felina (V4/V5)', 4, 358, 7], [14, 'Antirrábica', 4, 50, 315], [15, 'Polivalente felina (V4/V5)', 1, 25, -4],
+    ];
+
+    /** Agenda: [paciente, dias a partir de hoje, hora, situação]. */
+    private const APPOINTMENTS = [
+        [3, 0, '08:30', 'confirmed'], [14, 0, '09:30', 'waiting'], [19, 0, '11:00', 'scheduled'], [7, 0, '15:00', 'scheduled'],
+        [10, 1, '09:00', 'confirmed'], [2, 1, '10:30', 'scheduled'], [15, 2, '14:00', 'scheduled'], [4, 3, '16:30', 'scheduled'],
+        [18, 4, '10:00', 'scheduled'], [1, 6, '08:00', 'scheduled'],
+    ];
+
+    /** Alertas: [paciente, tipo, gravidade, descrição]. */
+    private const ALERTS = [
+        [0, 'allergy', 'high', 'Alergia a frango (dieta) — demonstração'],
+        [7, 'chronic', 'medium', 'Cardiopata: evitar estresse e sedação sem avaliação — demonstração'],
+        [10, 'chronic', 'medium', 'Doente renal crônico — demonstração'],
+        [12, 'medication', 'medium', 'Uso contínuo de anti-hipertensivo — demonstração'],
+        [3, 'behavior', 'low', 'Fica agitado na contenção — demonstração'],
+    ];
+
+    public function __construct(private readonly TenantContext $context) {}
+
+    /** ID demo da clínica: prefixo + 8 hex do tenant (evita colisão entre clínicas) + tipo + número. Hex é Crockford válido. */
+    public static function idFor(string $tenantId, string $kind, int $n): string
+    {
+        $head = self::PREFIX.strtoupper(hash('crc32b', $tenantId)).$kind;
+
+        return $head.str_pad((string) $n, 26 - strlen($head), '0', STR_PAD_LEFT);
+    }
+
+    private function id(string $kind, int $n): string
+    {
+        return self::idFor($this->context->requireId(), $kind, $n);
+    }
+
+    /** @return array{patients: int, guardians: int, encounters: int, cases: int} */
+    public function counts(): array
+    {
+        $tenant = $this->context->requireId();
+        $count = fn (string $table) => DB::table($table)->where('tenant_id', $tenant)->where('id', 'like', self::PREFIX.'%')->count();
+
+        return ['patients' => $count('patients'), 'guardians' => $count('guardians'), 'encounters' => $count('encounters'), 'cases' => $count('clinical_cases')];
+    }
+
+    public function isLoaded(): bool
+    {
+        return $this->counts()['patients'] > 0;
+    }
+
+    /** @return array{patients: int, encounters: int, vaccinations: int, appointments: int, cases: int} */
+    public function load(string $userId): array
+    {
+        $tenant = $this->context->requireId();
+        if ($this->isLoaded()) {
+            throw new RuntimeException('Os dados de demonstração já estão carregados nesta clínica.');
+        }
+        $membership = Membership::query()->where('user_id', $userId)->value('id');
+        $unit = Unit::query()->orderBy('created_at')->orderBy('id')->first();
+        if ($membership === null || $unit === null) {
+            throw new RuntimeException('Cadastre ao menos uma unidade antes de carregar a demonstração.');
+        }
+        app(ScheduleService::class)->ensureDefaultTypes();
+        app(VaccinationService::class)->ensureDefaults();
+        $tz = $unit->timezone ?: 'America/Sao_Paulo';
+        $now = now();
+        $stamp = ['created_at' => $now, 'updated_at' => $now];
+        $base = ['tenant_id' => $tenant];
+
+        DB::transaction(function () use ($userId, $membership, $unit, $tz, $now, $stamp, $base) {
+            foreach (self::GUARDIANS as $i => [$name, $phone, $city, $uf]) {
+                DB::table('guardians')->insert($base + $stamp + [
+                    'id' => $this->id('GR', $i + 1), 'name' => $name, 'person_type' => 'PF', 'phone' => $phone,
+                    'email' => 'tutor'.($i + 1).'@demo.exemplo.test', 'city' => $city, 'state' => $uf, 'status' => 'active',
+                    'notes' => 'Cadastro fictício de demonstração.', 'created_by' => $userId,
+                ]);
+            }
+            foreach (self::PATIENTS as $i => [$name, $species, $detail, $breed, $sex, $neutered, $birth, $g]) {
+                $pid = $this->id('PT', $i + 1);
+                DB::table('patients')->insert($base + $stamp + [
+                    'id' => $pid, 'name' => $name, 'species' => $species, 'species_detail' => $detail, 'breed' => $breed,
+                    'sex' => $sex, 'neutered' => $neutered, 'birth_date' => $birth, 'birth_date_estimated' => $birth !== null && str_ends_with($birth, '-01-01'),
+                    'status' => 'active', 'marks' => 'Paciente fictício de demonstração.', 'created_by' => $userId,
+                ]);
+                DB::table('guardian_patient')->insert($base + $stamp + ['guardian_id' => $this->id('GR', $g + 1), 'patient_id' => $pid, 'relationship' => 'primary']);
+            }
+
+            $encounterOf = []; // paciente => [[id, quando, diagnósticos]]
+            foreach (self::ENCOUNTERS as $i => [$p, $daysAgo, $weight, $complaint, $exam, $plan, $dxs]) {
+                $eid = $this->id('EN', $i + 1);
+                $pid = $this->id('PT', $p + 1);
+                $when = Carbon::now($tz)->subDays($daysAgo)->setTime(9 + $i % 8, ($i * 17) % 60)->utc();
+                DB::table('encounters')->insert($base + [
+                    'id' => $eid, 'unit_id' => $unit->id, 'patient_id' => $pid, 'status' => 'finalized', 'started_at' => $when,
+                    'chief_complaint' => $complaint, 'history' => 'Histórico fictício de demonstração.', 'physical_exam' => $exam,
+                    'plan' => $plan, 'guidance' => 'Orientações fictícias de demonstração.', 'weight_kg' => $weight,
+                    'temperature_c' => '38.'.($i % 9), 'finalized_at' => $when->copy()->addMinutes(35), 'finalized_by' => $userId,
+                    'signer_membership_id' => $membership, 'created_by' => $userId, 'created_at' => $when, 'updated_at' => $when->copy()->addMinutes(35),
+                ]);
+                foreach ($dxs as $pos => [$desc, $code, $status]) {
+                    DB::table('encounter_diagnoses')->insert($base + [
+                        'id' => $this->id('DX', ($i + 1) * 10 + $pos), 'encounter_id' => $eid, 'patient_id' => $pid, 'description' => $desc,
+                        'code' => $code, 'status' => $status, 'position' => $pos, 'created_by' => $userId, 'created_at' => $when, 'updated_at' => $when,
+                    ]);
+                }
+                DB::table('patient_weights')->insert($base + [
+                    'id' => $this->id('PW', $i + 1), 'patient_id' => $pid, 'encounter_id' => $eid, 'weight_kg' => $weight,
+                    'measured_at' => $when, 'created_by' => $userId, 'created_at' => $when, 'updated_at' => $when,
+                ]);
+                $encounterOf[$p][] = ['id' => $eid, 'dx' => array_column($dxs, 2, 0)];
+            }
+
+            foreach (self::ALERTS as $i => [$p, $kind, $severity, $desc]) {
+                DB::table('patient_alerts')->insert($base + $stamp + [
+                    'id' => $this->id('PA', $i + 1), 'patient_id' => $this->id('PT', $p + 1), 'kind' => $kind, 'severity' => $severity,
+                    'description' => $desc, 'created_by' => $userId,
+                ]);
+            }
+
+            $vaccines = Vaccine::query()->pluck('id', 'name');
+            foreach (self::VACCINES as $i => [$p, $name, $dose, $appliedAgo, $nextIn]) {
+                if (! isset($vaccines[$name])) {
+                    continue; // vacina padrão renomeada/removida pela clínica
+                }
+                DB::table('vaccinations')->insert($base + $stamp + [
+                    'id' => $this->id('VX', $i + 1), 'patient_id' => $this->id('PT', $p + 1), 'vaccine_id' => $vaccines[$name],
+                    'dose_number' => $dose, 'applied_on' => Carbon::now($tz)->subDays($appliedAgo)->toDateString(),
+                    'lot' => 'DEMO-'.str_pad((string) ($i + 1), 3, '0', STR_PAD_LEFT), 'manufacturer' => 'Fabricante fictício',
+                    'lot_expires_on' => Carbon::now($tz)->addYear()->toDateString(), 'site' => 'Subcutânea',
+                    'next_due_on' => Carbon::now($tz)->addDays($nextIn)->toDateString(), 'applied_by_membership_id' => $membership, 'created_by' => $userId,
+                ]);
+            }
+
+            $type = AppointmentType::query()->where('active', true)->orderBy('name')->first();
+            foreach ($type ? self::APPOINTMENTS : [] as $i => [$p, $inDays, $time, $status]) {
+                $start = ScheduleService::toUtc(Carbon::now($tz)->addDays($inDays)->format('Y-m-d'), $time, $tz);
+                DB::table('appointments')->insert($base + $stamp + [
+                    'id' => $this->id('AP', $i + 1), 'unit_id' => $unit->id, 'patient_id' => $this->id('PT', $p + 1),
+                    'appointment_type_id' => $type->id, 'professional_membership_id' => $membership, 'starts_at' => $start,
+                    'ends_at' => $start->copy()->addMinutes($type->duration_minutes), 'status' => $status, 'is_walk_in' => false,
+                    'notes' => 'Agendamento fictício de demonstração.', 'confirmed_at' => in_array($status, ['confirmed', 'waiting'], true) ? $now : null,
+                    'checked_in_at' => $status === 'waiting' ? $now : null, 'created_by' => $userId,
+                ]);
+            }
+
+            $this->cases($base, $userId, $encounterOf, $now);
+        });
+
+        return [
+            'patients' => count(self::PATIENTS), 'encounters' => count(self::ENCOUNTERS), 'vaccinations' => count(self::VACCINES),
+            'appointments' => count(self::APPOINTMENTS), 'cases' => 3,
+        ];
+    }
+
+    /**
+     * Três estudos: série aberta (dermatite atópica em cães), série encerrada (DRC em gatos) e relato (hipovitaminose A
+     * em jabuti), com desfechos e consentimentos variados para mostrar a exportação anonimizada.
+     *
+     * @param  array<string, string>  $base
+     * @param  array<int, list<array{id: string, dx: array<string, string>}>>  $encounterOf
+     */
+    private function cases(array $base, string $userId, array $encounterOf, Carbon $now): void
+    {
+        $studies = [
+            ['CC', 1, 'series', 'Dermatite atópica em cães — resposta ao tratamento', 'Qual a proporção de cães com dermatite atópica confirmada que melhoram em até 90 dias?',
+                null, 'Dermatologia', ['especie' => 'canine', 'diagnostico' => 'dermatite atópica', 'situacao' => 'confirmed'], 'open', 'Dermatite atópica', [
+                    [0, 'improved', 'granted', 'Bento respondeu bem ao imunomodulador; tutora Beatriz ligou do (11) 90000-0101 relatando melhora.'],
+                    [1, 'resolved', 'granted', 'Sem recidiva após troca de dieta.'],
+                    [3, 'stable', 'pending', 'Aguardando assinatura do termo pela família.'],
+                ]],
+            ['CC', 2, 'series', 'Doença renal crônica em gatos idosos', 'Como evoluíram o peso e o apetite após a dieta renal?',
+                'Série encerrada de demonstração: 3 gatos idosos com DRC confirmada; dois mantiveram o peso e um perdeu peso no período.', 'Nefrologia',
+                ['especie' => 'feline', 'diagnostico' => 'renal', 'situacao' => 'confirmed'], 'closed', 'Doença renal crônica', [
+                    [10, 'stable', 'granted', 'Manteve peso com fluido subcutâneo em casa.'],
+                    [11, 'worsened', 'granted', 'Perdeu peso; tutor Eduardo optou por cuidados paliativos.'],
+                    [12, 'stable', 'refused', null],
+                ]],
+            ['CC', 3, 'report', 'Relato: hipovitaminose A em jabuti-piranga', 'Descrever a recuperação com suplementação e correção do manejo.',
+                null, 'Animais silvestres e exóticos', null, 'open', 'Hipovitaminose A', [
+                    [18, 'resolved', 'granted', 'Voltou a se alimentar em 30 dias com luz UVB e dieta variada.'],
+                ]],
+        ];
+        foreach ($studies as [$kind, $n, $type, $title, $question, $summary, $specialty, $criteria, $status, $dxName, $entries]) {
+            $cid = $this->id($kind, $n);
+            DB::table('clinical_cases')->insert($base + [
+                'id' => $cid, 'kind' => $type, 'title' => $title, 'question' => $question, 'summary' => $summary, 'specialty' => $specialty,
+                'criteria' => $criteria ? json_encode($criteria) : null, 'status' => $status, 'next_label' => count($entries) + 1,
+                'created_by' => $userId, 'updated_by' => $userId, 'created_at' => $now, 'updated_at' => $now,
+            ]);
+            foreach ($entries as $k => [$p, $outcome, $consent, $notes]) {
+                $recorded = $consent !== 'pending';
+                $ref = collect($encounterOf[$p] ?? [])->last(fn ($e) => ($e['dx'][$dxName] ?? null) === 'confirmed');
+                DB::table('clinical_case_patients')->insert($base + [
+                    'id' => $this->id('CP', $n * 100 + $k + 1), 'case_id' => $cid, 'patient_id' => $this->id('PT', $p + 1),
+                    'encounter_id' => $ref['id'] ?? null, 'label' => sprintf('Caso %02d', $k + 1), 'outcome' => $outcome, 'notes' => $notes,
+                    'consent' => $consent, 'consent_on' => $recorded ? $now->toDateString() : null,
+                    'consent_recorded_by' => $recorded ? $userId : null, 'added_by' => $userId, 'created_at' => $now, 'updated_at' => $now,
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Remove os dados de demonstração e tudo o que foi registrado nos pacientes demo (atendimentos, vacinas,
+     * documentos, anexos e arquivos). Nada fora do prefixo demo é tocado.
+     *
+     * @return array{patients: int, guardians: int, cases: int, files: int}
+     */
+    public function remove(): array
+    {
+        $tenant = $this->context->requireId();
+        $demo = fn (string $table) => DB::table($table)->where('tenant_id', $tenant)->where('id', 'like', self::PREFIX.'%');
+        $patients = $demo('patients')->pluck('id')->all();
+        $cases = $demo('clinical_cases')->pluck('id')->all();
+        $guardians = $demo('guardians')->pluck('id')->all();
+        $files = [];
+
+        DB::transaction(function () use ($tenant, $patients, $cases, $guardians, $demo, &$files) {
+            $t = fn (string $table) => DB::table($table)->where('tenant_id', $tenant);
+            $t('clinical_case_patients')->where(fn ($q) => $q->whereIn('case_id', $cases ?: [''])->orWhereIn('patient_id', $patients ?: ['']))->delete();
+            $demo('clinical_cases')->delete();
+            if ($patients !== []) {
+                $encounters = $t('encounters')->whereIn('patient_id', $patients)->pluck('id')->all();
+                $files = [
+                    ...$t('issued_documents')->whereIn('patient_id', $patients)->pluck('pdf_path')->all(),
+                    ...$t('attachments')->whereIn('patient_id', $patients)->pluck('storage_path')->all(),
+                ];
+                foreach (['vaccinations', 'issued_documents', 'attachments', 'patient_weights', 'patient_alerts', 'encounter_diagnoses'] as $table) {
+                    $t($table)->whereIn('patient_id', $patients)->delete();
+                }
+                if ($encounters !== []) {
+                    $t('encounter_addenda')->whereIn('encounter_id', $encounters)->delete();
+                }
+                $t('encounters')->whereIn('patient_id', $patients)->delete();
+                $t('appointments')->whereIn('patient_id', $patients)->delete();
+                $t('guardian_patient')->whereIn('patient_id', $patients)->delete();
+            }
+            if ($guardians !== []) {
+                $t('guardian_patient')->whereIn('guardian_id', $guardians)->delete(); // vínculo de paciente real a tutor demo
+            }
+            $demo('patients')->delete();
+            $demo('guardians')->delete();
+        });
+        foreach ($files as $path) {
+            Storage::disk('local')->delete($path); // depois do commit: sem registro, sem arquivo órfão
+        }
+
+        return ['patients' => count($patients), 'guardians' => count($guardians), 'cases' => count($cases), 'files' => count($files)];
+    }
+}

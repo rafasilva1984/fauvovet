@@ -57,6 +57,10 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
   gravados) e relato a partir de atendimento finalizado; desfecho, consentimento do tutor e observações por caso;
   estatísticas agregadas; CSV/PDF anonimizados (pseudônimo, mês/ano, redação de nomes/números/e-mails, só casos
   autorizados); `research:manage` (veterinário e titular); ADR-015.
+- **Dados de demonstração (implementado e testado localmente; ainda não publicado):** pedido do proprietário para ver
+  as novidades na produção. Tela do titular (só com `FAUVOVET_DEMO_DATA=true`) que carrega na clínica ativa 22
+  pacientes/10 tutores fictícios, 32 atendimentos finalizados em ~3 anos, vacinas, agenda e 3 casos científicos, e
+  remove tudo (inclusive o registrado depois nos pacientes demo); IDs com prefixo `00DEM0`; ADR-016.
 - **Não implementado:** exames estruturados, internação, (alergias, peso, vacinas), busca clínica, lembretes, visão mensal/salas/recorrência; MFA, recuperação de senha, e-mail transacional; backup automático.
 - **PUBLICADO (teste) na Locaweb em 15/10/2026** pelo proprietário, seguindo o tutorial: `http://dradeboragaldino.com.br/fauvovet`.
   Domínio corrigido em todo o repositório (era "gakdino"; o certo é **galdino**). `pnpm smoke` contra o servidor real:
@@ -65,7 +69,7 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
 - **Tutorial de deploy didático:** o proprietário achou o passo a passo de `DEPLOY_LOCAWEB.md` difícil de seguir (faltava
   configuração do banco e o que copiar para onde). Reescrito como guia completo, etapas A–H, com glossário, mapa de pastas,
   folha de anotações e troubleshooting; novo comando `pnpm deploy:copiar` (pacote → `C:\fauvovet-deploy`, fora do OneDrive).
-- **Último guia HTML:** [`docs/changes/2026-10-18-casos-cientificos.html`](changes/2026-10-18-casos-cientificos.html)
+- **Último guia HTML:** [`docs/changes/2026-10-18-dados-demonstracao.html`](changes/2026-10-18-dados-demonstracao.html)
 
 ## Ambiente (verificado)
 
@@ -154,9 +158,10 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 
 ## Próxima ação exata
 
-1. Proprietário: publicar vacinação + busca avançada + casos científicos num único pacote
-   (`docs/changes/2026-10-18-casos-cientificos.html` › seção 7; 2 migrações se a vacinação ainda não subiu; revisar
-   protocolos de vacina). HTTPS continua pendente (pedido do proprietário: deixar para o final).
+1. Proprietário: publicar vacinação + busca avançada + casos científicos + dados de demonstração num único pacote
+   (`docs/changes/2026-10-18-dados-demonstracao.html` › seção 7; 2 migrações se a vacinação ainda não subiu; acrescentar
+   `FAUVOVET_DEMO_DATA=true` ao `.env` do servidor; carregar a demonstração; revisar protocolos de vacina). **Antes do
+   primeiro paciente real:** remover a demonstração e voltar `FAUVOVET_DEMO_DATA=false`. HTTPS continua pendente (pedido do proprietário: deixar para o final).
 2. Próximo incremento sugerido (Fase 2): busca em texto livre do prontuário (queixa, evolução, conduta) e em anexos,
    com destaque de trechos e sinônimos — decidir FULLTEXT InnoDB × tabela de termos (`docs/IDEAS.md`, ADR-010).
    Alternativas da Fase 3: exames estruturados ou internação. Entrada: `app/Services/PatientSearch.php`.
@@ -181,3 +186,4 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 | 2026-10-18 | **Vacinação**: catálogo, carteira, próxima dose, vencimentos, PDF                                               | [2026-10-18-vacinacao.html](changes/2026-10-18-vacinacao.html)                               | verify --e2e 9/9 (PHPUnit 151, isolamento 37)                      | `6fd9d73`                          | push OK, CI            | Busca avançada + casos científicos    |
 | 2026-10-18 | **Busca avançada de pacientes**: raça, sexo, idade, castração, diagnóstico/situação, ano                        | [2026-10-18-busca-avancada.html](changes/2026-10-18-busca-avancada.html)                     | verify --e2e 9/9 (PHPUnit 156, isolamento 38)                      | `c74f19b`                          | push OK, CI            | Casos científicos                     |
 | 2026-10-18 | **Casos científicos**: séries/relatos, consentimento, estatísticas, exportação anonimizada                      | [2026-10-18-casos-cientificos.html](changes/2026-10-18-casos-cientificos.html)               | verify --e2e 9/9 (PHPUnit 164, isolamento 40)                      | main — hash na próxima atualização | push nesta sessão      | Publicar; busca em texto livre        |
+| 2026-10-18 | **Dados de demonstração**: carga/remoção de dados fictícios pelo titular (chave no `.env`)                      | [2026-10-18-dados-demonstracao.html](changes/2026-10-18-dados-demonstracao.html)             | verify --e2e 9/9 (PHPUnit 169, isolamento 41, E2E 72)              | main — hash na próxima atualização | push nesta sessão      | Publicar; busca em texto livre        |

@@ -204,3 +204,18 @@ test('acessibilidade WCAG AA (axe): casos científicos', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 2, name: 'Casos' })).toBeVisible();
   await axe(page); // estatísticas, formulários por caso e painel do estudo
 });
+
+test('acessibilidade WCAG AA (axe): dados de demonstração', async ({ page }) => {
+  await loginInto(page, USERS.diana);
+  await page.goto('configuracoes/dados-de-demonstracao');
+  await axe(page);
+  await page.getByRole('button', { name: 'Carregar demonstração' }).click();
+  await expect(page.getByText(/Demonstração carregada: 22 pacientes/).first()).toBeVisible();
+  await axe(page);
+  await page.goto('pacientes?diagnostico=renal&especie=feline');
+  await axe(page);
+  await page.goto('configuracoes/dados-de-demonstracao');
+  await page.getByRole('checkbox', { name: /Entendo que/ }).check();
+  await page.getByRole('button', { name: 'Remover demonstração' }).click();
+  await expect(page.getByRole('button', { name: 'Carregar demonstração' })).toBeVisible();
+});

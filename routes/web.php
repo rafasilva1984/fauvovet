@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\ContextController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\ClinicalCaseController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DemoDataController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\DocumentTemplateController;
 use App\Http\Controllers\EncounterController;
@@ -160,5 +161,12 @@ Route::middleware('auth')->group(function () {
         Route::put('/equipe/{membership}', [TeamController::class, 'update'])->middleware('permission:members:manage')->name('team.update');
         Route::get('/configuracoes/aparencia', [AppearanceController::class, 'edit'])->middleware('permission:theme:update')->name('settings.appearance');
         Route::put('/configuracoes/aparencia', [AppearanceController::class, 'update'])->middleware('permission:theme:update')->name('settings.appearance.update');
+
+        // Dados fictícios de demonstração (FAUVOVET_DEMO_DATA=true; desligado = 404). Só o titular.
+        Route::middleware('permission:tenant:update')->group(function () {
+            Route::get('/configuracoes/dados-de-demonstracao', [DemoDataController::class, 'show'])->name('settings.demo-data');
+            Route::post('/configuracoes/dados-de-demonstracao', [DemoDataController::class, 'load'])->name('settings.demo-data.load');
+            Route::post('/configuracoes/dados-de-demonstracao/remover', [DemoDataController::class, 'remove'])->name('settings.demo-data.remove');
+        });
     });
 });

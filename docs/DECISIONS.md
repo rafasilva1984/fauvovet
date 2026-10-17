@@ -202,3 +202,23 @@ modelo de outro projeto dele já operado na Locaweb (Laravel + Vite, Node só pa
   - O rodapé do PDF pede revisão e aprovação ética (ex.: CEUA, quando aplicável) antes de publicar.
   - O termo de consentimento propriamente dito (texto, assinatura) fica para um modelo de documento da clínica;
     aqui só se registra a situação e a data.
+
+## ADR-016 — Dados de demonstração na clínica, atrás de chave e com remoção total (2026-10-18)
+
+- **Contexto:** o proprietário pediu "um script que coloque casos no perfil atual em produção" para ver vacinação,
+  busca avançada e casos científicos com conteúdo. A hospedagem não tem SSH (ADR-010): seeder/artisan não rodam lá, e
+  o seed de desenvolvimento recusa produção de propósito.
+- **Decisão:**
+  - Tela **Configurações → Dados de demonstração**, só para o titular (`tenant:update`) e só com
+    `FAUVOVET_DEMO_DATA=true` no `.env` do servidor; desligada, as rotas respondem 404.
+  - Dados 100% fictícios (tutores com "(demo)", e-mails `.exemplo.test`, telefones `11 90000-01xx`), na clínica
+    **ativa**; autoria e assinatura dos atendimentos ficam com o titular que carregou; auditoria
+    `demo_data.loaded`/`demo_data.removed`.
+  - Todo registro demo tem ID `00DEM0` + CRC32 da clínica + tipo + número: ULID válido (data de 1970, que o sistema
+    nunca gera) e sem colisão entre clínicas. Assim a remoção é cirúrgica.
+  - **Remoção** apaga pacientes/tutores/casos demo e tudo ligado aos pacientes demo, inclusive o que a equipe
+    registrou depois (atendimentos, vacinas, documentos, anexos e arquivos). É a única exceção à regra "prontuário não
+    é apagado", e vale só para pacientes demo. Paciente real vinculado a tutor demo perde só o vínculo.
+- **Riscos e limites:** dados demo convivem com dados reais se a chave ficar ligada. O guia manda remover a
+  demonstração e desligar a chave antes do primeiro paciente real; recomendado reavaliar quando houver HTTPS e uso
+  clínico real.

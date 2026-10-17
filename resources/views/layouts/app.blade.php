@@ -19,6 +19,7 @@
             ['route' => 'vaccines.index', 'label' => 'Catálogo de vacinas', 'icon' => 'syringe', 'perm' => 'vaccines:configure'],
             ['route' => 'document-templates.index', 'label' => 'Modelos de documento', 'icon' => 'copy', 'perm' => 'documents:templates'],
             ['route' => 'settings.appearance', 'label' => 'Aparência', 'icon' => 'palette', 'perm' => 'theme:update'],
+            ...(config('fauvovet.demo_data') ? [['route' => 'settings.demo-data', 'label' => 'Dados de demonstração', 'icon' => 'sparkles', 'perm' => 'tenant:update']] : []),
         ],
     ];
     foreach ($groups as $g => $items) {

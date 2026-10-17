@@ -22,6 +22,8 @@ export const E2E_ENV = {
   SEED_PASSWORD: process.env.E2E_PASSWORD ?? 'fauvovet-e2e-2026',
   FAUVOVET_ALLOW_SELF_SIGNUP: 'true',
   DEPLOY_TOOLS_ENABLED: 'false',
+  // Tela de dados de demonstração (o teste carrega e remove na clínica B).
+  FAUVOVET_DEMO_DATA: 'true',
   LOG_LEVEL: 'warning',
 };
 

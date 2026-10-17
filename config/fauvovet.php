@@ -14,6 +14,8 @@ return [
     'attachments' => [
         'max_kb' => (int) env('FAUVOVET_ATTACHMENT_MAX_KB', 15360),
     ],
+    // Tela "Dados de demonstração" (titular carrega/remove pacientes fictícios na própria clínica). Padrão: desligada.
+    'demo_data' => (bool) env('FAUVOVET_DEMO_DATA', false),
     // Ferramentas de deploy sem SSH (migração/diagnóstico via HTTP). Ver docs/DEPLOY_LOCAWEB.md.
     'deploy' => [
         'enabled' => (bool) env('DEPLOY_TOOLS_ENABLED', false),
