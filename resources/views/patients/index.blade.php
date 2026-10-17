@@ -8,7 +8,7 @@
         @endif
     </x-page-header>
 
-    <form method="GET" action="{{ route('patients.index') }}" class="mb-6 grid gap-3 rounded-[1.25rem] border border-line bg-surface p-4 shadow-card sm:grid-cols-[minmax(0,1fr)_14rem_auto] sm:items-end" role="search">
+    <form method="GET" action="{{ route('patients.index') }}" class="mb-6 grid grid-cols-1 gap-3 rounded-[1.25rem] border border-line bg-surface p-4 shadow-card sm:grid-cols-[minmax(0,1fr)_14rem_auto] sm:items-end" role="search">
         <x-field name="q" label="Buscar por paciente, responsável, telefone ou microchip" type="search" :value="$q" autocomplete="off" />
         <x-select name="especie" label="Espécie" :options="\App\Support\Species::LABELS" :value="$species" placeholder="Todas" />
         <x-button variant="secondary">Buscar</x-button>

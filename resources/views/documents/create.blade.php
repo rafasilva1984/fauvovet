@@ -8,7 +8,7 @@
         <x-alert tone="warning" class="mb-6">Seu CRMV não está cadastrado. Receitas, atestados e encaminhamentos exigem o CRMV: <a class="font-semibold underline underline-offset-4" href="{{ route('profile.edit') }}">abrir Meu perfil</a>.</x-alert>
     @endif
 
-    <div class="grid gap-6 lg:grid-cols-[18rem_minmax(0,1fr)]">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[18rem_minmax(0,1fr)]">
         <nav aria-label="Modelos" class="flex flex-col gap-2">
             <h2 class="mb-1 text-sm font-bold uppercase tracking-[0.12em] text-muted">1. Escolha o modelo</h2>
             @forelse ($templates as $t)

@@ -60,7 +60,7 @@
 
                 <x-card>
                     <h2 class="mb-4 text-lg font-bold tracking-tight">Horário</h2>
-                    <div class="grid gap-4 sm:grid-cols-2">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         @if ($units->count() > 1)
                             <x-select name="unit_id" label="Unidade" :options="$units->pluck('name', 'id')->all()" :value="$unit->id" required class="sm:col-span-2" />
                         @else

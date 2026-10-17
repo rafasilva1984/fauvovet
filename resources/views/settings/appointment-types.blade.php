@@ -7,7 +7,7 @@
 
 @section('content')
     <x-page-header title="Tipos de atendimento" icon="list" eyebrow="Configurações" description="Duração padrão e cor de cada tipo na agenda. Desative os que não usa; o histórico é mantido." />
-    <div class="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <x-card class="p-0">
             <ul class="divide-y divide-line">
                 @foreach ($types as $t)

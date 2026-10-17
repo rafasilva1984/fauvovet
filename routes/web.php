@@ -3,6 +3,7 @@
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\AppearanceController;
 use App\Http\Controllers\AppointmentTypeController;
+use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\Auth\ContextController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
@@ -90,10 +91,13 @@ Route::middleware('auth')->group(function () {
         // Documentos clínicos: ler/baixar = clinical:read; emitir = clinical:write (receita/atestado/encaminhamento
         // exigem clinical:sign, verificado no serviço); modelos = documents:templates.
         Route::middleware('permission:clinical:read')->group(function () {
+            Route::get('/anexos/{attachment}', [AttachmentController::class, 'download'])->name('attachments.download');
             Route::get('/documentos/{document}', [DocumentController::class, 'show'])->name('documents.show');
             Route::get('/documentos/{document}/pdf', [DocumentController::class, 'pdf'])->name('documents.pdf');
         });
         Route::middleware('permission:clinical:write')->group(function () {
+            Route::post('/pacientes/{patient}/anexos', [AttachmentController::class, 'store'])->middleware('throttle:attachment-upload')->name('attachments.store');
+            Route::post('/anexos/{attachment}/remover', [AttachmentController::class, 'remove'])->name('attachments.remove');
             Route::get('/pacientes/{patient}/documentos/novo', [DocumentController::class, 'create'])->name('documents.create');
             Route::post('/pacientes/{patient}/documentos', [DocumentController::class, 'store'])->name('documents.store');
             Route::post('/documentos/{document}/anular', [DocumentController::class, 'void'])->name('documents.void');

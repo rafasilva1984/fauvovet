@@ -88,7 +88,7 @@
                 </ul>
             @endif
         @else
-            <div class="grid gap-4 lg:grid-cols-7">
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-7">
                 @for ($i = 0; $i < 7; $i++)
                     @php
                         $d = $from->copy()->addDays($i);

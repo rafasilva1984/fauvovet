@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FauvoVet — Anexos do prontuário</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #1a2935; background: #f4f7f8; line-height: 1.65; font-size: 17px; }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 16px 80px; }
+    header { border-radius: 20px; padding: 32px; color: white; background: linear-gradient(120deg, #0b4652, #1a7375); }
+    header p { color: #e1f5f0; margin-bottom: 0; }
+    h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.2; margin: 0; }
+    h2 { font-size: 1.3rem; margin: 0 0 12px; }
+    h3 { font-size: 1.12rem; margin: 28px 0 8px; padding-top: 16px; border-top: 1px dashed #c9d6d8; }
+    h4 { font-size: 1rem; margin: 18px 0 6px; }
+    section { margin-top: 20px; background: #fff; padding: 24px; border: 1px solid #dee7e8; border-radius: 14px; }
+    p, li { overflow-wrap: anywhere; }
+    code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { background: #eaf1f2; padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+    pre code { background: none; padding: 0; }
+    kbd { border: 1px solid #b8c6c9; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: #fff; font-size: 0.9em; }
+    pre { overflow-x: auto; border-radius: 8px; padding: 14px; color: #e9fbff; background: #172b32; font-size: 0.9rem; line-height: 1.5; }
+    .tag { display: inline-block; font-size: 0.8rem; font-weight: 700; border: 1px solid #f5cf83; background: #fff8e4; color: #7a4b12; border-radius: 30px; padding: 3px 10px; }
+    .where { display: inline-block; font-size: 0.78rem; font-weight: 700; border-radius: 30px; padding: 2px 10px; margin-right: 6px; vertical-align: middle; }
+    .w-term { background: #1f3b44; color: #d9fbff; }
+    .w-web { background: #e1effd; color: #0f3e72; }
+    .w-fz { background: #fde8e1; color: #7a2a0f; }
+    .w-np { background: #ece5fb; color: #42237a; }
+    .w-panel { background: #e2f6e8; color: #145c2e; }
+    .note { border-left: 4px solid #338b96; background: #eef7f8; padding: 10px 12px; border-radius: 6px; }
+    .warn { border-left: 4px solid #c27c0e; background: #fff8e4; padding: 10px 12px; border-radius: 6px; }
+    .stop { border-left: 4px solid #b3261e; background: #fdecea; padding: 10px 12px; border-radius: 6px; }
+    .ok { border-left: 4px solid #1d7a45; background: #e8f6ee; padding: 10px 12px; border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid #e0e7e8; text-align: left; vertical-align: top; }
+    small { color: #52646d; }
+    .pass { color: #116b3a; font-weight: 700; }
+    .notrun { color: #8a5a00; font-weight: 700; }
+    ol.steps > li { margin-bottom: 12px; }
+    .map { font-size: 0.85rem; }
+    .shots { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .shots figure { margin: 0; }
+    .shots img { width: 100%; height: auto; border-radius: 12px; border: 1px solid #dee7e8; display: block; }
+    .shots figcaption { font-size: 0.85rem; color: #52646d; margin-top: 4px; }
+    .shots .tall img { max-height: 520px; object-fit: cover; object-position: top; }
+    nav ol { columns: 2; column-gap: 32px; }
+    @media (max-width: 640px) { nav ol { columns: 1; } body { font-size: 16px; } section { padding: 18px; } header { padding: 22px; } }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e4eef0; background: #0f1a1e; }
+      section { background: #15242a; border-color: #23373e; }
+      th, td { border-color: #23373e; }
+      code { background: #213840; }
+      kbd { background: #1d3138; border-color: #3b5760; }
+      .warn { background: #2a2210; } .note { background: #12303a; } .stop { background: #3a1614; } .ok { background: #12301f; }
+      small { color: #9fb3ba; }
+      h3 { border-color: #2c454c; }
+      .pass { color: #5fd28f; } .notrun { color: #f0b54a; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="tag">INCREMENTO IMPLEMENTADO — FASE 1 · ANEXOS PRIVADOS</span>
+      <h1>Anexos do prontuário: exames, imagens e documentos guardados com segurança</h1>
+      <p>ID: <strong>2026-10-18-anexos</strong> · Data: <strong>18/10/2026</strong> · Versão: <strong>0.8.0</strong> · Módulo: <strong>D. Prontuário (anexos) · F. Exames (arquivos)</strong> · Estado: <strong>implementado e testado localmente; publicação a cargo do proprietário (seção 7)</strong></p>
+    </header>
+
+    <section>
+      <h2>1. Objetivo</h2>
+      <p>Guardar no prontuário os arquivos que chegam à clínica (resultados de laboratório, raio-X, fotos de lesões, laudos de outros serviços), ligados ao paciente e, se quiser, ao atendimento. Os critérios:</p>
+      <ul>
+        <li>só tipos seguros, conferidos pelo conteúdo;</li>
+        <li>arquivos fora da área pública;</li>
+        <li>download só por quem tem acesso, com registro;</li>
+        <li>nada é apagado de verdade;</li>
+        <li>nada é visível para outra clínica.</li>
+      </ul>
+      <div class="shots">
+        <figure><img src="img/2026-10-18-anexos.jpg" alt="Painel de anexos na ficha do paciente com miniatura de imagem e PDF (dados fictícios)" loading="lazy"><figcaption>Anexos na ficha do paciente</figcaption></figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>2. O que mudou</h2>
+      <h3>Para quem usa</h3>
+      <ul>
+        <li><strong>Painel "Anexos"</strong> na seção Prontuário da ficha do paciente e no atendimento. No atendimento, o arquivo fica ligado àquela consulta.</li>
+        <li><strong>Enviar:</strong> escolha o arquivo (PDF, JPG, PNG, WebP ou Word DOCX, até <strong>15 MB</strong>), a categoria (Exame, Imagem, Documento, Outro) e, se quiser, um título; sem título, usa o nome do arquivo.</li>
+        <li><strong>Abrir:</strong> imagens aparecem em miniatura e abrem no navegador. PDF e Word são <strong>baixados</strong>: arquivos de terceiros nunca são exibidos dentro do sistema.</li>
+        <li><strong>Remover da ficha:</strong> com motivo. O anexo some da ficha, mas o arquivo original continua guardado para histórico. Só quem enviou ou o titular pode remover.</li>
+        <li><strong>Arquivo recusado:</strong> aparece "Tipo de arquivo não aceito…". Exemplos: um <code>.php</code> renomeado para <code>.pdf</code>, HTML com extensão <code>.png</code>, SVG, executável, ZIP qualquer.</li>
+      </ul>
+      <h3>Segurança</h3>
+      <ul>
+        <li><strong>Tipo verificado pelo conteúdo</strong> (assinatura do arquivo), que precisa bater com a extensão.</li>
+        <li><strong>Armazenamento:</strong>
+          <ul>
+            <li>nome no disco <strong>aleatório</strong>, em <code>storage/app/private/attachments/{clínica}/{ano}/</code>, fora do <code>public_html</code>;</li>
+            <li>o nome original é guardado, já sem caminho ("../") e sem caracteres perigosos;</li>
+            <li>o SHA-256 é conferido a cada download; arquivo alterado no disco não é entregue.</li>
+          </ul>
+        </li>
+        <li><strong>Resposta do download</strong> com <code>nosniff</code>, sem cache e com política <code>sandbox</code>: mesmo que um navegador tente interpretar o arquivo, nada é executado.</li>
+        <li><strong>Quem pode:</strong> envio, abertura e download só pela equipe clínica (veterinário, assistente, titular). Recepção e financeiro não têm acesso. Cada envio, download e remoção fica registrado.</li>
+        <li><strong>Limite:</strong> 120 envios por hora por usuário.</li>
+        <li><strong>Sem antivírus</strong> na hospedagem compartilhada: a proteção vem da lista fechada de tipos, de nunca executar arquivos e do download forçado (veja IDEAS e SECURITY).</li>
+      </ul>
+      <h3>Correções de layout encontradas pelos testes</h3>
+      <ul>
+        <li><strong>Zoom automático no celular:</strong> campos com fonte menor que 16 px faziam o Chrome do celular dar zoom e deslocar a tela. Corrigido em 5 campos.</li>
+        <li><strong>Grades responsivas sem coluna única definida</strong> (25 telas) podiam alargar o conteúdo no celular; agora têm <code>grid-cols-1</code> como base.</li>
+        <li><strong>Botões fora da tela:</strong> no celular, o "Baixar" do anexo ficava cortado; agora quebra para a linha de baixo.</li>
+        <li><strong>Teste novo:</strong> a checagem de acessibilidade agora reprova qualquer conteúdo visível que passe da borda da tela no celular.</li>
+      </ul>
+      <h3>Arquivos</h3>
+      <ul>
+        <li><strong>Migração:</strong> <code>2026_10_18_000001_create_attachments_table</code>.</li>
+        <li><strong>Código:</strong> <code>app/Files/FileTypeDetector.php</code>, <code>app/Services/AttachmentService.php</code>, <code>app/Http/Controllers/AttachmentController.php</code>, <code>app/Models/Attachment.php</code> (imutável), view <code>attachments/_panel</code>.</li>
+        <li><strong>Infraestrutura:</strong>
+          <ul>
+            <li><code>SecurityHeaders</code> respeita uma CSP mais restrita definida pela resposta;</li>
+            <li><code>config/fauvovet.php</code> → <code>attachments.max_kb</code> (padrão 15360);</li>
+            <li><code>deploy/public/.user.ini</code> (limites de upload 16 MB/20 MB, levado pelo pacote);</li>
+            <li>servidor de desenvolvimento com os mesmos limites;</li>
+            <li>o diagnóstico de deploy mostra <code>upload_max_filesize</code> e <code>post_max_size</code>.</li>
+          </ul>
+        </li>
+        <li><strong>Testes:</strong> <code>AttachmentTest</code> (16, com 7 tipos maliciosos e 2 de isolamento), E2E <code>attachments.spec.ts</code>, checagem de borda no celular.</li>
+      </ul>
+      <p>Dependências novas: nenhuma.</p>
+    </section>
+
+    <section>
+      <h2>3. Pré-requisitos</h2>
+      <p>Servidor com a extensão PHP <code>fileinfo</code> (já exigida pelo diagnóstico) e a pasta <code>storage/app/private</code> gravável. Para arquivos de até 15 MB, o PHP precisa aceitar uploads desse tamanho; o arquivo <code>.user.ini</code> enviado na pasta pública cuida disso.</p>
+      <p class="warn"><strong>Git Bash/macOS:</strong> NOT RUN.</p>
+    </section>
+
+    <section>
+      <h2>4. Passo a passo (no seu computador)</h2>
+      <ol>
+        <li><code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm db:start</code> → <code>pnpm db:migrate</code></li>
+        <li><code>pnpm dev</code> → entre como <code>bruno.vet@aurora.exemplo.test</code> → paciente Thor → Prontuário → <em>Anexos</em>.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>5. Como testar</h2>
+      <h3>Automático</h3>
+<pre><code>pnpm verify --e2e
+pnpm test:tenant-isolation</code></pre>
+      <h3>Manual</h3>
+      <ol>
+        <li>Como <strong>Bruno</strong>:
+          <ul>
+            <li>envie uma foto (JPG/PNG): aparece a miniatura, e "Abrir" mostra a imagem;</li>
+            <li>envie um PDF: só há "Baixar", e o arquivo baixa com o nome original;</li>
+            <li>renomeie um arquivo de texto para <code>.pdf</code> e tente enviar: "Tipo de arquivo não aceito".</li>
+          </ul>
+        </li>
+        <li>Abra um atendimento e envie um anexo por lá: ele aparece no atendimento e também na ficha.</li>
+        <li>Use "Remover da ficha" com um motivo: o anexo some da ficha.</li>
+        <li>Como <strong>Carla</strong> (recepção): nenhum painel de anexos, e o endereço <code>/anexos/{id}</code> responde 403.</li>
+        <li>Como <strong>Diana</strong> (clínica B): o mesmo endereço responde 404.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>6. Performance e usabilidade</h2>
+      <ul>
+        <li><strong>Desempenho:</strong> o envio e o download leem o arquivo inteiro uma vez (para o SHA-256), o que é desprezível até 15 MB. Miniaturas usam a própria imagem com <code>loading="lazy"</code> e tamanho fixo (sem salto de layout). A ficha do paciente faz só 1 consulta a mais (até 60 anexos).</li>
+        <li><strong>Celular:</strong> todos os campos com fonte de 16 px (sem zoom automático); a nova checagem garante que nada passa da borda da tela.</li>
+        <li><strong>Acessibilidade:</strong> o axe (WCAG 2.2 AA) não acusou violações nas telas com anexos.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>7. Implantação na Locaweb (1 migração + arquivo .user.ini)</h2>
+      <ol>
+        <li><strong>Terminal:</strong> <code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm db:start</code> → <code>pnpm verify --e2e</code> → <code>pnpm deploy:package</code> → <code>pnpm deploy:copiar</code></li>
+        <li><strong>Painel Locaweb:</strong> backup (exportação) do banco.</li>
+        <li><strong>Terminal:</strong> <code>pnpm deploy:token</code>.</li>
+        <li><strong>FileZilla:</strong> <code>.env</code> com <code>DEPLOY_TOOLS_ENABLED=true</code> + linha nova do token → enviar → apagar <code>bootstrap/cache/config.php</code> (se existir).</li>
+        <li><strong>FileZilla:</strong> <code>C:\fauvovet-deploy\app-fauvovet</code> → <code>/app-fauvovet</code>, tudo <strong>exceto <code>storage</code></strong>, com <em>Sobrescrever</em>.</li>
+        <li><strong>FileZilla:</strong> <code>C:\fauvovet-deploy\public_html\fauvovet</code> → <code>/public_html/fauvovet</code>, com <em>Sobrescrever</em>. Confira que o <strong><code>.user.ini</code></strong> foi enviado (é um arquivo oculto; precisa estar marcado "Forçar exibição de arquivos ocultos").</li>
+        <li><strong>Terminal</strong> (sem HTTPS: <code>http</code> + <code>export FAUVOVET_ALLOW_HTTP=1</code>):
+<pre><code> export FAUVOVET_DEPLOY_TOKEN='TOKEN_NOVO'
+pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet diagnostico
+#   confira: pending_migrations: 1 · private_storage_writable: true
+#            upload_max_filesize: "16M" · post_max_size: "20M"  (pode levar até 5 min para o .user.ini valer)
+pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet migrar        # exit_code: 0
+pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet otimizar      # tudo 0</code></pre>
+        </li>
+        <li><strong>FileZilla:</strong> <code>DEPLOY_TOOLS_ENABLED=false</code> → enviar → apagar <code>bootstrap/cache/config.php</code>.</li>
+        <li><strong>Terminal:</strong> <code>SMOKE_URL=https://dradeboragaldino.com.br/fauvovet pnpm smoke</code> (5 PASS) → <code>unset FAUVOVET_DEPLOY_TOKEN FAUVOVET_ALLOW_HTTP</code></li>
+        <li><strong>Navegador:</strong> num paciente fictício, envie uma imagem e um PDF e confira miniatura e download.</li>
+        <li><strong>Backup</strong> (rotina): além do banco e de <code>.../private/documents</code>, baixe também <code>/app-fauvovet/storage/app/private/attachments</code>.</li>
+      </ol>
+      <p class="warn">Se o diagnóstico continuar mostrando <code>upload_max_filesize: "2M"</code> (ou outro valor baixo) depois de 5 minutos, a hospedagem não está lendo o <code>.user.ini</code>. Arquivos maiores que esse valor serão recusados com "O arquivo não chegou ao servidor". Me avise: dá para ajustar o limite no painel da Locaweb ou reduzir o máximo no sistema.</p>
+      <p class="stop">Sem HTTPS válido, anexe apenas arquivos fictícios.</p>
+    </section>
+
+    <section>
+      <h2>8. Rollback</h2>
+      <ul>
+        <li><strong>Código:</strong> reenvie o pacote anterior (<code>.deploy/fauvovet-7cf93a2</code>) e rode o <em>otimizar</em>. A tabela e os arquivos podem ficar.</li>
+        <li><strong>Banco:</strong> restaure o backup do passo 2. Os anexos enviados depois dele deixam de aparecer; os arquivos na pasta <code>attachments</code> podem ser apagados.</li>
+        <li><strong><code>.user.ini</code>:</strong> pode ficar (só aumenta o limite de upload) ou ser apagado pelo FileZilla.</li>
+        <li><strong>Local:</strong> <code>git revert</code> do commit e <code>node scripts/php.mjs artisan migrate:rollback --step=1</code> (só no banco de desenvolvimento).</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>9. Troubleshooting</h2>
+      <table>
+        <tr><th>Sintoma</th><th>Causa e solução</th></tr>
+        <tr><td>"Tipo de arquivo não aceito…"</td><td>O arquivo não é PDF, JPG, PNG, WebP ou DOCX de verdade (ou a extensão não confere). Fotos do iPhone em HEIC precisam ser convertidas para JPG.</td></tr>
+        <tr><td>"O arquivo não chegou ao servidor…"</td><td>Maior que o limite do PHP do servidor. Veja <code>upload_max_filesize</code> no diagnóstico.</td></tr>
+        <tr><td>"Arquivo maior que 15 MB"</td><td>Limite do sistema. Comprima o PDF ou reduza a imagem.</td></tr>
+        <tr><td>Erro 500 ao baixar</td><td>O arquivo sumiu ou foi alterado no disco (o hash não confere). Restaure <code>storage/app/private/attachments</code> do backup.</td></tr>
+        <tr><td>Não vejo o painel de Anexos</td><td>Só a equipe clínica vê. Confira o papel em Equipe.</td></tr>
+        <tr><td>"Remover da ficha" dá erro 403</td><td>Só quem enviou ou o titular pode remover.</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>10. Evidências e status</h2>
+      <table>
+        <tr><th>Verificação</th><th>Status</th><th>Detalhe</th></tr>
+        <tr><td><code>pnpm verify --e2e</code></td><td class="pass">PASS</td><td>9/9 etapas</td></tr>
+        <tr><td>PHPUnit</td><td class="pass">PASS</td><td>143 testes / 1.257 asserções (16 novos de anexos)</td></tr>
+        <tr><td>Arquivos maliciosos recusados</td><td class="pass">PASS</td><td>PHP como .pdf, HTML como .png, PDF como .png, SVG, EXE, ZIP como .docx, TXT</td></tr>
+        <tr><td>Isolamento</td><td class="pass">PASS</td><td>35 testes (2 novos: anexo de outra clínica → 404; FK composta recusa anexo cruzado)</td></tr>
+        <tr><td>E2E (desktop + celular)</td><td class="pass">PASS</td><td>61 passaram + 1 ignorado de propósito; checagem de borda no celular em todas as telas do axe</td></tr>
+        <tr><td><code>.user.ini</code> lido pela Locaweb</td><td class="notrun">NOT RUN</td><td>Conferir no diagnóstico (seção 7)</td></tr>
+      </table>
+      <p><strong>Commit:</strong> registrado no <code>docs/PROGRESS.md</code> após a sincronização.</p>
+      <p><strong>Próximo passo sugerido:</strong> vacinação. Catálogo de vacinas e protocolos por espécie, registro com lote, fabricante, validade e local de aplicação, carteira de vacinação e próximas doses (com aviso de atraso).</p>
+    </section>
+  </main>
+</body>
+</html>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Appointment;
+use App\Models\Attachment;
 use App\Models\Encounter;
 use App\Models\Guardian;
 use App\Models\IssuedDocument;
@@ -137,6 +138,8 @@ final class PatientController extends Controller
                 'encounters' => Encounter::query()->where('patient_id', $patient->id)
                     ->with(['diagnoses', 'author:id,name', 'signer:id,name', 'unit:id,name,timezone', 'type:id,name'])
                     ->withCount('addenda')->orderByDesc('started_at')->limit(50)->get(),
+                'attachments' => Attachment::query()->where('patient_id', $patient->id)->whereNull('removed_at')
+                    ->with('uploader:id,name')->orderByDesc('created_at')->limit(60)->get(),
                 'documents' => IssuedDocument::query()->where('patient_id', $patient->id)
                     ->with('issuer:id,name')->orderByDesc('issued_at')->limit(30)->get(),
             ];

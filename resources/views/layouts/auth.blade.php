@@ -1,7 +1,7 @@
 @extends('layouts.base')
 
 @section('body')
-    <div class="fv-mesh grid min-h-dvh lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
+    <div class="fv-mesh grid grid-cols-1 min-h-dvh lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
         {{-- Painel de marca (desktop): degradê da clínica, brilhos animados e prévia ilustrativa do produto --}}
         <aside class="relative hidden overflow-hidden bg-brand fv-gradient text-on-brand lg:flex lg:flex-col lg:justify-between lg:p-12">
             <div aria-hidden="true" class="fv-orb fv-orb-a absolute -right-24 -top-24 size-[26rem] opacity-40"></div>

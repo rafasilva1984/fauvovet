@@ -1,6 +1,6 @@
 # FauvoVet — Checkpoint e ponto de retomada
 
-> **Atualizado em:** 2026-10-17 (America/Sao_Paulo) — fim da sessão · **Fase:** 1 — MVP clínico (em andamento; Fase 0 concluída exceto HTTPS/backup)
+> **Atualizado em:** 2026-10-18 (America/Sao_Paulo) · **Fase:** 1 — MVP clínico (em andamento; Fase 0 concluída exceto HTTPS/backup)
 > **Regra:** atualizar a cada incremento, bloqueio e antes de encerrar qualquer sessão.
 
 ## Mudança de rumo nesta sessão
@@ -43,7 +43,11 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
   (5 padrão) com variáveis whitelist e versão, emissão com texto preenchido e aviso de [colchetes], PDF dompdf com
   identidade da clínica, paciente/tutor, assinatura com CRMV e código de verificação, disco privado + SHA-256,
   anulação, Meu perfil (CRMV), auditoria de leitura/download (ADR-014).
-- **Não implementado:** anexos (alergias, peso, vacinas), busca clínica, lembretes, visão mensal/salas/recorrência; MFA, recuperação de senha, e-mail transacional; backup automático.
+- **Anexos privados (Fase 1, implementado e testado localmente; ainda não publicado):** PDF/JPG/PNG/WebP/DOCX por
+  paciente/atendimento, tipo pelo conteúdo, disco privado com nome aleatório e SHA-256, imagem inline e PDF/DOCX só
+  download (CSP sandbox), remoção com motivo, auditoria, `.user.ini` (16 MB). Também: correções de layout no celular
+  (zoom por fonte < 16 px, grades sem coluna única) + checagem automática de conteúdo além da borda.
+- **Não implementado:** vacinação, exames estruturados, internação, (alergias, peso, vacinas), busca clínica, lembretes, visão mensal/salas/recorrência; MFA, recuperação de senha, e-mail transacional; backup automático.
 - **PUBLICADO (teste) na Locaweb em 15/10/2026** pelo proprietário, seguindo o tutorial: `http://dradeboragaldino.com.br/fauvovet`.
   Domínio corrigido em todo o repositório (era "gakdino"; o certo é **galdino**). `pnpm smoke` contra o servidor real:
   **5/5 PASS** (143–245 ms). **HTTPS inválido**: certificado `*.websiteseguro.com` não cobre o domínio → sem dados reais
@@ -51,7 +55,7 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
 - **Tutorial de deploy didático:** o proprietário achou o passo a passo de `DEPLOY_LOCAWEB.md` difícil de seguir (faltava
   configuração do banco e o que copiar para onde). Reescrito como guia completo, etapas A–H, com glossário, mapa de pastas,
   folha de anotações e troubleshooting; novo comando `pnpm deploy:copiar` (pacote → `C:\fauvovet-deploy`, fora do OneDrive).
-- **Último guia HTML:** [`docs/changes/2026-10-17-documentos-pdf.html`](changes/2026-10-17-documentos-pdf.html)
+- **Último guia HTML:** [`docs/changes/2026-10-18-anexos.html`](changes/2026-10-18-anexos.html)
 
 ## Ambiente (verificado)
 
@@ -117,6 +121,12 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 - Dependência nova: `dompdf/dompdf` 3.1.6 (LGPL-2.1, sem modificação). Migração nova `2026_10_17_000001_create_document_tables`.
 - Produção precisa de `ext-dom` e `storage/app/private` gravável (diagnóstico confere); backup passa a incluir os PDFs.
 
+## Comandos executados e resultados (anexos)
+
+- `pnpm verify --e2e` → **9/9 PASS**; PHPUnit **143/143** (1.257 asserções); isolamento **35/35**; E2E **61 + 1
+  ignorado**; axe + checagem de borda no celular OK.
+- Migração nova `2026_10_18_000001_create_attachments_table`; pacote inclui `public_html/fauvovet/.user.ini`.
+
 ## Pendências que dependem do proprietário
 
 1. **Ativar certificado SSL para `dradeboragaldino.com.br`** no painel (bloqueia dados reais). Depois: `.env` com
@@ -134,11 +144,12 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 
 ## Próxima ação exata
 
-1. Tudo publicado até `7cf93a2`. Sessão encerrada pelo proprietário em 17/10/2026. Pendências dele: HTTPS do
-   domínio (bloqueia dados reais) e rotina de backup do banco + `storage/app/private/documents`.
-2. Próximo incremento: **anexos privados no prontuário** — upload (PDF, JPG/PNG/WebP, DOCX) com validação de tipo
-   real (MIME por conteúdo), tamanho e nome, armazenamento em `storage/app/private/attachments/{clínica}`, vínculo a
-   paciente/atendimento, download autorizado e auditado, sem execução nem pré-visualização insegura; testes A/B.
+1. Proprietário: publicar `docs/changes/2026-10-18-anexos.html` › seção 7 (1 migração; enviar `.user.ini`; conferir
+   `upload_max_filesize` no diagnóstico; backup passa a incluir `storage/app/private/attachments`). Pendências antigas:
+   HTTPS e rotina de backup.
+2. Próximo incremento sugerido: **vacinação** — catálogo de vacinas/protocolos por espécie (padrão editável),
+   registro de aplicação (vacina, lote, fabricante, validade, local, profissional, data), próximas doses com aviso de
+   atraso no painel e na ficha, carteira de vacinação em PDF (reaproveita documentos), testes A/B.
 
 ## Histórico de incrementos
 
@@ -156,3 +167,4 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 | 2026-10-16 | **Novo visual (design 2.0)**: fonte própria, menu escuro, degradês da clínica, painel, agenda em linha do tempo | [2026-10-16-redesign-visual.html](changes/2026-10-16-redesign-visual.html)                   | verify --e2e 9/9 (PHPUnit 100, E2E 47); axe claro/escuro           | main — hash na próxima atualização | push nesta sessão      | Prontuário                            |
 | 2026-10-17 | **Fase 1 — Prontuário** + ajustes pedidos (sem "opcional", idade pela data, CEP, UF em lista)                   | [2026-10-17-prontuario.html](changes/2026-10-17-prontuario.html)                             | verify --e2e 9/9 (PHPUnit 117, isolamento 32, E2E 55)              | main — hash na próxima atualização | push nesta sessão      | Receitas/documentos PDF               |
 | 2026-10-17 | **Fase 1 — Documentos em PDF**: modelos, receita/atestado/orientações/encaminhamento/termo, PDF preservado      | [2026-10-17-documentos-pdf.html](changes/2026-10-17-documentos-pdf.html)                     | verify --e2e 9/9 (PHPUnit 127, isolamento 33)                      | main — hash na próxima atualização | push nesta sessão      | Anexos privados                       |
+| 2026-10-18 | **Fase 1 — Anexos privados** + correções de layout no celular                                                   | [2026-10-18-anexos.html](changes/2026-10-18-anexos.html)                                     | verify --e2e 9/9 (PHPUnit 143, isolamento 35, E2E 61)              | main — hash na próxima atualização | push nesta sessão      | Vacinação                             |

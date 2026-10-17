@@ -9,7 +9,7 @@
             @method('PUT')
             @if ($errors->any())<x-alert>Revise os campos destacados.</x-alert>@endif
             @include('patients._fields', ['patient' => $patient])
-            <div class="grid gap-4 sm:grid-cols-2">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <x-select name="status" label="Situação" :options="\App\Models\Patient::STATUS" :value="$patient->status" />
                 <x-field name="deceased_on" label="Data do óbito" type="date" :value="$patient->deceased_on?->format('Y-m-d')" hint="Obrigatória quando a situação for Óbito." />
             </div>

@@ -66,10 +66,16 @@ CEP pela consulta `/cep/{cep}`). Migração aditiva.
 | `document_templates` | clínica | nome único por clínica; texto com variáveis só da whitelist (`App\Documents\Placeholders`); `version` incrementa ao editar texto/título/categoria; 5 modelos padrão criados no primeiro uso      |
 | `issued_documents`   | clínica | texto final + caminho do PDF (disco privado `storage/app/private/documents/{clínica}/{ano}/{id}.pdf`), SHA-256, bytes, código de verificação único, emissor e vínculo; **imutável**, só anulação |
 
+## 2026_10_18_000001_create_attachments_table
+
+| Tabela        | Escopo  | Integridade                                                                                                                                                                                                                                         |
+| ------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `attachments` | clínica | FKs compostas (paciente, atendimento); mime detectado pelo conteúdo, extensão gravada, tamanho, SHA-256; arquivo em `storage/app/private/attachments/{clínica}/{ano}/{id}.{ext}` (nome aleatório); **imutável**, só "removido" (oculto, com motivo) |
+
 Tabelas de clínica registradas no firewall: `TenantQueryFirewall::TENANT_TABLES` (um teste falha se uma tabela com
 `tenant_id` não estiver na lista).
 
 ## Planejado (não migrado)
 
-Vacinas, exames, anexos, internação etc. conforme CLAUDE.md §6.3, cada um com `tenant_id`, FKs compostas,
+Vacinas, exames estruturados, internação etc. conforme CLAUDE.md §6.3, cada um com `tenant_id`, FKs compostas,
 model `BelongsToTenant` + `TenantOwned` e testes de isolamento.

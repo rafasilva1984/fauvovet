@@ -4,7 +4,7 @@
 @section('content')
     <x-profile-header :title="$unit->name" eyebrow="Unidade" description="Detalhes da unidade." avatar-icon="building" />
     <x-card>
-        <dl class="grid gap-4 sm:grid-cols-2">
+        <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div><dt class="text-sm text-muted">Cidade/UF</dt><dd class="font-medium">{{ collect([$unit->city, $unit->state])->filter()->join(' · ') ?: '—' }}</dd></div>
             <div><dt class="text-sm text-muted">Fuso horário</dt><dd class="font-medium">{{ $unit->timezone }}</dd></div>
             <div class="sm:col-span-2"><dt class="text-sm text-muted">Endereço</dt><dd class="font-medium">{{ $unit->address_line ?: '—' }}</dd></div>

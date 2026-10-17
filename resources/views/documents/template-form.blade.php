@@ -3,12 +3,12 @@
 
 @section('content')
     <x-page-header icon="list" eyebrow="Modelos de documento" :title="$template->exists ? 'Editar '.$template->name : 'Novo modelo'" :description="$template->exists ? 'Versão atual: '.$template->version.'. Salvar alterações de texto cria a versão '.($template->version + 1).'.' : null" />
-    <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <x-card>
             <form method="POST" action="{{ $template->exists ? route('document-templates.update', $template) : route('document-templates.store') }}" class="flex flex-col gap-4" novalidate>
                 @csrf
                 @if ($template->exists) @method('PUT') @endif
-                <div class="grid gap-4 sm:grid-cols-2">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <x-field name="name" label="Nome do modelo" :value="$template->name" required />
                     <x-select name="category" label="Categoria" :options="\App\Models\DocumentTemplate::CATEGORIES" :value="$template->category" required />
                 </div>

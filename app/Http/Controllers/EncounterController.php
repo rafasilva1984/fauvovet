@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attachment;
 use App\Models\Encounter;
 use App\Models\EncounterDiagnosis;
 use App\Models\IssuedDocument;
@@ -43,6 +44,7 @@ final class EncounterController extends Controller
             'alerts' => PatientAlert::query()->where('patient_id', $encounter->patient_id)->whereNull('resolved_at')->orderByRaw("FIELD(severity, 'high', 'medium', 'low')")->get(),
             'previous' => Encounter::query()->where('patient_id', $encounter->patient_id)->whereKeyNot($encounter->id)
                 ->where('status', 'finalized')->with('diagnoses')->orderByDesc('started_at')->limit(3)->get(),
+            'attachments' => Attachment::query()->where('encounter_id', $encounter->id)->whereNull('removed_at')->with('uploader:id,name')->orderByDesc('created_at')->get(),
             'documents' => IssuedDocument::query()->where('encounter_id', $encounter->id)->with('issuer:id,name')->orderByDesc('issued_at')->get(),
             'tz' => $encounter->unit->timezone,
             'mucous' => self::MUCOUS,

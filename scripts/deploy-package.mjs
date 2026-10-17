@@ -98,6 +98,7 @@ rmSync(join(app, 'storage', 'logs', 'laravel.log'), { force: true });
 sh(process.execPath, ['node_modules/vite/bin/vite.js', 'build']);
 copyFileSync(join(ROOT, 'deploy', 'public', 'index.php'), join(pub, 'index.php'));
 copyFileSync(join(ROOT, 'deploy', 'public', '.htaccess'), join(pub, '.htaccess'));
+copyFileSync(join(ROOT, 'deploy', 'public', '.user.ini'), join(pub, '.user.ini'));
 cpSync(join(ROOT, 'public', 'build'), join(pub, 'build'), { recursive: true });
 for (const f of ['favicon.ico', 'robots.txt'])
   if (existsSync(join(ROOT, 'public', f))) copyFileSync(join(ROOT, 'public', f), join(pub, f));

@@ -10,7 +10,7 @@
         @endif
     </div>
 
-    <div class="grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <div>
             @if ($clinical['encounters']->isEmpty())
                 <x-empty-state title="Nenhum atendimento registrado" icon="stethoscope">Use “Iniciar atendimento” na agenda ou “Novo atendimento” acima.</x-empty-state>
@@ -66,6 +66,8 @@
                 </div>
                 @include('documents._list', ['documents' => $clinical['documents']])
             </x-card>
+
+            @include('attachments._panel', ['attachments' => $clinical['attachments'], 'encounter' => null])
 
             <x-card>
                 <h3 class="mb-3 flex items-center gap-2 font-bold"><x-icon name="heart" :size="18" class="text-link" /> Peso</h3>

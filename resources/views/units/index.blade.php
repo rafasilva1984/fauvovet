@@ -3,7 +3,7 @@
 
 @section('content')
     <x-page-header title="Unidades" icon="building" eyebrow="Clínica" description="Estabelecimentos ou locais de atendimento da clínica. Cada unidade tem seu próprio fuso horário." />
-    <div class="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <section aria-label="Lista de unidades">
             @if ($units->isEmpty())
                 <x-empty-state title="Nenhuma unidade cadastrada" icon="building" />

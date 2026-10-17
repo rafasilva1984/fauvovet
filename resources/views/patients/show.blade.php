@@ -33,10 +33,10 @@
         <x-alert tone="info" class="mb-6">Paciente arquivado: não aparece na busca padrão.</x-alert>
     @endif
 
-    <div class="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
         <x-card>
             <h2 class="mb-4 text-lg font-bold tracking-tight">Identificação</h2>
-            <dl class="grid gap-4 sm:grid-cols-2">
+            <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div><dt class="text-sm text-muted">Espécie</dt><dd class="font-medium">{{ $speciesText }}</dd></div>
                 <div><dt class="text-sm text-muted">Raça</dt><dd class="font-medium">{{ $patient->breed ?: '—' }}</dd></div>
                 <div><dt class="text-sm text-muted">Sexo</dt><dd class="font-medium">{{ \App\Models\Patient::SEX[$patient->sex] }}</dd></div>
@@ -117,7 +117,7 @@
                                             @csrf
                                             <input type="hidden" name="guardian_id" value="{{ $c->id }}">
                                             <label for="rel-{{ $c->id }}" class="sr-only">Vínculo de {{ $c->name }}</label>
-                                            <select id="rel-{{ $c->id }}" name="relationship" class="min-h-11 rounded-xl border border-line bg-surface px-2 text-sm">
+                                            <select id="rel-{{ $c->id }}" name="relationship" class="min-h-11 rounded-xl border border-line bg-surface px-2 text-base sm:text-sm">
                                                 @foreach (\App\Models\Patient::RELATIONSHIPS as $v => $l)
                                                     <option value="{{ $v }}" @selected($v === 'co_guardian')>{{ $l }}</option>
                                                 @endforeach

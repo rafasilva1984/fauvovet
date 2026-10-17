@@ -22,7 +22,7 @@
         @endif
     </x-profile-header>
 
-    <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
         <x-card>
             <h2 class="mb-4 text-lg font-bold tracking-tight">Contato</h2>
             <dl class="grid gap-4">

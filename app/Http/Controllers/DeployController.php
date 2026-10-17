@@ -43,6 +43,9 @@ final class DeployController extends Controller
             'session_secure_cookie' => (bool) config('session.secure'),
             'storage_writable' => is_writable(storage_path('framework')) && is_writable(storage_path('logs')),
             // PDFs emitidos (documentos clínicos) ficam aqui — fora da área pública.
+            // Anexos: o PHP precisa aceitar arquivos do tamanho configurado (ajustado por deploy/public/.user.ini).
+            'upload_max_filesize' => ini_get('upload_max_filesize'),
+            'post_max_size' => ini_get('post_max_size'),
             'private_storage_writable' => is_dir(storage_path('app/private')) && is_writable(storage_path('app/private')),
             'bootstrap_cache_writable' => is_writable(base_path('bootstrap/cache')),
             'database' => $db,

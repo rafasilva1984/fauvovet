@@ -9,6 +9,11 @@ return [
     ],
     // Senha dos usuários FICTÍCIOS do seed (somente desenvolvimento/testes).
     'seed_password' => (string) env('SEED_PASSWORD', 'fauvovet-demo-2026'),
+    // Anexos do prontuário: tamanho máximo por arquivo (KB). O PHP do servidor também precisa aceitar
+    // (upload_max_filesize/post_max_size — ver deploy/public/.user.ini e o diagnóstico de deploy).
+    'attachments' => [
+        'max_kb' => (int) env('FAUVOVET_ATTACHMENT_MAX_KB', 15360),
+    ],
     // Ferramentas de deploy sem SSH (migração/diagnóstico via HTTP). Ver docs/DEPLOY_LOCAWEB.md.
     'deploy' => [
         'enabled' => (bool) env('DEPLOY_TOOLS_ENABLED', false),

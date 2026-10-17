@@ -3,7 +3,7 @@
 
 @section('content')
     <x-page-header title="Aparência" icon="palette" eyebrow="Configurações" description="Cores e modo de exibição da sua clínica. Valem para todos os usuários do ambiente. Logo e timbre de documentos chegam em breve." />
-    <form method="POST" action="{{ route('settings.appearance.update') }}" class="grid gap-6 lg:grid-cols-2" novalidate
+    <form method="POST" action="{{ route('settings.appearance.update') }}" class="grid grid-cols-1 gap-6 lg:grid-cols-2" novalidate
         x-data="themeEditor" data-primary="{{ old('primary', $theme['primary']) }}" data-secondary="{{ old('secondary', $theme['secondary']) }}"
         data-default-primary="{{ $default['primary'] }}" data-default-secondary="{{ $default['secondary'] }}">
         @csrf
@@ -17,7 +17,7 @@
                             class="size-11 cursor-pointer rounded-xl border border-line bg-surface p-1">
                         <input id="cor-{{ $key }}" name="{{ $key }}" x-model="{{ $key }}" maxlength="7" spellcheck="false" aria-describedby="cor-{{ $key }}-ratio"
                             value="{{ old($key, $theme[$key]) }}"
-                            class="min-h-11 w-32 rounded-xl border border-line bg-surface px-3 font-mono text-sm uppercase">
+                            class="min-h-11 w-32 rounded-xl border border-line bg-surface px-3 font-mono text-base sm:text-sm uppercase">
                     </div>
                     <p id="cor-{{ $key }}-ratio" class="text-xs" x-bind:class="{{ $key }}Class" x-text="{{ $key }}Text" aria-live="polite"></p>
                     @error($key)<p class="text-xs font-medium text-danger">{{ $message }}</p>@enderror

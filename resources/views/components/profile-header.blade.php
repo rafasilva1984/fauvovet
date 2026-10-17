@@ -1,7 +1,7 @@
 {{-- Cabeçalho de perfil (paciente, responsável, membro...): avatar grande, título, metadados e ações. --}}
 @props(['title', 'eyebrow' => null, 'description' => null, 'avatarName' => null, 'avatarIcon' => null, 'tone' => null])
 <section class="relative mb-7 animate-fade-up overflow-hidden rounded-[1.5rem] border border-line bg-surface bg-linear-to-br from-tint via-surface to-surface p-5 shadow-card sm:p-6">
-    <div aria-hidden="true" class="fv-dots pointer-events-none absolute -right-4 -top-4 h-28 w-56 text-link opacity-25"></div>
+    <div aria-hidden="true" class="fv-dots pointer-events-none absolute right-0 top-0 h-28 w-56 text-link opacity-25"></div>
     <div class="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div class="flex min-w-0 items-center gap-4">
             <x-avatar :name="$avatarName ?? $title" :icon="$avatarIcon" :tone="$tone" size="xl" class="shadow-card ring-4 ring-surface" />

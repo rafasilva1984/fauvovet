@@ -23,7 +23,7 @@
             <fieldset @if ($errors->has('units') || $errors->has('units.*')) aria-describedby="units-err" @endif>
                 <legend class="mb-1 text-sm font-medium text-ink">Unidades em que pode trabalhar</legend>
                 <p class="mb-2 text-xs text-muted">Nenhuma marcada = todas as unidades da clínica.</p>
-                <div class="grid gap-2 sm:grid-cols-2">
+                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     @foreach ($units as $unit)
                         <label class="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border border-line px-3 py-2 text-sm has-[:checked]:border-brand has-[:checked]:bg-surface-2 has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring">
                             <input type="checkbox" name="units[]" value="{{ $unit->id }}" class="size-4" @checked(in_array($unit->id, old('units', $restricted), true)) @disabled($isSelf || $locked)>
@@ -38,7 +38,7 @@
 
             <fieldset>
                 <legend class="mb-2 text-sm font-medium text-ink">Situação</legend>
-                <div class="grid gap-2 sm:grid-cols-2">
+                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     @foreach (['active' => 'Ativo — pode entrar nesta clínica', 'disabled' => 'Desativado — perde o acesso na hora'] as $value => $label)
                         <label class="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border border-line px-3 py-2 text-sm has-[:checked]:border-brand has-[:checked]:bg-surface-2 has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring">
                             <input type="radio" name="status" value="{{ $value }}" class="size-4" @checked(old('status', $member->status === 'disabled' ? 'disabled' : 'active') === $value) @disabled($isSelf || $locked)>

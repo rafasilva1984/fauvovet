@@ -10,7 +10,7 @@
             <p class="mt-1 text-sm text-muted">Este link aparece <strong>só agora</strong>. Envie para a pessoa por um canal de sua confiança (WhatsApp, e-mail). Ele vale por {{ \App\Models\Invitation::TTL_DAYS }} dias e funciona uma única vez.</p>
             <div class="mt-4 flex flex-col gap-2 sm:flex-row">
                 <label for="invite-link" class="sr-only">Link de convite</label>
-                <input id="invite-link" x-ref="link" type="text" readonly size="1" value="{{ session('invite_link') }}" class="min-h-11 w-full rounded-xl border border-line bg-surface-2 px-3.5 font-mono text-sm text-ink">
+                <input id="invite-link" x-ref="link" type="text" readonly size="1" value="{{ session('invite_link') }}" class="min-h-11 w-full rounded-xl border border-line bg-surface-2 px-3.5 font-mono text-base sm:text-sm text-ink">
                 <x-button type="button" variant="primary" class="shrink-0" x-on:click="copy">
                     <x-icon name="copy" /> <span x-text="label">Copiar link</span>
                 </x-button>
@@ -19,7 +19,7 @@
         </x-card>
     @endif
 
-    <div class="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <div class="flex flex-col gap-6">
             <section aria-labelledby="membros-titulo">
                 <h2 id="membros-titulo" class="mb-3 text-lg font-bold tracking-tight">Membros</h2>

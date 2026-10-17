@@ -16,13 +16,13 @@
     @error('status')<x-alert class="mb-6">{{ $message }}</x-alert>@enderror
     @error('starts_at')<x-alert class="mb-6">{{ $message }}</x-alert>@enderror
 
-    <div class="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
         <x-card class="fv-at-{{ strtolower($a->appointment_type_id) }} border-l-4">
             <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
                 <h2 class="text-lg font-bold tracking-tight tabular-nums">{{ ucfirst($a->starts_at->timezone($tz)->locale('pt_BR')->translatedFormat('l, d/m/Y')) }} · {{ $a->starts_at->timezone($tz)->format('H:i') }}–{{ $a->ends_at->timezone($tz)->format('H:i') }}</h2>
                 @include('agenda._status', ['status' => $a->status])
             </div>
-            <dl class="grid gap-4 sm:grid-cols-2">
+            <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div><dt class="text-sm text-muted">Profissional</dt><dd class="font-medium">{{ $a->professional?->user?->name ?? 'Sem profissional definido' }}</dd></div>
                 <div><dt class="text-sm text-muted">Tipo</dt><dd class="font-medium">{{ $a->type->name }}@if ($a->is_walk_in) · encaixe @endif</dd></div>
                 <div><dt class="text-sm text-muted">Paciente</dt><dd class="font-medium">

@@ -28,7 +28,7 @@
     @endif
 
     @if ($editable)
-        <form method="POST" action="{{ route('encounters.update', $encounter) }}" class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]" novalidate>
+        <form method="POST" action="{{ route('encounters.update', $encounter) }}" class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]" novalidate>
             @csrf
             @method('PUT')
             <div>
@@ -56,8 +56,12 @@
                 @include('encounters._previous')
             </aside>
         </form>
+        {{-- Fora do formulário do rascunho (HTML não permite formulário dentro de formulário). --}}
+        <div class="mt-6 lg:max-w-[calc(100%-21.5rem)]">
+            @include('attachments._panel', ['attachments' => $attachments, 'encounter' => $encounter])
+        </div>
     @else
-        <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
             <div class="flex flex-col gap-4">
                 @if (! $encounter->isDraft())
                     <div class="flex items-start gap-3 rounded-[1.25rem] border border-success/25 bg-success-bg p-4 text-sm text-success">
@@ -98,6 +102,7 @@
             </div>
             <aside class="flex flex-col gap-4">
                 @include('encounters._previous')
+                @include('attachments._panel', ['attachments' => $attachments, 'encounter' => $encounter])
             </aside>
         </div>
     @endif

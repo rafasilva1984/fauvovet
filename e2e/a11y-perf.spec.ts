@@ -8,6 +8,24 @@ async function axe(page: Page) {
   // Mede o estado FINAL da tela: com animação de entrada, o axe calcularia o contraste no meio do "fade".
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.waitForTimeout(50);
+  // Celular: nenhum elemento visível pode passar da borda da tela (o overflow-x: clip esconderia o defeito).
+  const clipped = await page.evaluate(() =>
+    innerWidth > 600
+      ? []
+      : [...document.querySelectorAll('body *')]
+          .filter((el) => {
+            if (el.closest('.sr-only, [aria-hidden="true"], [x-cloak], [hidden], .pointer-events-none')) return false;
+            const r = el.getBoundingClientRect();
+            const st = getComputedStyle(el);
+            return r.width > 0 && r.height > 0 && st.visibility !== 'hidden' && r.right > innerWidth + 1;
+          })
+          .slice(0, 5)
+          .map(
+            (el) =>
+              `${el.tagName.toLowerCase()} "${(el.textContent ?? '').trim().slice(0, 40)}" right=${Math.round(el.getBoundingClientRect().right)}`,
+          ),
+  );
+  expect(clipped, `conteúdo além da borda em ${page.url()}`).toEqual([]);
   const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze();
   // Lista cada elemento reprovado (seletor + dados do contraste) para facilitar a correção.
   const summary = r.violations.map(

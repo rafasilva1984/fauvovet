@@ -1,5 +1,5 @@
 {{-- Campos do paciente (sem dados clínicos: alergias, peso e prontuário ficam no módulo clínico). --}}
-<div class="grid gap-4 sm:grid-cols-2">
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
     <x-field name="name" label="Nome do paciente" autocomplete="off" required :value="$patient->name" />
     <x-select name="species" label="Espécie" required :options="\App\Support\Species::LABELS" :value="$patient->species" />
     <x-field name="species_detail" label="Qual espécie / tipo" autocomplete="off" :value="$patient->species_detail" hint="Para aves, répteis e exóticos: ex.: Calopsita, Jabuti-piranga, Hamster sírio." />
@@ -8,7 +8,7 @@
     <x-select name="neutered" label="Castração" :options="\App\Models\Patient::NEUTERED" :value="$patient->neutered" />
     <fieldset class="flex flex-col gap-3 rounded-xl border border-line p-4 sm:col-span-2" x-data="birthAge">
         <legend class="px-1 text-sm font-medium text-ink">Nascimento</legend>
-        <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
             <x-field name="birth_date" label="Data de nascimento" type="date" :value="$patient->birth_date?->format('Y-m-d')" x-ref="birth" x-on:input="fromBirth" x-on:change="fromBirth" max="{{ now()->format('Y-m-d') }}" />
             <div class="grid grid-cols-2 gap-3">
                 <x-field name="age_years" label="ou idade: anos" type="number" min="0" max="150" inputmode="numeric" x-ref="years" x-on:input="fromAge" />

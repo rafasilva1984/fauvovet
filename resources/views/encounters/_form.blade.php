@@ -39,7 +39,7 @@
         @error('record')<x-alert class="mb-3">{{ $message }}</x-alert>@enderror
         <div class="flex flex-col gap-3">
             @foreach ($rows as $i => $row)
-                <fieldset class="grid gap-2 rounded-xl border border-line p-3 sm:grid-cols-[minmax(0,1fr)_8rem_11rem]">
+                <fieldset class="grid grid-cols-1 gap-2 rounded-xl border border-line p-3 sm:grid-cols-[minmax(0,1fr)_8rem_11rem]">
                     <legend class="sr-only">Hipótese ou diagnóstico {{ $i + 1 }}</legend>
                     <x-field :name="'diagnoses['.$i.'][description]'" :id="'dx-'.$i.'-d'" :label="'Descrição '.($i + 1)" :value="$row['description'] ?? ''" placeholder="Ex.: dermatite atópica" />
                     <x-field :name="'diagnoses['.$i.'][code]'" :id="'dx-'.$i.'-c'" label="Código" :value="$row['code'] ?? ''" />

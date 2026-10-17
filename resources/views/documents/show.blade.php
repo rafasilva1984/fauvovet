@@ -19,7 +19,7 @@
         <x-alert class="mb-6">Documento anulado em {{ $document->voided_at->timezone('America/Sao_Paulo')->format('d/m/Y H:i') }}. Motivo: {{ $document->void_reason }}. O PDF original continua guardado para histórico.</x-alert>
     @endif
 
-    <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <x-card>
             <h2 class="mb-3 text-lg font-bold tracking-tight">Texto emitido</h2>
             <div class="whitespace-pre-line rounded-xl bg-surface-2 p-4 text-sm leading-relaxed">{{ $document->body }}</div>

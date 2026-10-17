@@ -41,6 +41,10 @@ final class SecurityHeaders
         if ($request->isSecure()) {
             $headers['Strict-Transport-Security'] = 'max-age=31536000';
         }
+        // Respostas com CSP própria e MAIS restrita (ex.: arquivos enviados, com "sandbox") mantêm a delas.
+        if ($response->headers->has('Content-Security-Policy')) {
+            unset($headers['Content-Security-Policy']);
+        }
         foreach ($headers as $k => $v) {
             $response->headers->set($k, $v);
         }

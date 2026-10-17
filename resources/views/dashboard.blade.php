@@ -86,7 +86,7 @@
         @endif
     </div>
 
-    <div class="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+    <div class="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <section aria-labelledby="atendimento">
             <div class="mb-3 flex items-center justify-between gap-3">
                 <h2 id="atendimento" class="text-lg font-bold tracking-tight">Hoje na agenda</h2>

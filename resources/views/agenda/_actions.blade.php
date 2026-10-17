@@ -15,7 +15,7 @@
                     <input type="hidden" name="to" value="cancelled">
                     <input type="hidden" name="back" value="{{ $back ?? 'show' }}">
                     <label for="motivo-{{ $a->id }}" class="sr-only">Motivo do cancelamento de {{ $a->patient->name }}</label>
-                    <input id="motivo-{{ $a->id }}" name="reason" maxlength="200" placeholder="Motivo" class="min-h-11 rounded-xl border border-line bg-surface px-3 text-sm">
+                    <input id="motivo-{{ $a->id }}" name="reason" maxlength="200" placeholder="Motivo" class="min-h-11 rounded-xl border border-line bg-surface px-3 text-base sm:text-sm">
                     <x-button variant="secondary">Cancelar<span class="sr-only"> agendamento de {{ $a->patient->name }}</span></x-button>
                 </form>
             @else
