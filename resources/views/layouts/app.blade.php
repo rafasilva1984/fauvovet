@@ -8,6 +8,7 @@
             ['route' => 'patients.index', 'label' => 'Pacientes', 'icon' => 'paw', 'perm' => 'patients:read'],
             ['route' => 'guardians.index', 'label' => 'Responsáveis', 'icon' => 'users', 'perm' => 'patients:read'],
             ['route' => 'vaccinations.index', 'label' => 'Vacinas a vencer', 'icon' => 'syringe', 'perm' => 'vaccines:read'],
+            ['route' => 'search.index', 'label' => 'Busca clínica', 'icon' => 'search', 'perm' => 'clinical:read'],
         ],
         'Clínica' => [
             ['route' => 'cases.index', 'label' => 'Casos científicos', 'icon' => 'flask', 'perm' => 'research:manage'],

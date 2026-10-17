@@ -86,6 +86,14 @@ CEP pela consulta `/cep/{cep}`). Migração aditiva.
 | `clinical_cases`         | clínica | série (`criteria` JSON = filtros da busca) ou relato; título, pergunta clínica, resumo, área, situação aberto/encerrado; contador de pseudônimos                                                                                                     |
 | `clinical_case_patients` | clínica | FKs compostas (caso, paciente, atendimento de referência); pseudônimo "Caso NN", desfecho, observações da equipe, consentimento do tutor (pendente/autorizado/recusado + data + quem registrou); um paciente por caso; remover não toca o prontuário |
 
+## 2026_10_19_000001_create_clinical_search_tables
+
+| Tabela                      | Escopo  | Integridade                                                                                                                                                                        |
+| --------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `clinical_search_documents` | clínica | trecho pesquisável derivado do prontuário (campo do atendimento finalizado, diagnóstico, adendo, alerta, documento, vacina); texto original + normalizado; FK composta ao paciente |
+| `clinical_search_terms`     | clínica | termos distintos normalizados por trecho; PK `(tenant_id, term, document_id)` para busca por prefixo; cascata ao apagar o trecho                                                   |
+| `clinical_search_status`    | clínica | versão, número de trechos e data da última (re)construção do índice da clínica                                                                                                     |
+
 Tabelas de clínica registradas no firewall: `TenantQueryFirewall::TENANT_TABLES` (um teste falha se uma tabela com
 `tenant_id` não estiver na lista).
 

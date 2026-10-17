@@ -30,8 +30,11 @@ Depois: modelos de documento por clínica, vacinação.
 
 ## Fase 2 — Busca clínica e importação documental
 
-Busca com FULLTEXT do InnoDB e índice próprio por clínica (avaliar qualidade em português), facetas e trechos com
-origem; extração de PDF/DOCX em PHP (fila `database` + cron); templates por clínica com versões. Aceite: CLAUDE.md §3.3.
+- [x] Busca clínica em texto livre: índice próprio de termos normalizados (ADR-017), frases, OU/NÃO, facetas, trechos
+      destacados com origem, índice atualizado na finalização (19/10/2026).
+- [ ] Texto de anexos PDF/DOCX na busca, com status "sem texto pesquisável" (exemplos 4 e 10 do §3.3).
+- [ ] Dicionário de sinônimos da clínica; pesquisas salvas.
+- [ ] Importação de modelos DOCX/PDF com versões. Aceite: CLAUDE.md §3.3.
 
 ## Fases 3–6
 

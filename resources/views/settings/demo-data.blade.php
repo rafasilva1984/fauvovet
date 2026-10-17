@@ -20,6 +20,9 @@
                     <li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('patients.index', ['diagnostico' => 'dermatite atópica', 'situacao' => 'confirmed', 'especie' => 'canine']) }}">Busca: dermatite atópica confirmada em cães</a></li>
                     <li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('patients.index', ['diagnostico' => 'renal', 'especie' => 'feline', 'idade_min' => 10]) }}">Busca: doença renal em gatos com 10 anos ou mais</a></li>
                     <li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('patients.index', ['ano' => now('America/Sao_Paulo')->year - 2]) }}">Busca: atendidos em {{ now('America/Sao_Paulo')->year - 2 }}</a></li>
+                    <li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('search.index', ['q' => '"recusa alimentar" OU "não se alimenta"']) }}">Busca clínica: “recusa alimentar” OU “não se alimenta”</a></li>
+                    <li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('search.index', ['q' => 'uveíte', 'especie' => 'bird']) }}">Busca clínica: uveíte em aves</a></li>
+                    <li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('search.index', ['q' => 'penicilina antibiótico']) }}">Busca clínica: alergia a penicilina + antibiótico</a></li>
                     <li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('vaccinations.index') }}">Vacinas atrasadas e a vencer</a></li>
                     <li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('cases.index') }}">Casos científicos (série aberta, série encerrada e relato)</a></li>
                     <li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('agenda.index') }}">Agenda de hoje</a></li>
@@ -27,8 +30,8 @@
             @else
                 <p class="text-sm">Nenhum dado de demonstração nesta clínica.</p>
                 <p class="text-sm text-muted">
-                    Serão criados 10 responsáveis e 22 pacientes (cães, gatos, aves, jabuti, coelho, hamster e furão), 32 atendimentos
-                    finalizados em 3 anos com diagnósticos suspeitos, confirmados e descartados, pesos, alertas, 15 vacinas
+                    Serão criados 10 responsáveis e 22 pacientes (cães, gatos, aves, jabuti, coelho, hamster e furão), 33 atendimentos
+                    finalizados em 3 anos com diagnósticos suspeitos, confirmados e descartados, adendos, pesos, alertas, 15 vacinas
                     (atrasadas, a vencer e em dia), 10 agendamentos nesta semana e 3 casos científicos.
                 </p>
                 <form method="POST" action="{{ route('settings.demo-data.load') }}">

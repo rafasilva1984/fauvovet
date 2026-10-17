@@ -222,3 +222,25 @@ modelo de outro projeto dele já operado na Locaweb (Laravel + Vite, Node só pa
 - **Riscos e limites:** dados demo convivem com dados reais se a chave ficar ligada. O guia manda remover a
   demonstração e desligar a chave antes do primeiro paciente real; recomendado reavaliar quando houver HTTPS e uso
   clínico real.
+
+## ADR-017 — Busca clínica em texto livre com tabela de termos normalizados (2026-10-19)
+
+- **Contexto:** §3 pede busca em todo o prontuário, sem acento/plural, com frases, operadores e trecho de origem. No
+  MySQL (ADR-010) não há `tsvector`/`unaccent`. O FULLTEXT do InnoDB tem limites: ignora palavras com menos de 3
+  letras, usa stopwords em inglês (`com`, `de`…), não enxerga linhas ainda não confirmadas (quebra os testes em
+  transação) e não pode ser configurado na hospedagem compartilhada.
+- **Decisão:**
+  - Índice próprio derivado do prontuário. Cada trecho (campo de atendimento finalizado, diagnóstico, adendo, alerta,
+    documento, vacina) tem o texto original e o normalizado; uma tabela de termos distintos fica com PK
+    `(tenant_id, term, document_id)`, e a busca por prefixo usa B-tree.
+  - **Normalização em PHP**, sem `intl`: minúsculas e sem acento, preservando a posição de cada caractere (permite
+    destacar o original); plural do português reduzido igual no índice e na consulta; stopwords em português.
+  - **Semântica por paciente:** termos de uma alternativa podem estar em registros diferentes; `OU` separa
+    alternativas; `NÃO`/`-` exclui pacientes. Frases são pré-filtradas com `LIKE` e confirmadas por regex.
+  - Índice atualizado na mesma transação das gravações clínicas. Rascunho não entra. A versão do índice força a
+    reconstrução automática quando a regra mudar, e o titular pode reconstruir manualmente.
+  - Mesmo controle de acesso do prontuário (`clinical:read`); auditoria sem o termo; rate limit; teto por termo.
+- **Alternativa futura:** se o volume exigir (§3.4), trocar o mecanismo por trás de `ClinicalSearchService` (ex.:
+  OpenSearch) sem mudar a interface.
+- **Limites:** sem sinônimos configuráveis e sem texto de anexos (próximos incrementos); a relevância é heurística
+  (peso por origem × termos casados).

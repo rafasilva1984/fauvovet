@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FauvoVet — Busca clínica</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #1a2935; background: #f4f7f8; line-height: 1.65; font-size: 17px; }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 16px 80px; }
+    header { border-radius: 20px; padding: 32px; color: white; background: linear-gradient(120deg, #0b4652, #1a7375); }
+    header p { color: #e1f5f0; margin-bottom: 0; }
+    h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.2; margin: 0; }
+    h2 { font-size: 1.3rem; margin: 0 0 12px; }
+    h3 { font-size: 1.12rem; margin: 28px 0 8px; padding-top: 16px; border-top: 1px dashed #c9d6d8; }
+    h4 { font-size: 1rem; margin: 18px 0 6px; }
+    section { margin-top: 20px; background: #fff; padding: 24px; border: 1px solid #dee7e8; border-radius: 14px; }
+    p, li { overflow-wrap: anywhere; }
+    code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { background: #eaf1f2; padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+    pre code { background: none; padding: 0; }
+    kbd { border: 1px solid #b8c6c9; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: #fff; font-size: 0.9em; }
+    pre { overflow-x: auto; border-radius: 8px; padding: 14px; color: #e9fbff; background: #172b32; font-size: 0.9rem; line-height: 1.5; }
+    .tag { display: inline-block; font-size: 0.8rem; font-weight: 700; border: 1px solid #f5cf83; background: #fff8e4; color: #7a4b12; border-radius: 30px; padding: 3px 10px; }
+    .where { display: inline-block; font-size: 0.78rem; font-weight: 700; border-radius: 30px; padding: 2px 10px; margin-right: 6px; vertical-align: middle; }
+    .w-term { background: #1f3b44; color: #d9fbff; }
+    .w-web { background: #e1effd; color: #0f3e72; }
+    .w-fz { background: #fde8e1; color: #7a2a0f; }
+    .w-np { background: #ece5fb; color: #42237a; }
+    .w-panel { background: #e2f6e8; color: #145c2e; }
+    .note { border-left: 4px solid #338b96; background: #eef7f8; padding: 10px 12px; border-radius: 6px; }
+    .warn { border-left: 4px solid #c27c0e; background: #fff8e4; padding: 10px 12px; border-radius: 6px; }
+    .stop { border-left: 4px solid #b3261e; background: #fdecea; padding: 10px 12px; border-radius: 6px; }
+    .ok { border-left: 4px solid #1d7a45; background: #e8f6ee; padding: 10px 12px; border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid #e0e7e8; text-align: left; vertical-align: top; }
+    small { color: #52646d; }
+    .pass { color: #116b3a; font-weight: 700; }
+    .notrun { color: #8a5a00; font-weight: 700; }
+    ol.steps > li { margin-bottom: 12px; }
+    .map { font-size: 0.85rem; }
+    .shots { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .shots figure { margin: 0; }
+    .shots img { width: 100%; height: auto; border-radius: 12px; border: 1px solid #dee7e8; display: block; }
+    .shots figcaption { font-size: 0.85rem; color: #52646d; margin-top: 4px; }
+    .shots .tall img { max-height: 520px; object-fit: cover; object-position: top; }
+    nav ol { columns: 2; column-gap: 32px; }
+    @media (max-width: 640px) { nav ol { columns: 1; } body { font-size: 16px; } section { padding: 18px; } header { padding: 22px; } }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e4eef0; background: #0f1a1e; }
+      section { background: #15242a; border-color: #23373e; }
+      th, td { border-color: #23373e; }
+      code { background: #213840; }
+      kbd { background: #1d3138; border-color: #3b5760; }
+      .warn { background: #2a2210; } .note { background: #12303a; } .stop { background: #3a1614; } .ok { background: #12301f; }
+      small { color: #9fb3ba; }
+      h3 { border-color: #2c454c; }
+      .pass { color: #5fd28f; } .notrun { color: #f0b54a; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="tag">INCREMENTO IMPLEMENTADO — BUSCA CLÍNICA EM TEXTO LIVRE</span>
+      <h1>Busca clínica: procurar palavras e frases em todo o prontuário, com o trecho destacado</h1>
+      <p>ID: <strong>2026-10-19-busca-clinica</strong> · Data: <strong>19/10/2026</strong> · Versão: <strong>0.13.0</strong> · Módulo: <strong>Fase 2 — Busca clínica inteligente (ADR-017)</strong> · Estado: <strong>implementado e testado localmente; publicação a cargo do proprietário (seção 7)</strong></p>
+    </header>
+
+    <section>
+      <h2>1. Objetivo</h2>
+      <p>É o diferencial do produto (CLAUDE.md §3). Até aqui dava para filtrar pacientes por diagnóstico estruturado. Agora dá para procurar <strong>qualquer palavra ou frase</strong> escrita no prontuário. Exemplos: "recusa alimentar", "uveíte", "xampu".</p>
+      <p>Cada resultado mostra <strong>qual paciente</strong>, <strong>em que registro</strong>, <strong>em que data</strong>, <strong>quem escreveu</strong> e o <strong>trecho com a palavra destacada</strong>. Um clique abre o registro original.</p>
+      <div class="shots">
+        <figure><img src="img/2026-10-19-busca-clinica-ou.jpg" alt="Busca por recusa alimentar OU não se alimenta com dois gatos e trechos destacados (dados fictícios)" loading="lazy"><figcaption>Frases alternativas com OU</figcaption></figure>
+        <figure><img src="img/2026-10-19-busca-clinica-cruzada.jpg" alt="Busca penicilina antibiótico cruzando alerta de alergia e conduta (dados fictícios)" loading="lazy"><figcaption>Termos em registros diferentes do mesmo paciente</figcaption></figure>
+        <figure class="tall"><img src="img/2026-10-19-busca-clinica-celular.jpg" alt="Busca por uveíte em aves no celular (dados fictícios)" loading="lazy"><figcaption>Celular</figcaption></figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>2. O que mudou</h2>
+      <ul>
+        <li><strong>Menu → Busca clínica</strong> (equipe com acesso clínico: veterinário, assistente, titular). No celular, fica em "Mais opções".</li>
+        <li><strong>Onde procura:</strong> atendimentos <strong>finalizados</strong> (queixa, anamnese, exame físico, conduta, orientações), diagnósticos (com a situação), adendos, alertas (alergias etc.), documentos emitidos e vacinas. Rascunhos não entram.</li>
+        <li><strong>Como digitar:</strong>
+          <ul>
+            <li>acentos, maiúsculas e plural não importam: <code>dermatites atopicas</code> encontra "Dermatite atópica";</li>
+            <li>várias palavras = todas precisam aparecer no prontuário <strong>do mesmo paciente</strong>, mesmo em registros diferentes (<code>penicilina antibiótico</code> cruza o alerta de alergia com a conduta);</li>
+            <li><code>"frase exata"</code> entre aspas;</li>
+            <li><code>OU</code> (maiúsculo) para alternativas: <code>"recusa alimentar" OU "não se alimenta"</code>;</li>
+            <li><code>NÃO palavra</code> ou <code>-palavra</code> para excluir pacientes que tenham a palavra;</li>
+            <li>palavras com menos de 3 letras e palavras comuns ("de", "com") são ignoradas fora das aspas, e a tela avisa.</li>
+          </ul>
+        </li>
+        <li><strong>Filtros e ordem</strong> (painel recolhível): espécie, período (30 dias a 5 anos), onde procurar (atendimento, diagnóstico, adendo, alerta, documento, vacina), situação do diagnóstico (separa suspeitas de confirmados) e ordenação (relevância, mais recentes, mais antigos, nome).</li>
+        <li><strong>Atalho:</strong> na tela Pacientes, ao digitar um termo, aparece "Procurar “termo” no prontuário".</li>
+        <li><strong>Índice sempre em dia:</strong> finalizar atendimento, adendo, alerta, documento e vacina atualizam o índice do paciente na hora. Na primeira busca da clínica, o índice inteiro é construído sozinho; o rodapé mostra quantos trechos tem e quando foi atualizado. O titular tem o botão <em>Reconstruir índice</em>.</li>
+        <li><strong>Segurança:</strong> recepção e financeiro recebem 403. A busca só enxerga a clínica ativa. A auditoria (<code>clinical.search</code>) registra filtros e número de resultados, <strong>nunca o termo</strong>. Há limite de 40 buscas por minuto por usuário e teto de 5.000 registros por termo (acima disso, a tela pede para refinar).</li>
+        <li><strong>Dados de demonstração ampliados</strong>, para confirmar a busca na produção (seção 5):
+          <ul>
+            <li>queixas com "recusa alimentar" (Simba) e "não se alimenta" (Frajola);</li>
+            <li>uveíte em papagaio (Sol), com adendo de retorno;</li>
+            <li>alerta "Alergia a penicilina" e conduta com "Antibiótico" (Bento);</li>
+            <li>3 adendos; agora são 33 atendimentos.</li>
+          </ul>
+        </li>
+        <li><strong>Arquivos:</strong>
+          <ul>
+            <li>migração <code>2026_10_19_000001_create_clinical_search_tables</code> (3 tabelas: trechos, termos e situação do índice);</li>
+            <li><code>app/Support/SearchText.php</code> (normalização, plural, operadores, trecho destacado);</li>
+            <li><code>app/Services/ClinicalSearchIndex.php</code> e <code>ClinicalSearchService.php</code>;</li>
+            <li><code>ClinicalSearchController</code> e <code>resources/views/search/index.blade.php</code>;</li>
+            <li>ganchos em <code>ClinicalRecordService</code>, <code>DocumentService</code> e <code>VaccinationService</code>;</li>
+            <li><code>DemoDataService</code>;</li>
+            <li>testes <code>ClinicalSearchTest</code> (6, sendo 1 de isolamento), <code>DemoDataTest</code> ampliado, E2E <code>clinical-search.spec.ts</code> e axe;</li>
+            <li>ADR-017; <code>TEMPLATE.html</code> ganhou a subseção obrigatória "Confirmar o funcionamento com os dados de demonstração".</li>
+          </ul>
+        </li>
+      </ul>
+      <p>Dependências novas: nenhuma.</p>
+      <p class="warn"><strong>Ainda não incluído:</strong> texto de <strong>anexos</strong> (PDF/DOCX enviados) e o dicionário de sinônimos configurável. São os próximos itens da Fase 2 (<code>docs/IDEAS.md</code>).</p>
+    </section>
+
+    <section>
+      <h2>3. Pré-requisitos</h2>
+      <p>Os mesmos das entregas anteriores. Não exige extensão PHP nova nem configuração especial do MySQL (funciona em 5.7 e 8.0).</p>
+      <p class="warn"><strong>Git Bash/macOS:</strong> NOT RUN.</p>
+    </section>
+
+    <section>
+      <h2>4. Passo a passo (no seu computador)</h2>
+      <ol class="steps">
+        <li><span class="where w-term">Terminal</span> <code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm db:start</code> → <code>pnpm db:migrate</code> (1 migração nova).</li>
+        <li><span class="where w-term">Terminal</span> <code>pnpm dev</code> → entre como <code>bruno.vet@aurora.exemplo.test</code> → menu <em>Busca clínica</em> → digite <code>dermatite</code> → <em>Buscar</em>.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>5. Como testar</h2>
+<pre><code>pnpm verify --e2e
+pnpm test:tenant-isolation</code></pre>
+      <ol>
+        <li><strong>Como Bruno</strong> (dados do seed):
+          <ul>
+            <li><code>dermatites atopicas</code>: Thor, com os trechos "Dermatite atópica" destacados e os selos Suspeita e Confirmado;</li>
+            <li><code>penicilina prurido</code>: Thor (alerta + queixa de outro atendimento);</li>
+            <li><code>dermatite NÃO prurido</code>: nada;</li>
+            <li>em <em>Filtros e ordem</em>, escolha <em>Situação: Suspeita</em>: só o atendimento da suspeita.</li>
+          </ul>
+        </li>
+        <li><strong>Índice em dia:</strong>
+          <ul>
+            <li>abra a Mia → <em>Novo atendimento</em> → queixa "suspeita de giárdia" → salve o <strong>rascunho</strong>: <code>giardia</code> não encontra nada;</li>
+            <li>finalize o atendimento: agora encontra, com "Queixa principal" e a data de hoje.</li>
+          </ul>
+        </li>
+        <li><strong>Permissões e isolamento:</strong>
+          <ul>
+            <li>como Carla (recepção), <code>/busca</code> responde 403 e o menu não mostra o item;</li>
+            <li>como Diana (clínica B), <code>dermatite</code> não encontra nada e <code>"recusa alimentar"</code> encontra só o Jabu, da própria clínica.</li>
+          </ul>
+        </li>
+      </ol>
+
+      <h3>Confirmar o funcionamento com os dados de demonstração</h3>
+      <p>Funciona igual no seu computador e na produção, depois de publicar (seção 7).</p>
+      <p class="warn">Se você já tinha carregado a demonstração antes, ela não tem os textos novos. Vá em <em>Configurações → Dados de demonstração</em>, marque a confirmação, clique em <em>Remover demonstração</em> e depois em <em>Carregar demonstração</em>.</p>
+      <ol class="steps">
+        <li><span class="where w-web">Navegador</span> entre com o usuário <strong>titular</strong> → <em>Configurações → Dados de demonstração</em> → <em>Carregar demonstração</em>. Deve aparecer "Demonstração carregada: 22 pacientes, 33 atendimentos…".</li>
+        <li><strong>Frases alternativas:</strong> clique no atalho <em>Busca clínica: “recusa alimentar” OU “não se alimenta”</em>.
+          <ul>
+            <li><strong>Deve aparecer:</strong> 2 pacientes, Simba e Frajola. O Simba tem 2 trechos (queixa principal e um adendo); o Frajola tem 1. As frases ficam destacadas em amarelo.</li>
+            <li>Clique no título de um trecho: abre o atendimento daquele dia.</li>
+          </ul>
+        </li>
+        <li><strong>Filtro de espécie + adendo:</strong> volte e clique em <em>Busca clínica: uveíte em aves</em>.
+          <ul>
+            <li><strong>Deve aparecer:</strong> 1 paciente, Sol (papagaio), com 2 trechos: o adendo "Retorno antecipado: uveíte…" e o diagnóstico com o selo <em>Suspeita</em> "Uveíte anterior (H20)".</li>
+            <li>Abra <em>Filtros e ordem</em>, troque a espécie para <em>Cão</em> e clique em <em>Aplicar filtros</em>: "Nada encontrado".</li>
+          </ul>
+        </li>
+        <li><strong>Termos em registros diferentes:</strong> clique em <em>Busca clínica: alergia a penicilina + antibiótico</em>.
+          <ul>
+            <li><strong>Deve aparecer:</strong> Bento, com 2 trechos: "Alerta — Alergia: Alergia a <mark>penicilina</mark>" e "Conduta e plano terapêutico: <mark>Antibiótico</mark> (clindamicina)…".</li>
+          </ul>
+        </li>
+        <li><strong>Acentos, plural e exclusão:</strong> digite estas buscas.
+          <ul>
+            <li><code>DOENCAS RENAIS</code> (sem acento, no plural): encontra os gatos com doença renal crônica.</li>
+            <li><code>renal NÃO hipertensão</code>: o Frajola (que tem hipertensão) some, e aparece o selo "sem “hipertensao”".</li>
+          </ul>
+        </li>
+        <li><strong>Situação do diagnóstico:</strong> busque <code>dermatite</code> → <em>Filtros e ordem</em> → <em>Situação do diagnóstico: Descartado</em> → <em>Aplicar filtros</em>. <strong>Deve aparecer:</strong> só a Pipoca, com o selo <em>Descartado</em> (a dermatite atópica dela foi descartada).</li>
+        <li><strong>Atalho pela tela Pacientes:</strong> menu <em>Pacientes</em> → digite <code>xampu</code> → <em>Buscar</em>. Nenhum paciente tem esse nome; clique em <em>Procurar “xampu” no prontuário</em>. <strong>Deve aparecer:</strong> Bento, com o adendo "…banho com <mark>xampu</mark> comum…".</li>
+        <li><strong>Índice:</strong> no rodapé da Busca clínica aparece "Índice: N trechos · atualizado em …". Como titular, clique em <em>Reconstruir índice</em>. <strong>Deve aparecer:</strong> "Índice da busca clínica reconstruído: N trechos."</li>
+        <li><strong>Permissão:</strong> entre com um usuário de recepção (se houver na equipe). O menu não mostra <em>Busca clínica</em>, e o endereço <code>/fauvovet/busca</code> responde "Acesso negado".</li>
+        <li><strong>Limpeza:</strong> ao terminar, <em>Remover demonstração</em> também tira esses pacientes da busca (procure <code>uveite</code> de novo: nada).</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>6. Performance e usabilidade</h2>
+      <ul>
+        <li><strong>Medição local</strong> (WSL, servidor PHP embutido, Percona 5.7, clínica com seed + demonstração ≈ 240 trechos): 30 buscas variadas, <strong>p50 37 ms, p95 47 ms, máx. 59 ms</strong> (tempo da página inteira).</li>
+        <li><strong>Volume grande</strong> (dezenas de milhares de atendimentos): NOT RUN.
+          <ul>
+            <li>Cada termo usa o índice <code>(tenant_id, term, document_id)</code> por prefixo; o teto de 5.000 registros por termo limita o pior caso.</li>
+            <li>A primeira construção do índice numa clínica grande é feita na própria página e pode levar segundos; foi registrado em <code>docs/IDEAS.md</code> para virar tarefa em segundo plano.</li>
+          </ul>
+        </li>
+        <li><strong>Celular:</strong> filtros recolhidos num painel (abre sozinho só quando não há resultado), trechos legíveis e nada passando da borda. Acessibilidade (axe) sem violações na tela vazia e com resultados.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>7. Implantação na Locaweb</h2>
+      <p>Mesmo roteiro das entregas anteriores. Se vacinação, busca avançada, casos e demonstração ainda não foram publicados, este pacote leva tudo junto.</p>
+      <ol class="steps">
+        <li><span class="where w-term">Terminal</span> <code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm db:start</code> → <code>pnpm verify --e2e</code> → <code>pnpm deploy:package</code> → <code>pnpm deploy:copiar</code></li>
+        <li><span class="where w-panel">Painel Locaweb</span> backup do banco.</li>
+        <li><span class="where w-term">Terminal</span> <code>pnpm deploy:token</code>.</li>
+        <li><span class="where w-fz">FileZilla</span> no <code>.env</code> do servidor:
+          <ul>
+            <li><code>DEPLOY_TOOLS_ENABLED=true</code> + o token novo;</li>
+            <li>confira que existe a linha <code>FAUVOVET_DEMO_DATA=true</code>; se não existir, acrescente;</li>
+            <li>envie e apague <code>bootstrap/cache/config.php</code> (se existir).</li>
+          </ul>
+        </li>
+        <li><span class="where w-fz">FileZilla</span> <code>app-fauvovet</code> (tudo exceto <code>storage</code>) e <code>public_html/fauvovet</code>, com <em>Sobrescrever</em>.</li>
+        <li><span class="where w-term">Terminal</span> <code>diagnostico</code> → <code>migrar</code> → <code>otimizar</code>. O <code>pending_migrations</code> será 1 se o pacote anterior já foi publicado, ou 3 se vacinação e casos também vão agora.</li>
+        <li><span class="where w-fz">FileZilla</span> <code>DEPLOY_TOOLS_ENABLED=false</code> → enviar → apagar <code>bootstrap/cache/config.php</code>.</li>
+        <li><span class="where w-term">Terminal</span> <code>SMOKE_URL=https://dradeboragaldino.com.br/fauvovet pnpm smoke</code> (5 PASS).</li>
+        <li><span class="where w-web">Navegador</span> siga a subseção <strong>"Confirmar o funcionamento com os dados de demonstração"</strong> (seção 5). A primeira abertura de <em>Busca clínica</em> constrói o índice e mostra "O índice da busca desta clínica acabou de ser construído".</li>
+      </ol>
+      <p class="stop">Sem HTTPS válido, só dados fictícios. Antes do primeiro paciente real: remover a demonstração e voltar <code>FAUVOVET_DEMO_DATA=false</code>.</p>
+    </section>
+
+    <section>
+      <h2>8. Rollback</h2>
+      <ul>
+        <li><strong>Código:</strong> reenvie o pacote anterior em <code>.deploy/</code> e rode o <em>otimizar</em>. As 3 tabelas novas ficam sem uso e não afetam nada: o índice é só uma cópia derivada do prontuário.</li>
+        <li><strong>Índice inconsistente:</strong> como titular, <em>Busca clínica → Reconstruir índice</em>; ele é refeito inteiro a partir do prontuário.</li>
+        <li><strong>Banco:</strong> restaure o backup do passo 2, se preciso.</li>
+        <li><strong>Local:</strong> <code>git revert</code> e <code>migrate:rollback --step=1</code> (só desenvolvimento).</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>9. Troubleshooting</h2>
+      <table>
+        <tr><th>Sintoma</th><th>Causa e solução</th></tr>
+        <tr><td>"Nada encontrado" para algo que está num atendimento</td><td>O atendimento ainda é rascunho; finalize. Ou o termo tem menos de 3 letras: use aspas, ex. <code>"pó"</code>.</td></tr>
+        <tr><td>Paciente demo não aparece na busca</td><td>A demonstração foi carregada antes desta versão: remova e carregue de novo.</td></tr>
+        <tr><td>OU/NÃO não funcionam</td><td>Escreva em MAIÚSCULAS (<code>OU</code>, <code>NÃO</code>); em minúsculas são tratados como palavras comuns.</td></tr>
+        <tr><td>"Muitos registros com estes termos…"</td><td>Mais de 5.000 registros com o termo: acrescente palavras ou filtros.</td></tr>
+        <tr><td>"Acesso negado" na Busca clínica</td><td>O papel não tem acesso clínico (recepção, financeiro, estoque).</td></tr>
+        <tr><td>Erro 500 ao abrir a Busca clínica</td><td>A migração não foi aplicada: rode <code>diagnostico</code> e <code>migrar</code>.</td></tr>
+        <tr><td>"Muitas tentativas" (429)</td><td>Mais de 40 buscas por minuto pelo mesmo usuário; aguarde um minuto.</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>10. Evidências e status</h2>
+      <table>
+        <tr><th>Verificação</th><th>Status</th><th>Detalhe</th></tr>
+        <tr><td><code>pnpm verify --e2e</code></td><td class="pass">PASS</td><td>9/9 etapas</td></tr>
+        <tr><td>PHPUnit</td><td class="pass">PASS</td><td>175 testes (6 novos de busca + demonstração ampliada)</td></tr>
+        <tr><td>Isolamento</td><td class="pass">PASS</td><td>42 testes (1 novo: busca e índice só da clínica ativa)</td></tr>
+        <tr><td>E2E + axe + borda no celular</td><td class="pass">PASS</td><td>75 testes; termo → trecho destacado → atendimento de origem; demonstração (uveíte em aves); axe na busca vazia e com resultados</td></tr>
+        <tr><td>Aceite CLAUDE.md §3.3</td><td class="pass">PASS</td><td>exemplos 1, 2 (com o filtro de situação), 3, 5, 6, 7, 8 e 9 cobertos por testes. Exemplos 4 e 10 (texto de anexos) ficam para a próxima entrega.</td></tr>
+        <tr><td>Desempenho em volume grande</td><td class="notrun">NOT RUN</td><td>Ver seção 6</td></tr>
+      </table>
+      <p><strong>Commit:</strong> registrado no <code>docs/PROGRESS.md</code> após a sincronização.</p>
+      <p><strong>Próximo passo sugerido:</strong> extrair o texto de anexos PDF/DOCX para a busca, com o status "sem texto pesquisável" quando não for possível (exemplos 4 e 10 do §3.3), e depois o dicionário de sinônimos da clínica.</p>
+    </section>
+  </main>
+</body>
+</html>

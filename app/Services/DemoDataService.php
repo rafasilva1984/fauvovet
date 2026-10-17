@@ -76,7 +76,7 @@ final class DemoDataService
         // Dermatologia canina: suspeita → confirmação, e um caso descartado (série científica de exemplo).
         [0, 840, '31.200', 'Coceira nas patas e lambedura constante há 1 mês.', 'Eritema interdigital, otite bilateral leve.', 'Citologia de pele; banho terapêutico; retorno em 30 dias.', [['Dermatite atópica', 'L20', 'suspected']]],
         [0, 800, '31.000', 'Retorno: prurido persiste mesmo com controle de pulgas.', 'Lesões em face e axilas.', 'Iniciado imunomodulador; dieta hipoalergênica de eliminação.', [['Dermatite atópica', 'L20', 'confirmed']]],
-        [0, 420, '30.400', 'Crise de coceira na primavera.', 'Eritema em abdômen.', 'Ajuste de dose; retorno em 60 dias.', [['Dermatite atópica', 'L20', 'confirmed'], ['Otite externa', 'H60', 'confirmed']]],
+        [0, 420, '30.400', 'Crise de coceira na primavera.', 'Eritema em abdômen; pústulas.', 'Antibiótico (clindamicina) por 21 dias para piodermite secundária; ajuste do imunomodulador.', [['Dermatite atópica', 'L20', 'confirmed'], ['Otite externa', 'H60', 'confirmed']]],
         [1, 600, '6.800', 'Coça orelhas e balança a cabeça.', 'Secreção ceruminosa em conduto direito.', 'Limpeza otológica e medicação tópica por 10 dias.', [['Otite externa', 'H60', 'confirmed'], ['Dermatite atópica', 'L20', 'suspected']]],
         [1, 150, '6.950', 'Lambedura das patas e vermelhidão.', 'Pododermatite leve.', 'Teste terapêutico com dieta; retorno.', [['Dermatite atópica', 'L20', 'confirmed']]],
         [2, 210, '12.300', 'Feridas no dorso e muita coceira.', 'Pulgas visíveis; alopecia lombossacral.', 'Antipulgas e controle ambiental.', [['Dermatite alérgica à picada de pulga', 'L23', 'confirmed'], ['Dermatite atópica', 'L20', 'ruled_out']]],
@@ -92,17 +92,18 @@ final class DemoDataService
         [7, 45, '6.100', 'Tosse seca à noite e cansaço.', 'Sopro sistólico grau IV/VI em foco mitral.', 'Ecocardiograma; iniciar cardioprotetor.', [['Doença valvar mitral degenerativa', 'I34', 'confirmed']]],
         [9, 20, '9.800', 'Vômito e diarreia há 2 dias.', 'Desidratação leve.', 'Fluidoterapia subcutânea e dieta leve.', [['Gastroenterite aguda', 'K52', 'confirmed'], ['Parvovirose', 'A08', 'ruled_out']]],
         // Felinos: doença renal crônica (série científica encerrada) e outros.
-        [10, 760, '4.900', 'Emagrecimento e bebe muita água.', 'Rins pequenos à palpação; desidratação 5%.', 'Exames de sangue e urina.', [['Doença renal crônica', 'N18', 'suspected']]],
+        [10, 760, '4.900', 'Emagrecimento, bebe muita água e recusa alimentar há 4 dias.', 'Rins pequenos à palpação; desidratação 5%.', 'Exames de sangue e urina.', [['Doença renal crônica', 'N18', 'suspected']]],
         [10, 730, '4.700', 'Resultado dos exames: creatinina elevada.', 'Mucosas levemente pálidas.', 'Dieta renal; fluido subcutâneo em casa.', [['Doença renal crônica', 'N18', 'confirmed']]],
         [10, 300, '4.500', 'Acompanhamento renal.', 'Estável.', 'Manter dieta; exames a cada 3 meses.', [['Doença renal crônica', 'N18', 'confirmed']]],
         [11, 560, '3.600', 'Perda de apetite e vômitos ocasionais.', 'Halitose urêmica.', 'Exames; dieta renal.', [['Doença renal crônica', 'N18', 'confirmed']]],
-        [12, 640, '5.200', 'Bebe muita água; idoso.', 'Hipertensão aferida.', 'Anti-hipertensivo e dieta renal.', [['Doença renal crônica', 'N18', 'confirmed'], ['Hipertensão sistêmica', 'I10', 'confirmed']]],
+        [12, 640, '5.200', 'Bebe muita água e não se alimenta direito há uma semana.', 'Hipertensão aferida.', 'Anti-hipertensivo e dieta renal.', [['Doença renal crônica', 'N18', 'confirmed'], ['Hipertensão sistêmica', 'I10', 'confirmed']]],
         [13, 180, '3.900', 'Emagrecimento apesar de comer bem.', 'Nódulo tireoidiano palpável; taquicardia.', 'Dosagem de T4.', [['Hipertireoidismo', 'E05', 'suspected'], ['Doença renal crônica', 'N18', 'suspected']]],
         [14, 340, '7.400', 'Respiração rápida em repouso.', 'Galope à ausculta.', 'Ecocardiograma.', [['Cardiomiopatia hipertrófica', 'I42', 'suspected']]],
         [14, 12, '7.300', 'Retorno com ecocardiograma.', 'Espessamento do septo confirmado.', 'Iniciar medicação; restrição de esforço.', [['Cardiomiopatia hipertrófica', 'I42', 'confirmed']]],
         [15, 30, '2.900', 'Primeira consulta; espirros e secreção ocular.', 'Conjuntivite bilateral.', 'Colírio e vacinação após melhora.', [['Complexo respiratório felino', 'J06', 'confirmed']]],
         // Exóticos.
         [16, 400, '0.092', 'Arranca as próprias penas.', 'Falhas de penas no peito; ave ativa.', 'Enriquecimento ambiental; avaliar dieta.', [['Arrancamento de penas (comportamental)', null, 'suspected']]],
+        [17, 40, '0.420', 'Olho direito fechado e lacrimejando.', 'Opacidade da câmara anterior e hiperemia no olho direito.', 'Colírio anti-inflamatório; reavaliar em 7 dias.', [['Uveíte anterior', 'H20', 'suspected']]],
         [17, 250, '0.410', 'Bico crescido e dificuldade para comer.', 'Sobrecrescimento de bico; plumagem opaca.', 'Desgaste do bico; correção da dieta.', [['Deficiência nutricional', 'E63', 'confirmed']]],
         [18, 900, '2.150', 'Olhos inchados e não come há 1 semana.', 'Blefaroedema bilateral; secreção nasal.', 'Vitamina A injetável; ajuste de dieta e UVB.', [['Hipovitaminose A', 'E50', 'confirmed']]],
         [18, 870, '2.200', 'Retorno: olhos abriram, voltou a comer.', 'Melhora clínica evidente.', 'Manter dieta e iluminação UVB.', [['Hipovitaminose A', 'E50', 'confirmed']]],
@@ -128,16 +129,23 @@ final class DemoDataService
         [18, 4, '10:00', 'scheduled'], [1, 6, '08:00', 'scheduled'],
     ];
 
+    /** Adendos (texto livre pós-finalização, aparecem na busca clínica): [atendimento (índice), dias depois, texto]. */
+    private const ADDENDA = [
+        [2, 10, 'Tutora informou que o prurido voltou após banho com xampu comum; orientado retomar o xampu terapêutico.'],
+        [16, 20, 'Contato por telefone: segue com recusa alimentar parcial; reforçado oferecer ração úmida aquecida.'],
+        [26, 3, 'Retorno antecipado: uveíte com melhora parcial; manter colírio por mais 7 dias.'],
+    ];
+
     /** Alertas: [paciente, tipo, gravidade, descrição]. */
     private const ALERTS = [
-        [0, 'allergy', 'high', 'Alergia a frango (dieta) — demonstração'],
+        [0, 'allergy', 'high', 'Alergia a penicilina — demonstração'],
         [7, 'chronic', 'medium', 'Cardiopata: evitar estresse e sedação sem avaliação — demonstração'],
         [10, 'chronic', 'medium', 'Doente renal crônico — demonstração'],
         [12, 'medication', 'medium', 'Uso contínuo de anti-hipertensivo — demonstração'],
         [3, 'behavior', 'low', 'Fica agitado na contenção — demonstração'],
     ];
 
-    public function __construct(private readonly TenantContext $context) {}
+    public function __construct(private readonly TenantContext $context, private readonly ClinicalSearchIndex $search) {}
 
     /** ID demo da clínica: prefixo + 8 hex do tenant (evita colisão entre clínicas) + tipo + número. Hex é Crockford válido. */
     public static function idFor(string $tenantId, string $kind, int $n): string
@@ -166,7 +174,7 @@ final class DemoDataService
         return $this->counts()['patients'] > 0;
     }
 
-    /** @return array{patients: int, encounters: int, vaccinations: int, appointments: int, cases: int} */
+    /** @return array{patients: int, encounters: int, vaccinations: int, appointments: int, cases: int, addenda: int} */
     public function load(string $userId): array
     {
         $tenant = $this->context->requireId();
@@ -228,6 +236,14 @@ final class DemoDataService
                 $encounterOf[$p][] = ['id' => $eid, 'dx' => array_column($dxs, 2, 0)];
             }
 
+            foreach (self::ADDENDA as $i => [$e, $daysAfter, $body]) {
+                [$p, $daysAgo] = self::ENCOUNTERS[$e];
+                DB::table('encounter_addenda')->insert($base + [
+                    'id' => $this->id('AD', $i + 1), 'encounter_id' => $this->id('EN', $e + 1), 'body' => $body, 'author_id' => $userId,
+                    'author_membership_id' => $membership, 'created_at' => Carbon::now($tz)->subDays(max(0, $daysAgo - $daysAfter))->utc(),
+                ]);
+            }
+
             foreach (self::ALERTS as $i => [$p, $kind, $severity, $desc]) {
                 DB::table('patient_alerts')->insert($base + $stamp + [
                     'id' => $this->id('PA', $i + 1), 'patient_id' => $this->id('PT', $p + 1), 'kind' => $kind, 'severity' => $severity,
@@ -262,11 +278,15 @@ final class DemoDataService
             }
 
             $this->cases($base, $userId, $encounterOf, $now);
+            // Busca clínica: os pacientes demo já entram no índice.
+            foreach (array_keys(self::PATIENTS) as $i) {
+                $this->search->reindexPatient($this->id('PT', $i + 1));
+            }
         });
 
         return [
             'patients' => count(self::PATIENTS), 'encounters' => count(self::ENCOUNTERS), 'vaccinations' => count(self::VACCINES),
-            'appointments' => count(self::APPOINTMENTS), 'cases' => 3,
+            'appointments' => count(self::APPOINTMENTS), 'cases' => 3, 'addenda' => count(self::ADDENDA),
         ];
     }
 
@@ -343,7 +363,7 @@ final class DemoDataService
                     ...$t('issued_documents')->whereIn('patient_id', $patients)->pluck('pdf_path')->all(),
                     ...$t('attachments')->whereIn('patient_id', $patients)->pluck('storage_path')->all(),
                 ];
-                foreach (['vaccinations', 'issued_documents', 'attachments', 'patient_weights', 'patient_alerts', 'encounter_diagnoses'] as $table) {
+                foreach (['clinical_search_documents', 'vaccinations', 'issued_documents', 'attachments', 'patient_weights', 'patient_alerts', 'encounter_diagnoses'] as $table) {
                     $t($table)->whereIn('patient_id', $patients)->delete();
                 }
                 if ($encounters !== []) {
@@ -359,6 +379,7 @@ final class DemoDataService
             $demo('patients')->delete();
             $demo('guardians')->delete();
         });
+        $this->search->refreshCount();
         foreach ($files as $path) {
             Storage::disk('local')->delete($path); // depois do commit: sem registro, sem arquivo órfão
         }

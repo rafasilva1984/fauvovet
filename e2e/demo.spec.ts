@@ -10,6 +10,10 @@ test('dados de demonstração: carregar, ver na busca/vacinas/casos e remover', 
 
   await page.getByRole('link', { name: 'Busca: dermatite atópica confirmada em cães' }).click();
   await expect(page.getByRole('link', { name: /Bento/ }).first()).toBeVisible();
+  await page.goto('configuracoes/dados-de-demonstracao');
+  await page.getByRole('link', { name: 'Busca clínica: uveíte em aves' }).click();
+  await expect(page.getByRole('link', { name: /Sol/ }).first()).toBeVisible();
+  await expect(page.locator('.fv-snippet mark').first()).toHaveText(/uveíte/i);
   await page.goto('vacinas');
   await expect(page.getByText(/Atrasada/).first()).toBeVisible();
   await page.goto('casos');
@@ -21,6 +25,6 @@ test('dados de demonstração: carregar, ver na busca/vacinas/casos e remover', 
   await page.getByRole('button', { name: 'Remover demonstração' }).click();
   await expect(page.getByText(/Demonstração removida: 22 pacientes/)).toBeVisible();
   await page.goto('pacientes?q=Bento');
-  await expect(page.getByRole('link', { name: /Bento/ })).toHaveCount(0);
+  await expect(page.getByText('Nenhum paciente encontrado')).toBeVisible();
   expect(errors).toEqual([]);
 });

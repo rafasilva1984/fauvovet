@@ -27,6 +27,7 @@ final class ClinicalRecordService
         private readonly TenantContext $context,
         private readonly Audit $audit,
         private readonly ScheduleService $schedule,
+        private readonly ClinicalSearchIndex $search,
     ) {}
 
     /** Abre (ou reabre) o atendimento do paciente; um por agendamento. */
@@ -115,6 +116,7 @@ final class ClinicalRecordService
                 PatientWeight::create(['patient_id' => $locked->patient_id, 'encounter_id' => $locked->id, 'weight_kg' => $locked->weight_kg,
                     'measured_at' => $locked->started_at, 'created_by' => $actor->id]);
             }
+            $this->search->reindexPatient($locked->patient_id); // busca clínica: disponível na hora
             $this->audit->record('encounter.finalized', $actor->id, 'encounter', $locked->id, ['diagnoses' => $locked->diagnoses()->count()]);
 
             $appointment = $locked->appointment_id ? Appointment::query()->find($locked->appointment_id) : null;
@@ -134,6 +136,7 @@ final class ClinicalRecordService
             'encounter_id' => $encounter->id, 'body' => $body, 'author_id' => $actor->id,
             'author_membership_id' => (string) $this->context->membership()?->id,
         ]);
+        $this->search->reindexPatient($encounter->patient_id);
         $this->audit->record('encounter.addendum_added', $actor->id, 'encounter', $encounter->id, ['addendum_id' => $addendum->id]);
 
         return $addendum;
@@ -143,6 +146,7 @@ final class ClinicalRecordService
     public function addAlert(Patient $patient, array $data, User $actor): PatientAlert
     {
         $alert = PatientAlert::create([...$data, 'patient_id' => $patient->id, 'created_by' => $actor->id]);
+        $this->search->reindexPatient($patient->id);
         $this->audit->record('patient.alert_added', $actor->id, 'patient', $patient->id, ['alert_id' => $alert->id, 'kind' => $data['kind']]);
 
         return $alert;
@@ -156,6 +160,7 @@ final class ClinicalRecordService
         $alert->resolved_at = now();
         $alert->setAttribute('resolved_by', $actor->id);
         $alert->save();
+        $this->search->reindexPatient($alert->patient_id);
         $this->audit->record('patient.alert_resolved', $actor->id, 'patient', $alert->patient_id, ['alert_id' => $alert->id]);
     }
 

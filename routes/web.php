@@ -7,6 +7,7 @@ use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\Auth\ContextController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\ClinicalCaseController;
+use App\Http\Controllers\ClinicalSearchController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DemoDataController;
 use App\Http\Controllers\DocumentController;
@@ -130,6 +131,10 @@ Route::middleware('auth')->group(function () {
             Route::get('/configuracoes/vacinas/{vaccine}/editar', [VaccineController::class, 'edit'])->name('vaccines.edit');
             Route::put('/configuracoes/vacinas/{vaccine}', [VaccineController::class, 'update'])->name('vaccines.update');
         });
+
+        // Busca clínica em texto livre no prontuário (ADR-017).
+        Route::get('/busca', [ClinicalSearchController::class, 'index'])->middleware(['permission:clinical:read', 'throttle:clinical-search'])->name('search.index');
+        Route::post('/busca/reindexar', [ClinicalSearchController::class, 'rebuild'])->middleware(['permission:tenant:update', 'throttle:clinical-search'])->name('search.rebuild');
 
         // Casos científicos (séries e relatos a partir dos atendimentos): veterinário e titular.
         Route::middleware('permission:research:manage')->group(function () {

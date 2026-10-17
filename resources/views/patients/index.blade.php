@@ -62,12 +62,18 @@
         <x-empty-state :title="$q === '' && $species === '' && ! $advanced ? 'Nenhum paciente cadastrado' : 'Nenhum paciente encontrado'" icon="paw">
             @if ($advanced) Tente remover algum filtro avançado. @elseif ($q !== '') Tente parte do nome, do responsável ou os últimos dígitos do telefone. @endif
         </x-empty-state>
+        @if ($clinical && $q !== '')
+            <p class="mt-3 text-center"><a href="{{ route('search.index', ['q' => $q, 'especie' => $species]) }}" class="inline-flex min-h-11 items-center gap-2 font-semibold text-link underline underline-offset-4"><x-icon name="search" :size="16" /> Procurar “{{ $q }}” no prontuário</a></p>
+        @endif
     @else
         <div class="mb-3 flex flex-wrap items-center gap-2">
             <p class="text-sm font-semibold text-muted">{{ $patients->total() }} {{ $patients->total() === 1 ? 'paciente' : 'pacientes' }}</p>
             @foreach ($chips as $chip)
                 <x-badge tone="tint">{{ $chip }}</x-badge>
             @endforeach
+            @if ($clinical && $q !== '')
+                <a href="{{ route('search.index', ['q' => $q, 'especie' => $species]) }}" class="inline-flex min-h-11 items-center gap-2 rounded-xl px-2 text-sm font-semibold text-link underline-offset-4 hover:underline"><x-icon name="search" :size="16" /> Procurar “{{ $q }}” no prontuário</a>
+            @endif
             @if ($fvCan('research:manage') && ($advanced || $q !== '' || $species !== ''))
                 <a href="{{ route('cases.create', request()->query()) }}" class="ml-auto inline-flex min-h-11 items-center gap-2 rounded-xl border border-line bg-surface px-3.5 text-sm font-semibold shadow-card hover:bg-tint"><x-icon name="flask" :size="18" /> Criar série de casos</a>
             @endif

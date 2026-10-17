@@ -352,3 +352,13 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Busca clínica: palavra encontrada no trecho (HTML do trecho vem escapado do servidor). */
+.fv-snippet mark {
+  background: var(--fv-warning-bg);
+  color: inherit;
+  font-weight: 700;
+  border-radius: 0.25rem;
+  padding: 0 0.15em;
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--fv-warning, #b26b00) 55%, transparent);
+}

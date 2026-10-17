@@ -214,6 +214,10 @@ test('acessibilidade WCAG AA (axe): dados de demonstração', async ({ page }) =
   await axe(page);
   await page.goto('pacientes?diagnostico=renal&especie=feline');
   await axe(page);
+  await page.goto('busca?q=%22recusa+alimentar%22+OU+%22não+se+alimenta%22');
+  await axe(page); // trechos com destaque
+  await page.goto('busca');
+  await axe(page); // exemplos
   await page.goto('configuracoes/dados-de-demonstracao');
   await page.getByRole('checkbox', { name: /Entendo que/ }).check();
   await page.getByRole('button', { name: 'Remover demonstração' }).click();

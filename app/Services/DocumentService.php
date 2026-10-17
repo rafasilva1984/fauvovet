@@ -38,7 +38,7 @@ final class DocumentService
         ['Termo de consentimento', 'consent', 'Termo de consentimento livre e esclarecido', "Eu, {{responsavel.nome}}, documento {{responsavel.documento}}, residente em {{responsavel.endereco}}, responsável pelo animal {{paciente.nome}} ({{paciente.especie}}, {{paciente.raca}}), autorizo a realização de [procedimento/anestesia] pela equipe de {{clinica.nome}}.\n\nDeclaro ter sido informado(a) sobre o procedimento, seus riscos, benefícios e alternativas, e que tive a oportunidade de esclarecer minhas dúvidas.\n\nDeclaro ainda estar ciente de que, em situações de emergência durante o procedimento, a equipe poderá adotar as medidas necessárias para preservar a vida do animal."],
     ];
 
-    public function __construct(private readonly TenantContext $context, private readonly Audit $audit) {}
+    public function __construct(private readonly TenantContext $context, private readonly Audit $audit, private readonly ClinicalSearchIndex $search) {}
 
     public function ensureDefaultTemplates(): void
     {
@@ -154,6 +154,7 @@ final class DocumentService
 
             throw $e;
         }
+        $this->search->reindexPatient($patient->id);
         $this->audit->record('document.issued', $issuer->id, 'document', $id, ['category' => $category, 'patient_id' => $patient->id]);
 
         return $document;
@@ -171,6 +172,7 @@ final class DocumentService
         $document->voided_by = $actor->id;
         $document->void_reason = mb_substr($reason, 0, 200);
         $document->save();
+        $this->search->reindexPatient($document->patient_id);
         $this->audit->record('document.voided', $actor->id, 'document', $document->id);
     }
 

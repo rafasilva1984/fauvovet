@@ -61,6 +61,14 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
   as novidades na produção. Tela do titular (só com `FAUVOVET_DEMO_DATA=true`) que carrega na clínica ativa 22
   pacientes/10 tutores fictícios, 32 atendimentos finalizados em ~3 anos, vacinas, agenda e 3 casos científicos, e
   remove tudo (inclusive o registrado depois nos pacientes demo); IDs com prefixo `00DEM0`; ADR-016.
+- **Busca clínica em texto livre (Fase 2; implementado e testado localmente; ainda não publicado):** menu Busca
+  clínica (`clinical:read`); atendimentos finalizados, diagnósticos, adendos, alertas, documentos e vacinas; sem
+  acento/plural, "frases", OU, NÃO/-termo; cruza registros do mesmo paciente; facetas (espécie, período, origem,
+  situação) e ordenação; trecho destacado com origem/data/autor e link; índice próprio de termos (ADR-017) atualizado
+  na finalização; demonstração ampliada (recusa alimentar, uveíte em ave, penicilina + antibiótico, adendos).
+  Falta: texto de anexos, sinônimos, pesquisas salvas.
+- **Regra do proprietário (17/10/2026):** toda entrega amplia os dados de demonstração e o guia traz "Confirmar o
+  funcionamento com os dados de demonstração" (também no `TEMPLATE.html`).
 - **Não implementado:** exames estruturados, internação, (alergias, peso, vacinas), busca clínica, lembretes, visão mensal/salas/recorrência; MFA, recuperação de senha, e-mail transacional; backup automático.
 - **PUBLICADO (teste) na Locaweb em 15/10/2026** pelo proprietário, seguindo o tutorial: `http://dradeboragaldino.com.br/fauvovet`.
   Domínio corrigido em todo o repositório (era "gakdino"; o certo é **galdino**). `pnpm smoke` contra o servidor real:
@@ -69,7 +77,7 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
 - **Tutorial de deploy didático:** o proprietário achou o passo a passo de `DEPLOY_LOCAWEB.md` difícil de seguir (faltava
   configuração do banco e o que copiar para onde). Reescrito como guia completo, etapas A–H, com glossário, mapa de pastas,
   folha de anotações e troubleshooting; novo comando `pnpm deploy:copiar` (pacote → `C:\fauvovet-deploy`, fora do OneDrive).
-- **Último guia HTML:** [`docs/changes/2026-10-18-dados-demonstracao.html`](changes/2026-10-18-dados-demonstracao.html)
+- **Último guia HTML:** [`docs/changes/2026-10-19-busca-clinica.html`](changes/2026-10-19-busca-clinica.html)
 
 ## Ambiente (verificado)
 
@@ -158,13 +166,16 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 
 ## Próxima ação exata
 
-1. Proprietário: publicar vacinação + busca avançada + casos científicos + dados de demonstração num único pacote
-   (`docs/changes/2026-10-18-dados-demonstracao.html` › seção 7; 2 migrações se a vacinação ainda não subiu; acrescentar
-   `FAUVOVET_DEMO_DATA=true` ao `.env` do servidor; carregar a demonstração; revisar protocolos de vacina). **Antes do
-   primeiro paciente real:** remover a demonstração e voltar `FAUVOVET_DEMO_DATA=false`. HTTPS continua pendente (pedido do proprietário: deixar para o final).
-2. Próximo incremento sugerido (Fase 2): busca em texto livre do prontuário (queixa, evolução, conduta) e em anexos,
-   com destaque de trechos e sinônimos — decidir FULLTEXT InnoDB × tabela de termos (`docs/IDEAS.md`, ADR-010).
-   Alternativas da Fase 3: exames estruturados ou internação. Entrada: `app/Services/PatientSearch.php`.
+1. Proprietário: publicar vacinação + busca avançada + casos científicos + dados de demonstração + busca clínica num
+   único pacote (`docs/changes/2026-10-19-busca-clinica.html` › seção 7; 3 migrações se nada disso subiu ainda;
+   `FAUVOVET_DEMO_DATA=true` no `.env` do servidor). Depois seguir "Confirmar o funcionamento com os dados de
+   demonstração" (seção 5); se a demonstração já estava carregada, remover e carregar de novo. Revisar protocolos de
+   vacina. Antes do primeiro paciente real: remover a demonstração e voltar `FAUVOVET_DEMO_DATA=false`. HTTPS continua
+   pendente (pedido do proprietário: deixar para o final).
+2. Próximo incremento sugerido (Fase 2): texto de anexos PDF/DOCX na busca clínica, com status "sem texto
+   pesquisável" (§3.3 ex. 4 e 10) — avaliar extrator PHP puro (licença/tamanho) e indexar em `ClinicalSearchIndex`;
+   depois sinônimos da clínica. Entrada: `app/Services/ClinicalSearchIndex.php`, `app/Services/AttachmentService.php`.
+   Lembrar: ampliar `DemoDataService` e a seção de confirmação do guia.
 
 ## Histórico de incrementos
 
@@ -186,4 +197,5 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 | 2026-10-18 | **Vacinação**: catálogo, carteira, próxima dose, vencimentos, PDF                                               | [2026-10-18-vacinacao.html](changes/2026-10-18-vacinacao.html)                               | verify --e2e 9/9 (PHPUnit 151, isolamento 37)                      | `6fd9d73`                          | push OK, CI            | Busca avançada + casos científicos    |
 | 2026-10-18 | **Busca avançada de pacientes**: raça, sexo, idade, castração, diagnóstico/situação, ano                        | [2026-10-18-busca-avancada.html](changes/2026-10-18-busca-avancada.html)                     | verify --e2e 9/9 (PHPUnit 156, isolamento 38)                      | `c74f19b`                          | push OK, CI            | Casos científicos                     |
 | 2026-10-18 | **Casos científicos**: séries/relatos, consentimento, estatísticas, exportação anonimizada                      | [2026-10-18-casos-cientificos.html](changes/2026-10-18-casos-cientificos.html)               | verify --e2e 9/9 (PHPUnit 164, isolamento 40)                      | main — hash na próxima atualização | push nesta sessão      | Publicar; busca em texto livre        |
-| 2026-10-18 | **Dados de demonstração**: carga/remoção de dados fictícios pelo titular (chave no `.env`)                      | [2026-10-18-dados-demonstracao.html](changes/2026-10-18-dados-demonstracao.html)             | verify --e2e 9/9 (PHPUnit 169, isolamento 41, E2E 72)              | main — hash na próxima atualização | push nesta sessão      | Publicar; busca em texto livre        |
+| 2026-10-18 | **Dados de demonstração**: carga/remoção de dados fictícios pelo titular (chave no `.env`)                      | [2026-10-18-dados-demonstracao.html](changes/2026-10-18-dados-demonstracao.html)             | verify --e2e 9/9 (PHPUnit 169, isolamento 41, E2E 72)              | `bc41bf8`                          | push OK, CI            | Busca clínica em texto livre          |
+| 2026-10-19 | **Busca clínica em texto livre** + demonstração ampliada                                                        | [2026-10-19-busca-clinica.html](changes/2026-10-19-busca-clinica.html)                       | verify --e2e 9/9 (PHPUnit 175, isolamento 42, E2E 75)              | main — hash na próxima atualização | push nesta sessão      | Texto de anexos na busca              |

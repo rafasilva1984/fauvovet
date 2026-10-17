@@ -20,7 +20,7 @@ use Illuminate\Validation\ValidationException;
  */
 final class VaccinationService
 {
-    public function __construct(private readonly TenantContext $context, private readonly Audit $audit) {}
+    public function __construct(private readonly TenantContext $context, private readonly Audit $audit, private readonly ClinicalSearchIndex $search) {}
 
     public function ensureDefaults(): void
     {
@@ -78,6 +78,7 @@ final class VaccinationService
             'lot_expires_on' => $data['lot_expires_on'] ?? null, 'site' => $data['site'] ?? null, 'next_due_on' => $next,
             'notes' => $data['notes'] ?? null, 'applied_by_membership_id' => (string) $this->context->membership()?->id, 'created_by' => $actor->id,
         ]);
+        $this->search->reindexPatient($patient->id);
         $this->audit->record('vaccination.registered', $actor->id, 'patient', $patient->id, ['vaccination_id' => $v->id, 'vaccine_id' => $vaccine->id, 'dose' => $dose]);
 
         return $v;
@@ -92,6 +93,7 @@ final class VaccinationService
         $vaccination->setAttribute('voided_by', $actor->id);
         $vaccination->void_reason = mb_substr($reason, 0, 200);
         $vaccination->save();
+        $this->search->reindexPatient($vaccination->patient_id);
         $this->audit->record('vaccination.voided', $actor->id, 'patient', $vaccination->patient_id, ['vaccination_id' => $vaccination->id]);
     }
 

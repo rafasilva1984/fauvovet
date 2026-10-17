@@ -54,6 +54,18 @@ final class DemoDataTest extends TestCase
         $res->assertDontSee('/pacientes/'.DemoDataService::idFor(Seed::TENANT_A, 'PT', 3), false);
         $this->get('/pacientes?ano='.(now('America/Sao_Paulo')->year - 2))->assertSee('/pacientes/'.DemoDataService::idFor(Seed::TENANT_A, 'PT', 19), false); // jabuti, ~900 dias atrás
 
+        // Busca clínica em texto livre já indexada para os pacientes demo (exemplos do guia).
+        $pt = fn (int $n) => '/pacientes/'.DemoDataService::idFor(Seed::TENANT_A, 'PT', $n);
+        $this->get('/busca?q=%22recusa+alimentar%22+OU+%22n%C3%A3o+se+alimenta%22')->assertSee($pt(11), false)->assertSee($pt(13), false)->assertDontSee($pt(1), false);
+        $this->get('/busca?q=uveite&especie=bird')->assertSee($pt(18), false)->assertSee('Adendo');
+        $this->get('/busca?q=penicilina+antibiotico')->assertSee($pt(1), false)->assertSee('Alerta — Alergia');
+        $this->get('/busca?q=xampu')->assertSee('Adendo')->assertSee($pt(1), false);
+        // Demais passos do guia 2026-10-19-busca-clinica.html (seção 5).
+        $this->get('/busca?q=DOENCAS+RENAIS')->assertSee($pt(11), false)->assertSee($pt(12), false)->assertSee($pt(13), false);
+        $this->get('/busca?q=renal+N%C3%83O+hipertens%C3%A3o')->assertSee($pt(11), false)->assertDontSee($pt(13), false)->assertSee('sem “hipertensao”');
+        $this->get('/busca?q=dermatite&situacao=ruled_out')->assertSee($pt(3), false)->assertDontSee($pt(1), false);
+        $this->get('/busca?q=uveite&especie=canine')->assertSee('Nada encontrado');
+        $this->get('/pacientes?q=xampu')->assertSee('Procurar “xampu” no prontuário');
         $this->get('/vacinas')->assertOk()->assertSee('Bento')->assertSee('Atrasada');
         $this->get('/agenda')->assertOk()->assertSee('Zeus');
         $this->get('/casos')->assertOk()->assertSee('Dermatite atópica em cães')->assertSee('Doença renal crônica em gatos idosos')->assertSee('hipovitaminose A');
@@ -83,6 +95,7 @@ final class DemoDataTest extends TestCase
             $this->assertSame(0, $this->demoRows($table, Seed::TENANT_A), $table);
         }
         $this->assertSame(0, $this->sys(fn () => DB::table('encounters')->where('tenant_id', Seed::TENANT_A)->where('patient_id', $bento)->count()));
+        $this->assertSame(0, $this->sys(fn () => DB::table('clinical_search_documents')->where('tenant_id', Seed::TENANT_A)->where('patient_id', $bento)->count()));
         $this->assertSame(0, $this->sys(fn () => DB::table('guardian_patient')->where('tenant_id', Seed::TENANT_A)->where('guardian_id', DemoDataService::idFor(Seed::TENANT_A, 'GR', 2))->count()));
         // Dados que não são demo continuam.
         $this->assertSame(3, $this->sys(fn () => Patient::query()->where('tenant_id', Seed::TENANT_A)->count()));
