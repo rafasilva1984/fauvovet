@@ -96,6 +96,9 @@
         @case('user')
             <circle cx="12" cy="8.5" r="3.8" /><path d="M4.5 20a7.5 7.5 0 0 1 15 0" />
         @break
+        @case('syringe')
+            <path d="m18 2 4 4M17 7l3-3M19 9 8.5 19.5a2.1 2.1 0 0 1-3 0l-1-1a2.1 2.1 0 0 1 0-3L15 5M9 11l4 4M5 19l-3 3M14 4l6 6" />
+        @break
         @case('check')
             <path d="m5 12.5 4.5 4.5L19 7.5" />
         @break

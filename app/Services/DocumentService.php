@@ -188,7 +188,12 @@ final class DocumentService
     /** @param array<string, mixed> $data */
     public function renderPdf(array $data): string
     {
-        $html = view('documents.pdf', $data)->render();
+        return $this->renderHtml(view('documents.pdf', $data)->render());
+    }
+
+    /** HTML (já escapado pela view) → PDF, com as mesmas restrições de segurança do dompdf. */
+    public function renderHtml(string $html): string
+    {
         $options = new Options;
         $options->setIsRemoteEnabled(false);       // nunca busca nada fora do servidor
         $options->setIsPhpEnabled(false);

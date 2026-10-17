@@ -133,6 +133,9 @@
             @endif
         </section>
     </div>
+    @if ($vaccination !== null)
+        @include('vaccinations._card')
+    @endif
     @if ($clinical !== null)
         @include('patients._clinical')
     @endif

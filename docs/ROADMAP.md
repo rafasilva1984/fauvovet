@@ -22,7 +22,9 @@ Ordem conforme CLAUDE.md §11. Atualizado em 2026-10-15 (stack PHP/MySQL — ADR
 - [x] Atendimento/prontuário: queixa, anamnese, sinais vitais, exame físico, hipóteses × diagnósticos, conduta; finalizar e assinar bloqueia; adendos; alertas; peso (17/10/2026).
 - [x] Receitas e documentos em PDF: modelos da clínica, variáveis whitelist, PDF preservado com código de verificação, anulação, Meu perfil com CRMV (17/10/2026).
 - [x] Anexos privados no prontuário: PDF, imagens e DOCX validados pelo conteúdo, disco privado, download seguro e auditado (18/10/2026).
-- [ ] Vacinação: catálogo de vacinas/protocolos, registro com lote/validade, carteira e próximas doses ← próximo
+- [x] Vacinação: catálogo/protocolos, aplicação com lote/validade, próxima dose, carteira PDF, vencimentos (18/10/2026).
+- [ ] Busca avançada de pacientes (diagnóstico, raça, idade, sexo, ano de atendimento) ← pedido do proprietário
+- [ ] Casos científicos: séries/relatos de casos a partir dos atendimentos, exportação anonimizada ← pedido do proprietário
 
 Depois: modelos de documento por clínica, vacinação.
 

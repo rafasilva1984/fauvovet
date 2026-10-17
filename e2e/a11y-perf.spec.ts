@@ -123,6 +123,9 @@ test('acessibilidade WCAG AA (axe): prontuário', async ({ page }) => {
 test('acessibilidade WCAG AA (axe): documentos e perfil', async ({ page }) => {
   await loginInto(page, USERS.ana);
   for (const path of [
+    'vacinas',
+    'configuracoes/vacinas',
+    'configuracoes/vacinas/nova',
     'pacientes/01K7FV0000000000000PTA0001/documentos/novo',
     'configuracoes/modelos-de-documento',
     'configuracoes/modelos-de-documento/novo',

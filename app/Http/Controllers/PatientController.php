@@ -11,8 +11,11 @@ use App\Models\Patient;
 use App\Models\PatientAlert;
 use App\Models\PatientWeight;
 use App\Models\User;
+use App\Models\Vaccination;
+use App\Models\Vaccine;
 use App\Services\ClinicalRecordService;
 use App\Services\PatientRegistry;
+use App\Services\VaccinationService;
 use App\Support\BrazilianDocument;
 use App\Support\Species;
 use App\Tenancy\TenantContext;
@@ -125,6 +128,19 @@ final class PatientController extends Controller
                 ->orderBy('starts_at')->limit(5)->get()
             : null;
 
+        // Vacinação: carteira para quem lê vacinas (inclui recepção); formulário para quem registra.
+        $vaccination = null;
+        if ($this->context->can('vaccines:read')) {
+            $service = app(VaccinationService::class);
+            $service->ensureDefaults();
+            $vaccination = [
+                'card' => $service->card($patient),
+                'history' => Vaccination::query()->where('patient_id', $patient->id)->with(['vaccine:id,name', 'appliedBy.user:id,name'])
+                    ->orderByDesc('applied_on')->orderByDesc('created_at')->limit(100)->get(),
+                'vaccines' => Vaccine::query()->where('active', true)->orderBy('name')->get()->filter(fn ($v) => $v->appliesTo($patient->species))->values(),
+            ];
+        }
+
         // Prontuário: só para a equipe clínica, e cada abertura fica registrada (auditoria de acesso).
         $clinical = null;
         if ($this->context->can('clinical:read')) {
@@ -145,7 +161,7 @@ final class PatientController extends Controller
             ];
         }
 
-        return view('patients.show', ['patient' => $patient, 'term' => $term, 'candidates' => $candidates, 'appointments' => $appointments, 'clinical' => $clinical]);
+        return view('patients.show', ['patient' => $patient, 'term' => $term, 'candidates' => $candidates, 'appointments' => $appointments, 'clinical' => $clinical, 'vaccination' => $vaccination]);
     }
 
     public function edit(Patient $patient): View

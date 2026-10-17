@@ -72,6 +72,13 @@ CEP pela consulta `/cep/{cep}`). Migração aditiva.
 | ------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `attachments` | clínica | FKs compostas (paciente, atendimento); mime detectado pelo conteúdo, extensão gravada, tamanho, SHA-256; arquivo em `storage/app/private/attachments/{clínica}/{ano}/{id}.{ext}` (nome aleatório); **imutável**, só "removido" (oculto, com motivo) |
 
+## 2026_10_18_000002_create_vaccination_tables
+
+| Tabela         | Escopo  | Integridade                                                                                                                                                                                                 |
+| -------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `vaccines`     | clínica | catálogo/protocolo: espécies (JSON de códigos; vazio = todas), doses da série, intervalo, reforço; nome único por clínica; 7 modelos genéricos criados no 1º uso                                            |
+| `vaccinations` | clínica | FKs compostas (paciente, vacina, atendimento, aplicador); dose, data, lote, fabricante, validade, local, próxima dose; **imutável**, só anulação com motivo; índices por paciente+vacina e por próxima dose |
+
 Tabelas de clínica registradas no firewall: `TenantQueryFirewall::TENANT_TABLES` (um teste falha se uma tabela com
 `tenant_id` não estiver na lista).
 

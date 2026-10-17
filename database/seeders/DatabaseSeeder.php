@@ -15,7 +15,10 @@ use App\Models\Tenant;
 use App\Models\TenantTheme;
 use App\Models\Unit;
 use App\Models\User;
+use App\Models\Vaccination;
+use App\Models\Vaccine;
 use App\Services\ScheduleService;
+use App\Services\VaccinationService;
 use App\Tenancy\TenantContext;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -189,6 +192,25 @@ class DatabaseSeeder extends Seeder
         $context->runForTenant(self::TENANT_A, function () use ($users) {
             if (! PatientAlert::query()->where('patient_id', '01K7FV0000000000000PTA0001')->exists()) {
                 PatientAlert::create(['patient_id' => '01K7FV0000000000000PTA0001', 'kind' => 'allergy', 'severity' => 'high', 'description' => 'Alergia a penicilina (fictícia)', 'created_by' => $users['bruno']->id]);
+            }
+        });
+        // Vacinas fictícias: Thor com reforço da polivalente ATRASADO; Mia com antirrábica em dia.
+        $context->runForTenant(self::TENANT_A, function () use ($users) {
+            app(VaccinationService::class)->ensureDefaults();
+            if (Vaccination::query()->exists()) {
+                return;
+            }
+            $bruno = Membership::query()->where('user_id', $users['bruno']->id)->value('id');
+            $poli = Vaccine::query()->where('name', 'Polivalente canina (V8/V10)')->firstOrFail();
+            $raiva = Vaccine::query()->where('name', 'Antirrábica')->firstOrFail();
+            foreach ([
+                ['01K7FV0000000000000PTA0001', $poli, 3, now()->subDays(400), now()->subDays(35)],
+                ['01K7FV0000000000000PTA0001', $raiva, 1, now()->subDays(200), now()->addDays(165)],
+                ['01K7FV0000000000000PTA0002', $raiva, 1, now()->subDays(350), now()->addDays(15)],
+            ] as [$patient, $vaccine, $dose, $applied, $next]) {
+                Vaccination::create(['patient_id' => $patient, 'vaccine_id' => $vaccine->id, 'dose_number' => $dose, 'applied_on' => $applied->toDateString(),
+                    'lot' => 'LOTE-FICT-'.$dose, 'manufacturer' => 'Fabricante fictício', 'next_due_on' => $next->toDateString(),
+                    'applied_by_membership_id' => $bruno, 'created_by' => $users['bruno']->id]);
             }
         });
         $this->command->info('Seed fictício: 2 clínicas, '.count(self::UNITS).' unidades, '.count(self::USERS).' usuários, '.count(self::GUARDIANS).' responsáveis, '.count(self::PATIENTS).' pacientes, '.count(self::APPOINTMENTS).' agendamentos hoje (senha = SEED_PASSWORD).');

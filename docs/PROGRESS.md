@@ -12,7 +12,7 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
 
 ## Situação atual
 
-- **Branch/remote:** `main` → `origin`. Reescrita sincronizada em `34ee508`; tutorial em `7d1546c`; deploy/domínio em `df8a793`; equipe em `5bc5577`; pacientes em `7aee4ec`; agenda em `8f91a50`; visual em `1dacafc`; ajustes de cadastro em `57a5c46`; prontuário em `3767132`; teste de rede em `ca61106`; documentos em `7cf93a2` (CI success); CI (PHP 8.3) run 38796096959: **success** (bootstrap + verify --e2e).
+- **Branch/remote:** `main` → `origin`. Reescrita sincronizada em `34ee508`; tutorial em `7d1546c`; deploy/domínio em `df8a793`; equipe em `5bc5577`; pacientes em `7aee4ec`; agenda em `8f91a50`; visual em `1dacafc`; ajustes de cadastro em `57a5c46`; prontuário em `3767132`; teste de rede em `ca61106`; documentos em `7cf93a2`; anexos em `f7c5f2a`/`62debc1` (CI success); CI (PHP 8.3) run 38796096959: **success** (bootstrap + verify --e2e).
 - **Implementado e testado (local):** login seguro (Argon2id, bloqueio, rate limit, mensagem uniforme), sessão no
   servidor, CSRF, CSP com nonce, escolha de clínica/unidade, RBAC (8 papéis), cadastro de clínica PF/PJ, unidades
   (lista/criação/detalhe), equipe (leitura), aparência por clínica (AA), auditoria somente inclusão, páginas de erro
@@ -43,11 +43,14 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
   (5 padrão) com variáveis whitelist e versão, emissão com texto preenchido e aviso de [colchetes], PDF dompdf com
   identidade da clínica, paciente/tutor, assinatura com CRMV e código de verificação, disco privado + SHA-256,
   anulação, Meu perfil (CRMV), auditoria de leitura/download (ADR-014).
-- **Anexos privados (Fase 1, implementado e testado localmente; ainda não publicado):** PDF/JPG/PNG/WebP/DOCX por
+- **Anexos privados (Fase 1): PUBLICADO** pelo proprietário (pacote `62debc1`): PDF/JPG/PNG/WebP/DOCX por
   paciente/atendimento, tipo pelo conteúdo, disco privado com nome aleatório e SHA-256, imagem inline e PDF/DOCX só
   download (CSP sandbox), remoção com motivo, auditoria, `.user.ini` (16 MB). Também: correções de layout no celular
   (zoom por fonte < 16 px, grades sem coluna única) + checagem automática de conteúdo além da borda.
-- **Não implementado:** vacinação, exames estruturados, internação, (alergias, peso, vacinas), busca clínica, lembretes, visão mensal/salas/recorrência; MFA, recuperação de senha, e-mail transacional; backup automático.
+- **Vacinação (implementado e testado localmente; ainda não publicado):** catálogo/protocolos (7 modelos genéricos),
+  aplicação imutável com lote/validade/local/próxima dose, carteira PDF, "Vacinas a vencer" (recepção vê, clínica
+  registra), painel com vencimentos.
+- **Não implementado:** exames estruturados, internação, (alergias, peso, vacinas), busca clínica, lembretes, visão mensal/salas/recorrência; MFA, recuperação de senha, e-mail transacional; backup automático.
 - **PUBLICADO (teste) na Locaweb em 15/10/2026** pelo proprietário, seguindo o tutorial: `http://dradeboragaldino.com.br/fauvovet`.
   Domínio corrigido em todo o repositório (era "gakdino"; o certo é **galdino**). `pnpm smoke` contra o servidor real:
   **5/5 PASS** (143–245 ms). **HTTPS inválido**: certificado `*.websiteseguro.com` não cobre o domínio → sem dados reais
@@ -55,7 +58,7 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
 - **Tutorial de deploy didático:** o proprietário achou o passo a passo de `DEPLOY_LOCAWEB.md` difícil de seguir (faltava
   configuração do banco e o que copiar para onde). Reescrito como guia completo, etapas A–H, com glossário, mapa de pastas,
   folha de anotações e troubleshooting; novo comando `pnpm deploy:copiar` (pacote → `C:\fauvovet-deploy`, fora do OneDrive).
-- **Último guia HTML:** [`docs/changes/2026-10-18-anexos.html`](changes/2026-10-18-anexos.html)
+- **Último guia HTML:** [`docs/changes/2026-10-18-vacinacao.html`](changes/2026-10-18-vacinacao.html)
 
 ## Ambiente (verificado)
 
@@ -144,12 +147,10 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 
 ## Próxima ação exata
 
-1. Proprietário: publicar `docs/changes/2026-10-18-anexos.html` › seção 7 (1 migração; enviar `.user.ini`; conferir
-   `upload_max_filesize` no diagnóstico; backup passa a incluir `storage/app/private/attachments`). Pendências antigas:
-   HTTPS e rotina de backup.
-2. Próximo incremento sugerido: **vacinação** — catálogo de vacinas/protocolos por espécie (padrão editável),
-   registro de aplicação (vacina, lote, fabricante, validade, local, profissional, data), próximas doses com aviso de
-   atraso no painel e na ficha, carteira de vacinação em PDF (reaproveita documentos), testes A/B.
+1. Sessão em andamento (pedido do proprietário): **busca avançada de pacientes** (diagnóstico com situação, raça,
+   idade, sexo, ano de atendimento; filtros clínicos só para a equipe clínica) e depois **casos científicos** (séries e
+   relatos de casos a partir dos atendimentos, estatísticas, exportação CSV/PDF anonimizada, consentimento do tutor).
+2. Proprietário: publicar vacinação (`docs/changes/2026-10-18-vacinacao.html` › seção 7; revisar protocolos).
 
 ## Histórico de incrementos
 
@@ -168,3 +169,4 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 | 2026-10-17 | **Fase 1 — Prontuário** + ajustes pedidos (sem "opcional", idade pela data, CEP, UF em lista)                   | [2026-10-17-prontuario.html](changes/2026-10-17-prontuario.html)                             | verify --e2e 9/9 (PHPUnit 117, isolamento 32, E2E 55)              | main — hash na próxima atualização | push nesta sessão      | Receitas/documentos PDF               |
 | 2026-10-17 | **Fase 1 — Documentos em PDF**: modelos, receita/atestado/orientações/encaminhamento/termo, PDF preservado      | [2026-10-17-documentos-pdf.html](changes/2026-10-17-documentos-pdf.html)                     | verify --e2e 9/9 (PHPUnit 127, isolamento 33)                      | main — hash na próxima atualização | push nesta sessão      | Anexos privados                       |
 | 2026-10-18 | **Fase 1 — Anexos privados** + correções de layout no celular                                                   | [2026-10-18-anexos.html](changes/2026-10-18-anexos.html)                                     | verify --e2e 9/9 (PHPUnit 143, isolamento 35, E2E 61)              | main — hash na próxima atualização | push nesta sessão      | Vacinação                             |
+| 2026-10-18 | **Vacinação**: catálogo, carteira, próxima dose, vencimentos, PDF                                               | [2026-10-18-vacinacao.html](changes/2026-10-18-vacinacao.html)                               | verify --e2e 9/9 (PHPUnit 151, isolamento 37)                      | main — hash na próxima atualização | push nesta sessão      | Busca avançada + casos científicos    |

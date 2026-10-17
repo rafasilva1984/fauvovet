@@ -19,6 +19,8 @@ use App\Http\Controllers\PostalCodeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UnitController;
+use App\Http\Controllers\VaccinationController;
+use App\Http\Controllers\VaccineController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/painel');
@@ -108,6 +110,23 @@ Route::middleware('auth')->group(function () {
             Route::post('/configuracoes/modelos-de-documento', [DocumentTemplateController::class, 'store'])->name('document-templates.store');
             Route::get('/configuracoes/modelos-de-documento/{template}/editar', [DocumentTemplateController::class, 'edit'])->name('document-templates.edit');
             Route::put('/configuracoes/modelos-de-documento/{template}', [DocumentTemplateController::class, 'update'])->name('document-templates.update');
+        });
+
+        // Vacinação: recepção vê carteira/vencimentos (vaccines:read); equipe clínica registra (vaccines:write).
+        Route::middleware('permission:vaccines:read')->group(function () {
+            Route::get('/vacinas', [VaccinationController::class, 'index'])->name('vaccinations.index');
+            Route::get('/pacientes/{patient}/vacinas/carteira', [VaccinationController::class, 'card'])->name('vaccinations.card');
+        });
+        Route::middleware('permission:vaccines:write')->group(function () {
+            Route::post('/pacientes/{patient}/vacinas', [VaccinationController::class, 'store'])->name('vaccinations.store');
+            Route::post('/vacinas/aplicacoes/{vaccination}/anular', [VaccinationController::class, 'void'])->name('vaccinations.void');
+        });
+        Route::middleware('permission:vaccines:configure')->group(function () {
+            Route::get('/configuracoes/vacinas', [VaccineController::class, 'index'])->name('vaccines.index');
+            Route::get('/configuracoes/vacinas/nova', [VaccineController::class, 'create'])->name('vaccines.create');
+            Route::post('/configuracoes/vacinas', [VaccineController::class, 'store'])->name('vaccines.store');
+            Route::get('/configuracoes/vacinas/{vaccine}/editar', [VaccineController::class, 'edit'])->name('vaccines.edit');
+            Route::put('/configuracoes/vacinas/{vaccine}', [VaccineController::class, 'update'])->name('vaccines.update');
         });
 
         // Prontuário: leitura clínica; escrita clínica; assinatura (finalizar) verificada no serviço (clinical:sign).

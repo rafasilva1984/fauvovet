@@ -40,10 +40,12 @@
         'patient.clinical_viewed' => 'consultou um prontuário',
         'patient.alert_added' => 'registrou um alerta clínico',
         'patient.alert_resolved' => 'resolveu um alerta clínico',
+        'vaccination.registered' => 'registrou uma vacina',
+        'vaccination.voided' => 'anulou uma aplicação de vacina',
     ];
     $firstName = strtok(auth()->user()->name, ' ');
     $todayLabel = ucfirst(now('America/Sao_Paulo')->locale('pt_BR')->translatedFormat('l, d \\d\\e F'));
-    $activityIcons = ['encounter' => 'stethoscope', 'appointment' => 'calendar', 'patient' => 'paw', 'guardian' => 'user', 'member' => 'users', 'invitation' => 'mail', 'unit' => 'building', 'tenant' => 'sparkles', 'auth' => 'shield'];
+    $activityIcons = ['vaccination' => 'syringe', 'encounter' => 'stethoscope', 'appointment' => 'calendar', 'patient' => 'paw', 'guardian' => 'user', 'member' => 'users', 'invitation' => 'mail', 'unit' => 'building', 'tenant' => 'sparkles', 'auth' => 'shield'];
 @endphp
 
 @section('content')
@@ -140,6 +142,27 @@
                                         <span class="block truncate text-xs text-muted">{{ $dr->started_at->timezone($dr->unit->timezone)->format('d/m H:i') }} · {{ $dr->author?->name }}</span>
                                     </span>
                                     <x-badge tone="warning" :dot="true">Rascunho</x-badge>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </x-card>
+            @endif
+            @if ($vaccinesDue !== null && $vaccinesDue->isNotEmpty())
+                <div class="mb-3 flex items-center justify-between gap-2">
+                    <h2 class="flex items-center gap-2 text-lg font-bold tracking-tight"><span class="flex size-8 items-center justify-center rounded-xl bg-warning-bg text-warning"><x-icon name="syringe" :size="16" /></span> Vacinas a vencer</h2>
+                    <a href="{{ route('vaccinations.index') }}" class="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-link">Ver todas <x-icon name="arrow-right" :size="16" /></a>
+                </div>
+                <x-card class="mb-6 p-2">
+                    <ul>
+                        @foreach ($vaccinesDue as $vd)
+                            @php
+                                $dl = (int) \Illuminate\Support\Carbon::today()->diffInDays($vd->next_due_on, false);
+                            @endphp
+                            <li>
+                                <a href="{{ route('patients.show', $vd->patient) }}" class="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl px-3 py-2.5 transition hover:bg-tint">
+                                    <span class="min-w-0 flex-1 basis-32"><span class="block truncate font-semibold">{{ $vd->patient->name }}</span><span class="block truncate text-xs text-muted">{{ $vd->vaccine->name }}</span></span>
+                                    @include('vaccinations._status', ['status' => $dl < 0 ? 'overdue' : 'soon', 'days' => $dl])
                                 </a>
                             </li>
                         @endforeach

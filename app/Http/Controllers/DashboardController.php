@@ -9,6 +9,7 @@ use App\Models\Membership;
 use App\Models\Patient;
 use App\Models\Unit;
 use App\Services\ScheduleService;
+use App\Services\VaccinationService;
 use App\Tenancy\Roles;
 use App\Tenancy\TenantContext;
 use Illuminate\Database\Eloquent\Collection;
@@ -29,6 +30,7 @@ final class DashboardController extends Controller
                 ? Encounter::query()->where('status', 'draft')->with(['patient:id,name,species', 'author:id,name', 'unit:id,timezone'])
                     ->orderBy('started_at')->limit(5)->get()
                 : null,
+            'vaccinesDue' => $context->can('vaccines:read') ? app(VaccinationService::class)->dueList(30, 5) : null,
             'today' => $context->can('schedule:read') ? $this->today($context) : null,
             'patientCount' => $context->can('patients:read') ? Patient::query()->where('status', 'active')->count() : null,
             'memberCount' => $context->can('members:read') ? Membership::query()->where('status', 'active')->count() : null,
