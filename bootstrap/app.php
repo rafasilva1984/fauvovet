@@ -1,5 +1,6 @@
 <?php
 
+use App\Clinical\ClinicalRecordLocked;
 use App\Http\Middleware\PreventRequestForgery;
 use App\Http\Middleware\RequestContext;
 use App\Http\Middleware\RequirePermission;
@@ -43,5 +44,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Violação de isolamento: registra como crítico e responde 403 genérico (sem detalhes).
         $exceptions->render(fn (CrossTenantViolation $e) => response()->view('errors.403', ['message' => 'Acesso negado.'], 403));
         $exceptions->render(fn (TenantContextMissing $e) => redirect()->route('context.show'));
+        // Última barreira do prontuário: registro finalizado não muda (a tela já evita chegar aqui).
+        $exceptions->render(fn (ClinicalRecordLocked $e) => back()->withErrors(['record' => $e->getMessage()]));
         $exceptions->dontFlash(['password', 'password_confirmation', 'current_password']);
     })->create();

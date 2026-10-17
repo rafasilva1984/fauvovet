@@ -3,8 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Appointment;
+use App\Models\Encounter;
 use App\Models\Guardian;
 use App\Models\Patient;
+use App\Models\PatientAlert;
+use App\Models\PatientWeight;
+use App\Models\User;
+use App\Services\ClinicalRecordService;
 use App\Services\PatientRegistry;
 use App\Support\BrazilianDocument;
 use App\Support\Species;
@@ -118,7 +123,23 @@ final class PatientController extends Controller
                 ->orderBy('starts_at')->limit(5)->get()
             : null;
 
-        return view('patients.show', ['patient' => $patient, 'term' => $term, 'candidates' => $candidates, 'appointments' => $appointments]);
+        // Prontuário: só para a equipe clínica, e cada abertura fica registrada (auditoria de acesso).
+        $clinical = null;
+        if ($this->context->can('clinical:read')) {
+            /** @var User $user */
+            $user = $request->user();
+            app(ClinicalRecordService::class)->recordView('patient.clinical_viewed', 'patient', $patient->id, $user);
+            $clinical = [
+                'alerts' => PatientAlert::query()->where('patient_id', $patient->id)->whereNull('resolved_at')
+                    ->orderByRaw("FIELD(severity, 'high', 'medium', 'low')")->orderBy('created_at')->get(),
+                'weights' => PatientWeight::query()->where('patient_id', $patient->id)->orderByDesc('measured_at')->limit(12)->get()->reverse()->values(),
+                'encounters' => Encounter::query()->where('patient_id', $patient->id)
+                    ->with(['diagnoses', 'author:id,name', 'signer:id,name', 'unit:id,name,timezone', 'type:id,name'])
+                    ->withCount('addenda')->orderByDesc('started_at')->limit(50)->get(),
+            ];
+        }
+
+        return view('patients.show', ['patient' => $patient, 'term' => $term, 'candidates' => $candidates, 'appointments' => $appointments, 'clinical' => $clinical]);
     }
 
     public function edit(Patient $patient): View

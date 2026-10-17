@@ -1,6 +1,6 @@
 # FauvoVet — Checkpoint e ponto de retomada
 
-> **Atualizado em:** 2026-10-16 02:30 (America/Sao_Paulo) · **Fase:** 1 — MVP clínico (em andamento; Fase 0 concluída exceto HTTPS/backup)
+> **Atualizado em:** 2026-10-17 01:00 (America/Sao_Paulo) · **Fase:** 1 — MVP clínico (em andamento; Fase 0 concluída exceto HTTPS/backup)
 > **Regra:** atualizar a cada incremento, bloqueio e antes de encerrar qualquer sessão.
 
 ## Mudança de rumo nesta sessão
@@ -12,7 +12,7 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
 
 ## Situação atual
 
-- **Branch/remote:** `main` → `origin`. Reescrita sincronizada em `34ee508`; tutorial em `7d1546c`; deploy/domínio em `df8a793`; equipe em `5bc5577`; pacientes em `7aee4ec`; agenda em `8f91a50` (CI success); CI (PHP 8.3) run 38796096959: **success** (bootstrap + verify --e2e).
+- **Branch/remote:** `main` → `origin`. Reescrita sincronizada em `34ee508`; tutorial em `7d1546c`; deploy/domínio em `df8a793`; equipe em `5bc5577`; pacientes em `7aee4ec`; agenda em `8f91a50`; visual em `1dacafc`; ajustes de cadastro em `57a5c46` (CI success); CI (PHP 8.3) run 38796096959: **success** (bootstrap + verify --e2e).
 - **Implementado e testado (local):** login seguro (Argon2id, bloqueio, rate limit, mensagem uniforme), sessão no
   servidor, CSRF, CSP com nonce, escolha de clínica/unidade, RBAC (8 papéis), cadastro de clínica PF/PJ, unidades
   (lista/criação/detalhe), equipe (leitura), aparência por clínica (AA), auditoria somente inclusão, páginas de erro
@@ -30,11 +30,16 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
   profissional, fuso da unidade (UTC no banco, ADR-011), 6 tipos padrão configuráveis, 7 status com transições
   validadas, conflito por profissional (serializado com lock) e encaixe, fila de espera com minutos, reagendar,
   iniciar/concluir só para quem atende, painel "hoje", agenda na ficha do paciente.
-- **Novo visual (design 2.0, implementado e testado localmente; ainda não publicado):** pedido do proprietário
+- **Novo visual (design 2.0): PUBLICADO** pelo proprietário (pacote `1dacafc` gerado): pedido do proprietário
   ("telas sem vida, quadradas"). Só design: fonte Plus Jakarta Sans auto-hospedada, menu lateral escuro em grupos,
   barra superior com busca rápida e "Novo", painel com faixa em degradê e indicadores, agenda em linha do tempo,
   avatares por espécie, cabeçalhos de perfil, login com prévia ilustrativa, modo escuro refeito (ADR-012).
-- **Não implementado:** prontuário (alergias, peso, vacinas), busca clínica, lembretes, visão mensal/salas/recorrência; MFA, recuperação de senha, e-mail transacional; backup automático.
+- **Ajustes pedidos + Prontuário (Fase 1, implementado e testado localmente; ainda não publicado):** sem "(opcional)",
+  cor sem código, idade pela data, CEP→endereço (ViaCEP pelo servidor) + número/complemento/bairro, UF em lista;
+  prontuário com rascunho → finalizar e assinar (só veterinário) → bloqueio + adendos, sinais vitais, hipóteses ×
+  diagnósticos, alertas clínicos, peso com gráfico, auditoria de acesso, "Iniciar atendimento" abre o prontuário
+  (ADR-013).
+- **Não implementado:** receitas/documentos PDF, anexos (alergias, peso, vacinas), busca clínica, lembretes, visão mensal/salas/recorrência; MFA, recuperação de senha, e-mail transacional; backup automático.
 - **PUBLICADO (teste) na Locaweb em 15/10/2026** pelo proprietário, seguindo o tutorial: `http://dradeboragaldino.com.br/fauvovet`.
   Domínio corrigido em todo o repositório (era "gakdino"; o certo é **galdino**). `pnpm smoke` contra o servidor real:
   **5/5 PASS** (143–245 ms). **HTTPS inválido**: certificado `*.websiteseguro.com` não cobre o domínio → sem dados reais
@@ -42,7 +47,7 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
 - **Tutorial de deploy didático:** o proprietário achou o passo a passo de `DEPLOY_LOCAWEB.md` difícil de seguir (faltava
   configuração do banco e o que copiar para onde). Reescrito como guia completo, etapas A–H, com glossário, mapa de pastas,
   folha de anotações e troubleshooting; novo comando `pnpm deploy:copiar` (pacote → `C:\fauvovet-deploy`, fora do OneDrive).
-- **Último guia HTML:** [`docs/changes/2026-10-16-redesign-visual.html`](changes/2026-10-16-redesign-visual.html)
+- **Último guia HTML:** [`docs/changes/2026-10-17-prontuario.html`](changes/2026-10-17-prontuario.html)
 
 ## Ambiente (verificado)
 
@@ -93,6 +98,14 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
   `perf:check` p95: painel 53,7 ms, agenda 54,9 ms, pacientes 38,3 ms.
 - Sem migração: publicar exige só `otimizar` (recompilar telas) — guia seção 7.
 
+## Comandos executados e resultados (ajustes + prontuário)
+
+- `pnpm verify --e2e` → **9/9 PASS**; PHPUnit **117/117** (989 asserções); isolamento **32/32**; E2E **55 + 1
+  ignorado de propósito**; axe sem violações no prontuário.
+- `pnpm perf:check` p95: ficha com prontuário 63,2 ms; atendimento 55,1 ms; painel 55,1 ms.
+- Migrações novas: `2026_10_16_000002_add_address_details_to_guardians`, `2026_10_16_000003_create_clinical_record_tables`.
+- Pendente de conferir no servidor: acesso de saída ao ViaCEP a partir da Locaweb.
+
 ## Pendências que dependem do proprietário
 
 1. **Ativar certificado SSL para `dradeboragaldino.com.br`** no painel (bloqueia dados reais). Depois: `.env` com
@@ -110,13 +123,12 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 
 ## Próxima ação exata
 
-1. Proprietário: avaliar o novo visual (capturas no guia `docs/changes/2026-10-16-redesign-visual.html`) e publicar
-   pela seção 7 (sem migração; rodar `otimizar`). Sem HTTPS, só dados fictícios.
-2. Próximo incremento: **atendimento/prontuário** — `encounters` (paciente, agendamento opcional, profissional,
-   unidade, status rascunho/finalizado), queixa/anamnese/exame físico/sinais vitais, peso (`patient_weights`),
-   alergias/alertas (`patient_alerts`), hipóteses × diagnósticos confirmados, conduta; finalizar bloqueia e correções
-   viram `encounter_addenda`; permissão `clinical:*`; auditoria de VISUALIZAÇÃO; "Iniciar atendimento" abre o
-   prontuário; testes A/B.
+1. Proprietário: publicar `docs/changes/2026-10-17-prontuario.html` › seção 7 (2 migrações; backup antes) e testar o
+   CEP no servidor. Sem HTTPS, só atendimentos fictícios. Design: proprietário vai retomar o assunto mais à frente.
+2. Próximo incremento: **receitas e documentos em PDF** — modelos básicos (receita simples, atestado, orientações,
+   termo de consentimento) com variáveis da clínica/profissional/paciente (whitelist §4.3), geração com dompdf, PDF
+   emitido preservado e vinculado ao atendimento; depois anexos privados (storage fora do public_html, download
+   autorizado).
 
 ## Histórico de incrementos
 
@@ -132,3 +144,4 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 | 2026-10-15 | **Fase 1 — Responsáveis e pacientes**: cadastro rápido, espécies amplas, vínculos N:N, busca, óbito             | [2026-10-15-pacientes-responsaveis.html](changes/2026-10-15-pacientes-responsaveis.html)     | verify --e2e 9/9 (PHPUnit 85, isolamento 25, E2E 39); perf 20k     | main — hash na próxima atualização | push nesta sessão      | Agenda                                |
 | 2026-10-16 | **Fase 1 — Agenda**: dia/semana, fuso por unidade, tipos, status, conflito/encaixe, fila de espera              | [2026-10-16-agenda.html](changes/2026-10-16-agenda.html)                                     | verify --e2e 9/9 (PHPUnit 100, isolamento 29, E2E 47); perf volume | main — hash na próxima atualização | push nesta sessão      | Atendimento/prontuário                |
 | 2026-10-16 | **Novo visual (design 2.0)**: fonte própria, menu escuro, degradês da clínica, painel, agenda em linha do tempo | [2026-10-16-redesign-visual.html](changes/2026-10-16-redesign-visual.html)                   | verify --e2e 9/9 (PHPUnit 100, E2E 47); axe claro/escuro           | main — hash na próxima atualização | push nesta sessão      | Prontuário                            |
+| 2026-10-17 | **Fase 1 — Prontuário** + ajustes pedidos (sem "opcional", idade pela data, CEP, UF em lista)                   | [2026-10-17-prontuario.html](changes/2026-10-17-prontuario.html)                             | verify --e2e 9/9 (PHPUnit 117, isolamento 32, E2E 55)              | main — hash na próxima atualização | push nesta sessão      | Receitas/documentos PDF               |

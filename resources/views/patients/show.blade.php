@@ -23,6 +23,9 @@
             @endif
         </div>
     </x-profile-header>
+    @if ($clinical !== null)
+        @include('patients._alerts-banner', ['alerts' => $clinical['alerts']])
+    @endif
 
     @if ($patient->status === 'deceased')
         <x-alert tone="info" class="mb-6">Óbito registrado{{ $patient->deceased_on ? ' em '.$patient->deceased_on->format('d/m/Y') : '' }}.</x-alert>
@@ -64,7 +67,9 @@
                     </ul>
                 @endif
             @endif
-            <p class="mt-5 rounded-xl bg-surface-2 px-4 py-3 text-sm text-muted">Alergias, peso, vacinas e prontuário ficarão no módulo clínico (próximas entregas), visíveis só para a equipe clínica.</p>
+            @if ($clinical === null)
+                <p class="mt-5 rounded-xl bg-surface-2 px-4 py-3 text-sm text-muted">Prontuário, alergias e peso são visíveis só para a equipe clínica.</p>
+            @endif
         </x-card>
 
         <section aria-labelledby="resp-titulo" class="flex flex-col gap-4">
@@ -128,5 +133,8 @@
             @endif
         </section>
     </div>
+    @if ($clinical !== null)
+        @include('patients._clinical')
+    @endif
     <p class="mt-6"><a href="{{ route('patients.index') }}" class="font-semibold text-link underline underline-offset-4">Voltar aos pacientes</a></p>
 @endsection

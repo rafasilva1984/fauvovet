@@ -78,6 +78,8 @@ try {
     'GET /responsaveis?q=nome': ['/responsaveis?q=lima', true],
     'GET /agenda (dia)': ['/agenda', true],
     'GET /agenda (semana)': ['/agenda?visao=semana', true],
+    'GET /pacientes/{id} (prontuário)': ['/pacientes/01K7FV0000000000000PTB0001', true],
+    'GET /atendimentos/{id}': ['/atendimentos/01K7FV0000000000000ENB0001', true],
   };
   const report = {
     date: new Date().toISOString(),
@@ -107,7 +109,7 @@ try {
     t.sort((a, b) => a - b);
     const res = { p50: +pct(t, 50).toFixed(1), p95: +pct(t, 95).toFixed(1), p99: +pct(t, 99).toFixed(1) };
     report.results[name] = res;
-    console.log(`${name.padEnd(26)} p50=${res.p50}ms p95=${res.p95}ms p99=${res.p99}ms`);
+    console.log(`${name.padEnd(34)} p50=${res.p50}ms p95=${res.p95}ms p99=${res.p99}ms`);
   }
   mkdirSync(join(ROOT, '.perf'), { recursive: true });
   writeFileSync(join(ROOT, '.perf', 'web-baseline.json'), JSON.stringify(report, null, 2));

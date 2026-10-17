@@ -4,9 +4,13 @@ namespace Database\Seeders;
 
 use App\Models\Appointment;
 use App\Models\AppointmentType;
+use App\Models\Encounter;
+use App\Models\EncounterDiagnosis;
 use App\Models\Guardian;
 use App\Models\Membership;
 use App\Models\Patient;
+use App\Models\PatientAlert;
+use App\Models\PatientWeight;
 use App\Models\Tenant;
 use App\Models\TenantTheme;
 use App\Models\Unit;
@@ -63,6 +67,13 @@ class DatabaseSeeder extends Seeder
         ['01K7FV0000000000000APA0001', '01K7FV0000000000000PTA0001', '01K7FV000000000000000TNA01', 'bruno', '09:00', 'scheduled'],
         ['01K7FV0000000000000APA0002', '01K7FV0000000000000PTA0002', '01K7FV000000000000000TNA01', 'ana', '10:00', 'confirmed'],
         ['01K7FV0000000000000APB0001', '01K7FV0000000000000PTB0001', '01K7FV000000000000000TNB01', 'diana', '14:00', 'scheduled'],
+    ];
+
+    /** Prontuário fictício: [id, tenant, paciente, unidade, autor, dias atrás, peso, queixa, diagnóstico, status do dx]. */
+    public const ENCOUNTERS = [
+        ['01K7FV0000000000000ENA0001', self::TENANT_A, '01K7FV0000000000000PTA0001', '01K7FV000000000000000TNA01', 'bruno', 120, '27.400', 'Coceira intensa nas patas e orelhas há 3 semanas.', 'Dermatite atópica', 'suspected'],
+        ['01K7FV0000000000000ENA0002', self::TENANT_A, '01K7FV0000000000000PTA0001', '01K7FV000000000000000TNA01', 'bruno', 30, '28.150', 'Retorno: prurido reduziu com o tratamento.', 'Dermatite atópica', 'confirmed'],
+        ['01K7FV0000000000000ENB0001', self::TENANT_B, '01K7FV0000000000000PTB0001', '01K7FV000000000000000TNB01', 'diana', 60, '4.200', 'Recusa alimentar há 5 dias.', 'Suspeita de doença renal', 'suspected'],
     ];
 
     public function run(TenantContext $context): void
@@ -149,6 +160,34 @@ class DatabaseSeeder extends Seeder
                 }
             });
         }
+        foreach (self::ENCOUNTERS as [$id, $tenantId, $patientId, $unitId, $userKey, $daysAgo, $weight, $complaint, $dx, $dxStatus]) {
+            $context->runForTenant($tenantId, function () use ($id, $patientId, $unitId, $userKey, $daysAgo, $weight, $complaint, $dx, $dxStatus, $users) {
+                if (Encounter::query()->whereKey($id)->exists()) {
+                    return; // finalizado é imutável: o seed não reescreve
+                }
+                $when = now()->subDays($daysAgo)->setTime(13, 0);
+                $e = new Encounter([
+                    'unit_id' => $unitId, 'patient_id' => $patientId, 'status' => 'draft', 'started_at' => $when,
+                    'chief_complaint' => $complaint, 'physical_exam' => 'Exame físico fictício para demonstração.',
+                    'plan' => 'Conduta fictícia para demonstração.', 'weight_kg' => $weight, 'temperature_c' => '38.6',
+                    'created_by' => $users[$userKey]->id,
+                ]);
+                $e->id = $id;
+                $e->save();
+                EncounterDiagnosis::create(['encounter_id' => $id, 'patient_id' => $patientId, 'description' => $dx, 'status' => $dxStatus, 'position' => 0, 'created_by' => $users[$userKey]->id]);
+                $e->status = 'finalized';
+                $e->finalized_at = $when->copy()->addMinutes(40);
+                $e->finalized_by = $users[$userKey]->id;
+                $e->signer_membership_id = Membership::query()->where('user_id', $users[$userKey]->id)->value('id');
+                $e->save();
+                PatientWeight::create(['patient_id' => $patientId, 'encounter_id' => $id, 'weight_kg' => $weight, 'measured_at' => $when, 'created_by' => $users[$userKey]->id]);
+            });
+        }
+        $context->runForTenant(self::TENANT_A, function () use ($users) {
+            if (! PatientAlert::query()->where('patient_id', '01K7FV0000000000000PTA0001')->exists()) {
+                PatientAlert::create(['patient_id' => '01K7FV0000000000000PTA0001', 'kind' => 'allergy', 'severity' => 'high', 'description' => 'Alergia a penicilina (fictícia)', 'created_by' => $users['bruno']->id]);
+            }
+        });
         $this->command->info('Seed fictício: 2 clínicas, '.count(self::UNITS).' unidades, '.count(self::USERS).' usuários, '.count(self::GUARDIANS).' responsáveis, '.count(self::PATIENTS).' pacientes, '.count(self::APPOINTMENTS).' agendamentos hoje (senha = SEED_PASSWORD).');
     }
 }

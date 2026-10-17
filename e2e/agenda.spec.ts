@@ -36,13 +36,23 @@ test('recepção agenda, registra chegada e o veterinário atende e conclui', as
   await page.goto('agenda');
   const card2 = page.getByRole('listitem').filter({ hasText: isMobile ? '07:15–07:30' : '07:00–07:15' });
   await card2.getByRole('button', { name: 'Iniciar atendimento — Kiwi' }).click();
-  await expect(page.getByRole('main').getByRole('status')).toContainText('Em atendimento: Kiwi');
-  await page
-    .getByRole('listitem')
-    .filter({ hasText: isMobile ? '07:15–07:30' : '07:00–07:15' })
-    .getByRole('button', { name: 'Concluir — Kiwi' })
-    .click();
-  await expect(page.getByRole('main').getByRole('status')).toContainText('Concluído: Kiwi');
+  // Quem atende vai direto para o prontuário (rascunho ligado ao agendamento).
+  await expect(page.getByRole('main').getByRole('status')).toContainText('Atendimento iniciado');
+  await expect(page.getByRole('heading', { level: 1, name: 'Kiwi' })).toBeVisible();
+  await page.getByLabel('Queixa principal').fill('Revisão vacinal (fictícia).');
+  await page.getByLabel('Peso (kg)').fill('0,095');
+  await page.getByLabel('Revisei o registro e confirmo as informações como responsável técnico.').check();
+  await page.getByRole('button', { name: 'Finalizar e assinar' }).click();
+  await expect(page.getByRole('main').getByRole('status')).toContainText('finalizado e assinado');
+  await expect(page.getByText(/Finalizado e assinado por Bruno/)).toBeVisible();
+  // A agenda mostra o atendimento como concluído.
+  await page.goto('agenda');
+  await expect(
+    page
+      .getByRole('listitem')
+      .filter({ hasText: isMobile ? '07:15–07:30' : '07:00–07:15' })
+      .getByText('Concluído'),
+  ).toBeVisible();
 });
 
 test('conflito de horário mostra mensagem clara e semana lista os dias', async ({ page }) => {

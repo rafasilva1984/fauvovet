@@ -44,10 +44,25 @@
 | `appointment_types` | clínica | nome único por clínica, duração 5–480 min, cor `#RRGGBB` com contraste ≥ 3:1 sobre branco, `active` (desativar em vez de apagar); 6 tipos padrão criados no primeiro uso da agenda                                                                                                                               |
 | `appointments`      | clínica | `starts_at`/`ends_at` **UTC** (DATETIME), fuso da unidade na tela; FKs **compostas** para unidade, paciente, tipo e profissional (`memberships`); 7 status + carimbos de tempo; `is_walk_in`; índices `(tenant_id, unit_id/professional/patient, starts_at)` com nomes curtos (limite de 64 caracteres do MySQL) |
 
+## 2026_10_16_000002_add_address_details_to_guardians
+
+`guardians` ganha `address_number`, `address_complement` e `district` (endereço em partes; rua/bairro/cidade/UF vêm do
+CEP pela consulta `/cep/{cep}`). Migração aditiva.
+
+## 2026_10_16_000003_create_clinical_record_tables
+
+| Tabela                | Escopo  | Integridade                                                                                                                                                                                                 |
+| --------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `encounters`          | clínica | rascunho/finalizado; textos clínicos + sinais vitais em colunas; FKs compostas (unidade, paciente, agendamento, tipo, assinante); `UNIQUE (tenant_id, appointment_id)`; **imutável após finalizar** (model) |
+| `encounter_diagnoses` | clínica | suspeito/confirmado/descartado + código opcional; `patient_id` repetido para busca futura; imutável quando o atendimento está finalizado                                                                    |
+| `encounter_addenda`   | clínica | somente inclusão (model bloqueia update/delete); autor e vínculo do autor                                                                                                                                   |
+| `patient_weights`     | clínica | histórico de peso; 1 por atendimento (`UNIQUE (tenant_id, encounter_id)`)                                                                                                                                   |
+| `patient_alerts`      | clínica | alergia/condição crônica/medicação/comportamento/outro, gravidade; resolvido em vez de apagado                                                                                                              |
+
 Tabelas de clínica registradas no firewall: `TenantQueryFirewall::TENANT_TABLES` (um teste falha se uma tabela com
 `tenant_id` não estiver na lista).
 
 ## Planejado (não migrado)
 
-Prontuário (com alergias, peso histórico, vacinas) etc. conforme CLAUDE.md §6.3, cada um com `tenant_id`, FKs compostas,
+Vacinas, exames, receitas/documentos, anexos, internação etc. conforme CLAUDE.md §6.3, cada um com `tenant_id`, FKs compostas,
 model `BelongsToTenant` + `TenantOwned` e testes de isolamento.

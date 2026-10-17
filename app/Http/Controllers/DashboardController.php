@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Appointment;
 use App\Models\AuditEvent;
+use App\Models\Encounter;
 use App\Models\Membership;
 use App\Models\Patient;
 use App\Models\Unit;
@@ -23,10 +24,17 @@ final class DashboardController extends Controller
         return view('dashboard', [
             'kind' => Roles::dashboard($context->roles()),
             'unitCount' => Unit::query()->count(),
+            // Rascunhos de prontuário abertos na clínica (para não ficarem sem assinatura).
+            'drafts' => $context->can('clinical:write')
+                ? Encounter::query()->where('status', 'draft')->with(['patient:id,name,species', 'author:id,name', 'unit:id,timezone'])
+                    ->orderBy('started_at')->limit(5)->get()
+                : null,
             'today' => $context->can('schedule:read') ? $this->today($context) : null,
             'patientCount' => $context->can('patients:read') ? Patient::query()->where('status', 'active')->count() : null,
             'memberCount' => $context->can('members:read') ? Membership::query()->where('status', 'active')->count() : null,
-            'activity' => $canAudit ? AuditEvent::query()->with('actor:id,name')->latest('id')->limit(8)->get() : null,
+            // Acessos a prontuário ficam na auditoria, mas não poluem o feed de atividade.
+            'activity' => $canAudit ? AuditEvent::query()->whereNotIn('action', ['encounter.viewed', 'patient.clinical_viewed'])
+                ->with('actor:id,name')->latest('id')->limit(8)->get() : null,
         ]);
     }
 

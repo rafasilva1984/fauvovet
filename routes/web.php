@@ -6,9 +6,11 @@ use App\Http\Controllers\AppointmentTypeController;
 use App\Http\Controllers\Auth\ContextController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EncounterController;
 use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\PatientAlertController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PostalCodeController;
 use App\Http\Controllers\TeamController;
@@ -78,6 +80,17 @@ Route::middleware('auth')->group(function () {
             Route::post('/configuracoes/tipos-de-atendimento', [AppointmentTypeController::class, 'store'])->name('settings.appointment-types.store');
             Route::get('/configuracoes/tipos-de-atendimento/{appointmentType}/editar', [AppointmentTypeController::class, 'edit'])->name('settings.appointment-types.edit');
             Route::put('/configuracoes/tipos-de-atendimento/{appointmentType}', [AppointmentTypeController::class, 'update'])->name('settings.appointment-types.update');
+        });
+        // Prontuário: leitura clínica; escrita clínica; assinatura (finalizar) verificada no serviço (clinical:sign).
+        Route::middleware('permission:clinical:read')->group(function () {
+            Route::get('/atendimentos/{encounter}', [EncounterController::class, 'show'])->name('encounters.show');
+        });
+        Route::middleware('permission:clinical:write')->group(function () {
+            Route::post('/pacientes/{patient}/atendimentos', [EncounterController::class, 'store'])->name('encounters.store');
+            Route::put('/atendimentos/{encounter}', [EncounterController::class, 'update'])->name('encounters.update');
+            Route::post('/atendimentos/{encounter}/adendos', [EncounterController::class, 'addendum'])->name('encounters.addendum');
+            Route::post('/pacientes/{patient}/alertas', [PatientAlertController::class, 'store'])->name('alerts.store');
+            Route::post('/alertas/{alert}/resolver', [PatientAlertController::class, 'resolve'])->name('alerts.resolve');
         });
         Route::get('/equipe', [TeamController::class, 'index'])->middleware('permission:members:read')->name('team.index');
         Route::post('/equipe/convites', [TeamController::class, 'invite'])->middleware(['permission:members:manage', 'throttle:invite-create'])->name('team.invite');

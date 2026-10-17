@@ -153,3 +153,16 @@ modelo de outro projeto dele já operado na Locaweb (Laravel + Vite, Node só pa
   `/fauvovet` (antes apontavam para `/build` na raiz do domínio).
 - **Custo medido:** ~98 → 149 KB transferidos na primeira visita (fonte em cache depois); LCP de laboratório ≤ 120
   ms; p95 do painel 48 → 54 ms. Acessibilidade AA mantida (axe medido no estado final, sem animação).
+
+## ADR-013 — Prontuário: assinar trava o registro; correções só por adendo; acesso auditado (2026-10-17)
+
+- **Decisão:** atendimento nasce rascunho (equipe clínica edita); **finalizar e assinar** exige o papel
+  médico-veterinário (`clinical:sign`) e uma confirmação explícita. Depois disso o registro é imutável — a regra vale
+  na tela, no controller e no **model** (até em modo sistema); correções entram como **adendos** somente-inclusão,
+  com data e autor (CLAUDE.md §2.1 D, §12.5).
+- **Acesso:** ler prontuário é auditado (`encounter.viewed`, `patient.clinical_viewed`); a auditoria de alterações
+  guarda só os nomes dos campos, nunca o conteúdo clínico (§8.1). Recepção e financeiro não veem nada clínico.
+- **Assinatura:** é a assinatura **eletrônica simples** do sistema (autor autenticado + data + bloqueio). Não é
+  assinatura digital ICP-Brasil (§4.4) — isso fica para a integração com provedor especializado.
+- **CEP:** consulta pelo servidor (ViaCEP) em vez do navegador, para manter a CSP sem conexões externas; só o CEP
+  sai do sistema; falha não impede o cadastro.

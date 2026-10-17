@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FauvoVet — Prontuário e ajustes de cadastro</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #1a2935; background: #f4f7f8; line-height: 1.65; font-size: 17px; }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 16px 80px; }
+    header { border-radius: 20px; padding: 32px; color: white; background: linear-gradient(120deg, #0b4652, #1a7375); }
+    header p { color: #e1f5f0; margin-bottom: 0; }
+    h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.2; margin: 0; }
+    h2 { font-size: 1.3rem; margin: 0 0 12px; }
+    h3 { font-size: 1.12rem; margin: 28px 0 8px; padding-top: 16px; border-top: 1px dashed #c9d6d8; }
+    h4 { font-size: 1rem; margin: 18px 0 6px; }
+    section { margin-top: 20px; background: #fff; padding: 24px; border: 1px solid #dee7e8; border-radius: 14px; }
+    p, li { overflow-wrap: anywhere; }
+    code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { background: #eaf1f2; padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+    pre code { background: none; padding: 0; }
+    kbd { border: 1px solid #b8c6c9; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: #fff; font-size: 0.9em; }
+    pre { overflow-x: auto; border-radius: 8px; padding: 14px; color: #e9fbff; background: #172b32; font-size: 0.9rem; line-height: 1.5; }
+    .tag { display: inline-block; font-size: 0.8rem; font-weight: 700; border: 1px solid #f5cf83; background: #fff8e4; color: #7a4b12; border-radius: 30px; padding: 3px 10px; }
+    .where { display: inline-block; font-size: 0.78rem; font-weight: 700; border-radius: 30px; padding: 2px 10px; margin-right: 6px; vertical-align: middle; }
+    .w-term { background: #1f3b44; color: #d9fbff; }
+    .w-web { background: #e1effd; color: #0f3e72; }
+    .w-fz { background: #fde8e1; color: #7a2a0f; }
+    .w-np { background: #ece5fb; color: #42237a; }
+    .w-panel { background: #e2f6e8; color: #145c2e; }
+    .note { border-left: 4px solid #338b96; background: #eef7f8; padding: 10px 12px; border-radius: 6px; }
+    .warn { border-left: 4px solid #c27c0e; background: #fff8e4; padding: 10px 12px; border-radius: 6px; }
+    .stop { border-left: 4px solid #b3261e; background: #fdecea; padding: 10px 12px; border-radius: 6px; }
+    .ok { border-left: 4px solid #1d7a45; background: #e8f6ee; padding: 10px 12px; border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid #e0e7e8; text-align: left; vertical-align: top; }
+    small { color: #52646d; }
+    .pass { color: #116b3a; font-weight: 700; }
+    .notrun { color: #8a5a00; font-weight: 700; }
+    ol.steps > li { margin-bottom: 12px; }
+    .map { font-size: 0.85rem; }
+    .shots { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .shots figure { margin: 0; }
+    .shots img { width: 100%; height: auto; border-radius: 12px; border: 1px solid #dee7e8; display: block; }
+    .shots figcaption { font-size: 0.85rem; color: #52646d; margin-top: 4px; }
+    .shots .tall img { max-height: 520px; object-fit: cover; object-position: top; }
+    nav ol { columns: 2; column-gap: 32px; }
+    @media (max-width: 640px) { nav ol { columns: 1; } body { font-size: 16px; } section { padding: 18px; } header { padding: 22px; } }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e4eef0; background: #0f1a1e; }
+      section { background: #15242a; border-color: #23373e; }
+      th, td { border-color: #23373e; }
+      code { background: #213840; }
+      kbd { background: #1d3138; border-color: #3b5760; }
+      .warn { background: #2a2210; } .note { background: #12303a; } .stop { background: #3a1614; } .ok { background: #12301f; }
+      small { color: #9fb3ba; }
+      h3 { border-color: #2c454c; }
+      .pass { color: #5fd28f; } .notrun { color: #f0b54a; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="tag">INCREMENTO IMPLEMENTADO — FASE 1 · ATENDIMENTO/PRONTUÁRIO + AJUSTES PEDIDOS</span>
+      <h1>Prontuário com assinatura e adendos, mais os ajustes de cadastro pedidos</h1>
+      <p>ID: <strong>2026-10-17-prontuario</strong> · Data: <strong>17/10/2026</strong> · Versão: <strong>0.6.0</strong> · Módulos: <strong>D. Atendimento clínico e prontuário · B. Cadastros · §7 UX</strong> · Estado: <strong>implementado e testado localmente; publicação a cargo do proprietário (seção 7)</strong></p>
+    </header>
+
+    <section>
+      <h2>1. Objetivo</h2>
+      <p><strong>Ajustes pedidos pelo proprietário</strong> nas telas que já existiam:</p>
+      <ol>
+        <li>tirar "(opcional)", porque o <code>*</code> já indica o que é obrigatório;</li>
+        <li>tirar o código da cor (<code>#…</code>) da lista de tipos de atendimento;</li>
+        <li>preencher a idade ao informar a data de nascimento;</li>
+        <li>preencher rua e cidade pelo CEP;</li>
+        <li>UF como lista de seleção.</li>
+      </ol>
+      <p><strong>Atendimento/prontuário:</strong> registrar a consulta de forma confiável e rastreável. O rascunho é editável; ao finalizar, o veterinário assina e o registro fica bloqueado; correções viram adendos. Alertas clínicos e peso ficam em destaque, e só a equipe clínica vê, com cada acesso registrado.</p>
+      <div class="shots">
+        <figure><img src="img/2026-10-17-prontuario-rascunho.jpg" alt="Atendimento em rascunho com o painel de finalizar e assinar (dados fictícios)" loading="lazy"><figcaption>Atendimento em rascunho</figcaption></figure>
+        <figure><img src="img/2026-10-17-prontuario-finalizado.jpg" alt="Atendimento finalizado e assinado, com adendos (dados fictícios)" loading="lazy"><figcaption>Finalizado e assinado</figcaption></figure>
+        <figure><img src="img/2026-10-17-prontuario-ficha.jpg" alt="Prontuário na ficha do paciente: linha do tempo, peso e alertas (dados fictícios)" loading="lazy"><figcaption>Prontuário na ficha do paciente</figcaption></figure>
+        <figure class="tall"><img src="img/2026-10-17-prontuario-celular-ficha.jpg" alt="Ficha do paciente no celular com alerta de alergia em destaque (dados fictícios)" loading="lazy"><figcaption>Celular — alerta em destaque</figcaption></figure>
+        <figure class="tall"><img src="img/2026-10-17-prontuario-celular-endereco.jpg" alt="Endereço com CEP, número, bairro, cidade e UF em lista" loading="lazy"><figcaption>Celular — endereço com CEP e UF</figcaption></figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>2. O que mudou</h2>
+      <h3>Ajustes pedidos</h3>
+      <ul>
+        <li><strong>"(opcional)" removido</strong> de todos os rótulos: paciente, responsável, cadastro de clínica, convite e agenda.</li>
+        <li><strong>Tipos de atendimento:</strong> a lista mostra só nome e duração. A cor é escolhida num seletor visual, sem digitar código.</li>
+        <li><strong>Data de nascimento → idade:</strong> ao escolher a data, "anos" e "meses" se preenchem na hora. Se você digitar a idade, a data é limpa e o sistema grava uma data estimada (com "~").</li>
+        <li><strong>CEP → endereço:</strong>
+          <ul>
+            <li>ao digitar os 8 dígitos, o sistema preenche <strong>rua, bairro, cidade e UF</strong>, formata o CEP e leva o cursor para o <strong>Número</strong>;</li>
+            <li>o responsável ganhou os campos <strong>Número</strong>, <strong>Complemento</strong> e <strong>Bairro</strong>;</li>
+            <li>a consulta é feita pelo servidor do FauvoVet no serviço público ViaCEP (detalhes na seção 9);</li>
+            <li>se o serviço estiver fora, aparece "Não foi possível consultar o CEP. Preencha manualmente." e o cadastro continua normalmente.</li>
+          </ul>
+        </li>
+        <li><strong>UF em lista</strong> ("SP — São Paulo"…) em responsáveis e unidades, validada no servidor.</li>
+      </ul>
+      <h3>Atendimento/prontuário</h3>
+      <ul>
+        <li><strong>Como abrir:</strong>
+          <ul>
+            <li>na Agenda, <em>Iniciar atendimento</em> já abre o prontuário em rascunho, ligado ao agendamento;</li>
+            <li>sem agendamento, use <em>Novo atendimento</em> na ficha do paciente.</li>
+          </ul>
+        </li>
+        <li><strong>Ficha do atendimento:</strong>
+          <ul>
+            <li>queixa principal, anamnese e histórico;</li>
+            <li><strong>sinais vitais</strong>: peso, temperatura, FC, FR, TPC, escore corporal 1–9, dor 0–10, mucosas e hidratação. Aceita vírgula decimal;</li>
+            <li>exame físico;</li>
+            <li><strong>hipóteses e diagnósticos</strong>, cada um com situação <em>Suspeita</em>, <em>Confirmado</em> ou <em>Descartado</em> e código opcional;</li>
+            <li>conduta e plano terapêutico, orientações ao tutor.</li>
+          </ul>
+        </li>
+        <li><strong>Salvar rascunho</strong>: a equipe clínica, inclusive o assistente, pode editar.</li>
+        <li><strong>Finalizar e assinar</strong>:
+          <ul>
+            <li>só o médico-veterinário, depois de marcar "Revisei o registro e confirmo…";</li>
+            <li>o registro fica <strong>bloqueado</strong>, inclusive contra alteração direta no banco pelo sistema;</li>
+            <li>o peso vai para o histórico, e o agendamento vira "Concluído".</li>
+          </ul>
+        </li>
+        <li><strong>Adendos</strong> no atendimento finalizado: correções e complementos com data e autor, que não podem ser editados depois.</li>
+        <li><strong>Prontuário na ficha do paciente</strong>:
+          <ul>
+            <li>faixa vermelha de <strong>alertas clínicos</strong> (alergia, condição crônica, medicação contínua, comportamento), que também aparece no atendimento;</li>
+            <li><strong>gráfico de peso</strong>, com a variação desde a medida anterior;</li>
+            <li>linha do tempo dos atendimentos, com os diagnósticos coloridos por situação;</li>
+            <li>adicionar e resolver alertas.</li>
+          </ul>
+        </li>
+        <li><strong>Painel</strong>: "Prontuários em rascunho", para não ficarem sem assinatura.</li>
+        <li><strong>Quem vê:</strong>
+          <ul>
+            <li>titular, veterinário e assistente clínico;</li>
+            <li>recepção, financeiro, estoque e banho/tosa <strong>não veem nada clínico</strong>, nem os alertas;</li>
+            <li>cada abertura de prontuário fica registrada (quem, quando, qual), sem o conteúdo. Esses acessos não aparecem na "Atividade recente" do painel.</li>
+          </ul>
+        </li>
+      </ul>
+      <h3>Arquivos</h3>
+      <ul>
+        <li><strong>Migrações (2):</strong>
+          <ul>
+            <li><code>2026_10_16_000002_add_address_details_to_guardians</code> (aditiva);</li>
+            <li><code>2026_10_16_000003_create_clinical_record_tables</code> (<code>encounters</code>, <code>encounter_diagnoses</code>, <code>encounter_addenda</code>, <code>patient_weights</code>, <code>patient_alerts</code>, todas com FKs compostas).</li>
+          </ul>
+        </li>
+        <li><strong>Código:</strong>
+          <ul>
+            <li><code>app/Services/ClinicalRecordService.php</code>, <code>PostalCodeLookup.php</code>;</li>
+            <li>controllers <code>EncounterController</code>, <code>PatientAlertController</code>, <code>PostalCodeController</code>;</li>
+            <li>models <code>Encounter</code>, <code>EncounterDiagnosis</code>, <code>EncounterAddendum</code>, <code>PatientWeight</code>, <code>PatientAlert</code>;</li>
+            <li><code>App\Clinical\ClinicalRecordLocked</code>, <code>App\Support\BrazilianStates</code>.</li>
+          </ul>
+        </li>
+        <li><strong>Permissões:</strong> <code>clinical:sign</code> (veterinário). O assistente clínico ganhou <code>clinical:write</code> (rascunho).</li>
+        <li><strong>Telas:</strong> <code>encounters/*</code>, <code>patients/_clinical</code>, <code>_alerts-banner</code>, <code>_weight-chart</code> (SVG próprio, sem biblioteca). Componentes Alpine <code>birthAge</code> e <code>cepLookup</code>.</li>
+        <li><strong>Seed fictício:</strong> 3 atendimentos finalizados (Thor ×2 com dermatite suspeita → confirmada; Jabu com suspeita renal), histórico de peso e alergia a penicilina do Thor.</li>
+        <li><strong>Testes:</strong> <code>ClinicalRecordTest</code> (13, sendo 3 de isolamento), <code>AddressTest</code> (4), E2E <code>clinical.spec.ts</code>, E2E da agenda atualizado (Iniciar → prontuário → assinar → Concluído), E2E de idade/CEP, axe no prontuário.</li>
+        <li><strong>Documentação:</strong> ADR-013, DATA_MODEL, SECURITY, FEATURE_PARITY, ROADMAP.</li>
+      </ul>
+      <p>Dependências novas: nenhuma.</p>
+    </section>
+
+    <section>
+      <h2>3. Pré-requisitos</h2>
+      <p>Os mesmos de antes. O servidor precisa conseguir acessar <code>https://viacep.com.br</code> para o CEP automático; sem isso, o preenchimento fica manual.</p>
+      <p class="warn"><strong>Git Bash/macOS:</strong> NOT RUN.</p>
+    </section>
+
+    <section>
+      <h2>4. Passo a passo (no seu computador)</h2>
+      <ol>
+        <li><code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm db:start</code></li>
+        <li><code>pnpm db:migrate</code> → esperado: as duas migrações listadas com <code>DONE</code></li>
+        <li><code>pnpm db:seed</code> → <code>pnpm dev</code> → entre como <code>bruno.vet@aurora.exemplo.test</code> (veterinário).</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>5. Como testar</h2>
+      <h3>Automático</h3>
+<pre><code>pnpm verify --e2e
+pnpm test:tenant-isolation</code></pre>
+      <h3>Manual</h3>
+      <ol>
+        <li><strong>Ajustes:</strong>
+          <ul>
+            <li>em Pacientes → Novo paciente, escolha uma data de nascimento: a idade se preenche;</li>
+            <li>em Responsáveis → Novo, digite o CEP <code>01001000</code>: rua, bairro, cidade e UF se preenchem (com internet);</li>
+            <li>em Tipos de atendimento, a lista não mostra mais o código da cor.</li>
+          </ul>
+        </li>
+        <li><strong>Como Bruno (veterinário)</strong>, abra o Thor:
+          <ul>
+            <li>aparece a faixa "Alergia a penicilina";</li>
+            <li>o prontuário mostra 2 atendimentos (dermatite <em>Suspeita</em> → <em>Confirmado</em>) e o gráfico de peso.</li>
+          </ul>
+        </li>
+        <li>Na Agenda, no Thor de hoje: <em>Registrar chegada</em> → <em>Iniciar atendimento</em>. O prontuário abre em rascunho.</li>
+        <li>Preencha a queixa, os sinais vitais e um diagnóstico, e clique em <em>Salvar rascunho</em>. Depois marque a confirmação e clique em <em>Finalizar e assinar</em>:
+          <ul>
+            <li>aparece "Finalizado e assinado por…";</li>
+            <li>a edição some e fica só o adendo;</li>
+            <li>na Agenda, o Thor fica "Concluído".</li>
+          </ul>
+        </li>
+        <li>Registre um adendo: ele aparece com data e autor, sem opção de editar.</li>
+        <li><strong>Como Carla (recepção)</strong>, abra o Thor: nada de prontuário nem de alerta. O endereço <code>/atendimentos/01K7FV0000000000000ENA0002</code> responde 403.</li>
+        <li><strong>Teste de isolamento</strong>, como Diana (clínica B): o mesmo endereço responde 404, e no Jabu só aparece o prontuário da clínica B.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>6. Performance e usabilidade</h2>
+      <table>
+        <tr><th>Rota (p95, local)</th><th>Tempo</th></tr>
+        <tr><td>GET /pacientes/{id} com prontuário (alertas, peso, linha do tempo + auditoria de acesso)</td><td>63,2 ms</td></tr>
+        <tr><td>GET /atendimentos/{id} (+ auditoria de acesso)</td><td>55,1 ms</td></tr>
+        <tr><td>GET /painel (agora com "rascunhos")</td><td>55,1 ms</td></tr>
+        <tr><td>Demais rotas</td><td>sem mudança relevante (agenda 47,7 ms; pacientes 37,8 ms)</td></tr>
+      </table>
+      <p>Usabilidade:</p>
+      <ul>
+        <li>O fluxo da agenda até o prontuário não exige navegação: <em>Iniciar atendimento</em> já abre a ficha certa.</li>
+        <li>Hipóteses e diagnósticos ficam no mesmo formulário: nada se perde ao salvar.</li>
+        <li>Alergias aparecem antes de qualquer outro conteúdo.</li>
+        <li>O axe (WCAG 2.2 AA) não acusou violações no prontuário (rascunho, finalizado e ficha), no computador e no celular.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>7. Implantação na Locaweb (2 migrações)</h2>
+      <p><strong>Faça o backup do banco antes.</strong> Roteiro igual ao das versões anteriores:</p>
+      <ol>
+        <li><strong>Terminal:</strong> <code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm db:start</code> → <code>pnpm verify --e2e</code> → <code>pnpm deploy:package</code> → <code>pnpm deploy:copiar</code></li>
+        <li><strong>Painel Locaweb:</strong> backup (exportação) do banco MySQL.</li>
+        <li><strong>Terminal:</strong> <code>pnpm deploy:token</code>.</li>
+        <li><strong>FileZilla:</strong> <code>.env</code> com <code>DEPLOY_TOOLS_ENABLED=true</code> + linha nova do token → enviar de volta → apagar <code>bootstrap/cache/config.php</code> (se existir).</li>
+        <li><strong>FileZilla:</strong> <code>C:\fauvovet-deploy\app-fauvovet</code> → <code>/app-fauvovet</code>, tudo <strong>exceto <code>storage</code></strong>, com <em>Sobrescrever</em>.</li>
+        <li><strong>FileZilla:</strong> <code>C:\fauvovet-deploy\public_html\fauvovet</code> → <code>/public_html/fauvovet</code>, com <em>Sobrescrever</em>.</li>
+        <li><strong>Terminal</strong> (sem HTTPS: <code>http</code> + <code>export FAUVOVET_ALLOW_HTTP=1</code>):
+<pre><code> export FAUVOVET_DEPLOY_TOKEN='TOKEN_NOVO'
+pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet diagnostico   # pending_migrations: 2
+pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet migrar        # exit_code: 0
+pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet otimizar      # tudo 0</code></pre>
+        </li>
+        <li><strong>FileZilla:</strong> <code>DEPLOY_TOOLS_ENABLED=false</code> → enviar → apagar <code>bootstrap/cache/config.php</code>.</li>
+        <li><strong>Terminal:</strong> <code>SMOKE_URL=https://dradeboragaldino.com.br/fauvovet pnpm smoke</code> (5 PASS) → <code>unset FAUVOVET_DEPLOY_TOKEN FAUVOVET_ALLOW_HTTP</code></li>
+        <li><strong>Navegador</strong> (<kbd>Ctrl</kbd>+<kbd>F5</kbd>):
+          <ul>
+            <li>teste o CEP num responsável de teste. Se aparecer "Não foi possível consultar o CEP", o servidor da Locaweb não está alcançando o ViaCEP; me avise;</li>
+            <li>abra um paciente fictício como veterinário e confira a seção Prontuário.</li>
+          </ul>
+        </li>
+      </ol>
+      <p class="warn">Se a migração falhar no meio (<code>exit_code</code> diferente de 0), <strong>não rode de novo</strong> e me envie o <code>output</code> (ADR-011).</p>
+      <p class="stop"><strong>Prontuário é dado sensível.</strong> Sem HTTPS válido, registre <strong>apenas atendimentos fictícios</strong>.</p>
+    </section>
+
+    <section>
+      <h2>8. Rollback</h2>
+      <ul>
+        <li><strong>Código:</strong> reenvie o pacote anterior (<code>.deploy/fauvovet-1dacafc</code>, a versão do novo visual) e rode o <em>otimizar</em>. As tabelas novas podem ficar no banco, sem uso.</li>
+        <li><strong>Banco:</strong> restaure o backup do passo 2. Isso <strong>apaga atendimentos e alertas</strong> registrados depois dele; por isso o backup vem imediatamente antes.</li>
+        <li><strong>Local:</strong> <code>git revert</code> dos commits e <code>node scripts/php.mjs artisan migrate:rollback --step=2</code> (só no banco de desenvolvimento).</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>9. Troubleshooting</h2>
+      <table>
+        <tr><th>Sintoma</th><th>Causa e solução</th></tr>
+        <tr><td>"Não foi possível consultar o CEP"</td><td>ViaCEP fora do ar ou o servidor sem acesso à internet externa. Preencha à mão; o cadastro funciona igual.</td></tr>
+        <tr><td>"CEP não encontrado"</td><td>CEP inexistente ou genérico de cidade. Preencha a rua manualmente.</td></tr>
+        <tr><td>Não aparece "Finalizar e assinar"</td><td>Só aparece para quem tem o papel <em>Médico-veterinário</em>. O assistente salva o rascunho e o veterinário assina.</td></tr>
+        <tr><td>"Confirme que revisou o registro antes de finalizar"</td><td>Marque a caixa de confirmação no painel lateral.</td></tr>
+        <tr><td>"Preencha ao menos a queixa principal…"</td><td>Atendimento vazio não pode ser assinado.</td></tr>
+        <tr><td>"Atendimento finalizado não pode ser alterado"</td><td>Comportamento esperado. Use <em>Novo adendo</em>.</td></tr>
+        <tr><td>Recepção não vê alergias</td><td>Comportamento esperado (dado clínico). Alertas de comportamento para a recepção ficam como ideia futura.</td></tr>
+        <tr><td>Peso não entrou no gráfico</td><td>O peso entra no histórico ao <strong>finalizar</strong> o atendimento, não no rascunho.</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>10. Evidências e status</h2>
+      <table>
+        <tr><th>Verificação</th><th>Status</th><th>Detalhe</th></tr>
+        <tr><td><code>pnpm verify --e2e</code></td><td class="pass">PASS</td><td>9/9 etapas</td></tr>
+        <tr><td>PHPUnit</td><td class="pass">PASS</td><td>117 testes / 989 asserções (17 novos: 13 prontuário + 4 endereço)</td></tr>
+        <tr><td>Isolamento</td><td class="pass">PASS</td><td>32 testes (3 novos: 404 em atendimento/adendo/alerta de outra clínica, Eva só vê a clínica ativa, FK composta recusa diagnóstico cruzado)</td></tr>
+        <tr><td>E2E (desktop + celular)</td><td class="pass">PASS</td><td>55 passaram + 1 ignorado de propósito</td></tr>
+        <tr><td>Axe no prontuário</td><td class="pass">PASS</td><td>ficha, rascunho e finalizado</td></tr>
+        <tr><td>CEP real (ViaCEP) a partir da Locaweb</td><td class="notrun">NOT RUN</td><td>Testes usam o ViaCEP simulado; conferir no servidor (seção 7, passo 10)</td></tr>
+        <tr><td>Publicação desta versão</td><td class="notrun">NOT RUN</td><td>A cargo do proprietário</td></tr>
+      </table>
+      <p><strong>Commits:</strong> parte 1 (ajustes) <code>57a5c46</code>; parte 2 registrada no <code>docs/PROGRESS.md</code> após a sincronização.</p>
+      <p><strong>Próximo passo:</strong> receitas e documentos em PDF (modelos básicos com os dados da clínica, do profissional e do paciente; dompdf) e anexos privados no prontuário.</p>
+    </section>
+  </main>
+</body>
+</html>

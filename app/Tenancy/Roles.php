@@ -26,8 +26,8 @@ final class Roles
     private const MATRIX = [
         'tenant_owner' => ['tenant:update', 'theme:update', 'units:create', 'members:read', 'members:manage', 'audit:read', 'patients:read', 'patients:write', 'schedule:read', 'schedule:write', 'schedule:attend', 'schedule:configure', 'clinical:read', 'clinical:write'],
         'tenant_manager' => ['units:create', 'members:read', 'members:manage', 'audit:read', 'patients:read', 'patients:write', 'schedule:read', 'schedule:write', 'schedule:configure'],
-        'veterinarian' => ['patients:read', 'patients:write', 'schedule:read', 'schedule:write', 'schedule:attend', 'clinical:read', 'clinical:write'],
-        'clinical_assistant' => ['patients:read', 'patients:write', 'schedule:read', 'schedule:write', 'schedule:attend', 'clinical:read'],
+        'veterinarian' => ['patients:read', 'patients:write', 'schedule:read', 'schedule:write', 'schedule:attend', 'clinical:read', 'clinical:write', 'clinical:sign'],
+        'clinical_assistant' => ['patients:read', 'patients:write', 'schedule:read', 'schedule:write', 'schedule:attend', 'clinical:read', 'clinical:write'],
         'receptionist' => ['patients:read', 'patients:write', 'schedule:read', 'schedule:write'],
         'finance' => ['patients:read', 'schedule:read'],
         'stock' => [],

@@ -32,10 +32,18 @@
         'appointment.status_changed' => 'mudou o status de um agendamento',
         'appointment_type.created' => 'criou um tipo de atendimento',
         'appointment_type.updated' => 'alterou um tipo de atendimento',
+        'encounter.created' => 'abriu um atendimento',
+        'encounter.updated' => 'editou um rascunho de prontuário',
+        'encounter.finalized' => 'finalizou e assinou um atendimento',
+        'encounter.addendum_added' => 'registrou um adendo',
+        'encounter.viewed' => 'consultou um prontuário',
+        'patient.clinical_viewed' => 'consultou um prontuário',
+        'patient.alert_added' => 'registrou um alerta clínico',
+        'patient.alert_resolved' => 'resolveu um alerta clínico',
     ];
     $firstName = strtok(auth()->user()->name, ' ');
     $todayLabel = ucfirst(now('America/Sao_Paulo')->locale('pt_BR')->translatedFormat('l, d \\d\\e F'));
-    $activityIcons = ['appointment' => 'calendar', 'patient' => 'paw', 'guardian' => 'user', 'member' => 'users', 'invitation' => 'mail', 'unit' => 'building', 'tenant' => 'sparkles', 'auth' => 'shield'];
+    $activityIcons = ['encounter' => 'stethoscope', 'appointment' => 'calendar', 'patient' => 'paw', 'guardian' => 'user', 'member' => 'users', 'invitation' => 'mail', 'unit' => 'building', 'tenant' => 'sparkles', 'auth' => 'shield'];
 @endphp
 
 @section('content')
@@ -113,12 +121,31 @@
             @else
                 <x-empty-state title="Nenhum atendimento pendente hoje" icon="calendar">
                     @if ($fvCan('schedule:write'))<a class="font-semibold text-link underline underline-offset-4" href="{{ route('agenda.create') }}">Agendar</a> · @endif
-                    Prontuário e atendimento clínico são a próxima entrega da Fase 1.
+                    Para registrar um atendimento sem agendamento, abra a ficha do paciente e use “Novo atendimento”.
                 </x-empty-state>
             @endif
         </section>
 
         <section aria-labelledby="atalhos">
+            @if ($drafts !== null && $drafts->isNotEmpty())
+                <h2 class="mb-3 flex items-center gap-2 text-lg font-bold tracking-tight"><span class="flex size-8 items-center justify-center rounded-xl bg-warning-bg text-warning"><x-icon name="stethoscope" :size="16" /></span> Prontuários em rascunho</h2>
+                <x-card class="mb-6 p-2">
+                    <ul>
+                        @foreach ($drafts as $dr)
+                            <li>
+                                <a href="{{ route('encounters.show', $dr) }}" class="flex items-center gap-3 rounded-2xl px-3 py-2.5 transition hover:bg-tint">
+                                    <x-avatar :name="$dr->patient->name" icon="paw" :tone="\App\Support\Species::tone($dr->patient->species)" size="sm" />
+                                    <span class="min-w-0 flex-1">
+                                        <span class="block truncate font-semibold">{{ $dr->patient->name }}</span>
+                                        <span class="block truncate text-xs text-muted">{{ $dr->started_at->timezone($dr->unit->timezone)->format('d/m H:i') }} · {{ $dr->author?->name }}</span>
+                                    </span>
+                                    <x-badge tone="warning" :dot="true">Rascunho</x-badge>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </x-card>
+            @endif
             <h2 id="atalhos" class="mb-3 text-lg font-bold tracking-tight">Atalhos</h2>
             @php
                 $shortcuts = array_values(array_filter([

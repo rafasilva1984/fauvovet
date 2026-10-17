@@ -7,6 +7,8 @@ use App\Models\AppointmentType;
 use App\Models\Guardian;
 use App\Models\Patient;
 use App\Models\Unit;
+use App\Models\User;
+use App\Services\ClinicalRecordService;
 use App\Services\ScheduleService;
 use App\Support\BrazilianDocument;
 use App\Tenancy\TenantContext;
@@ -148,6 +150,14 @@ final class AgendaController extends Controller
             'back' => ['nullable', Rule::in(['agenda', 'show'])],
         ]);
         $this->schedule->transition($appointment, $data['to'], (string) $request->user()?->getAuthIdentifier(), $data['reason'] ?? null);
+        // Quem atende clinicamente vai direto para o prontuário (rascunho ligado ao agendamento).
+        if ($data['to'] === 'in_progress' && $this->context->can('clinical:write')) {
+            /** @var User $user */
+            $user = $request->user();
+            $encounter = app(ClinicalRecordService::class)->start($appointment->patient()->firstOrFail(), $appointment, $user);
+
+            return redirect()->route('encounters.show', $encounter)->with('status', 'Atendimento iniciado. Prontuário em rascunho.');
+        }
         $message = Appointment::STATUS[$data['to']].': '.$appointment->patient()->value('name').'.';
         if (($data['back'] ?? 'show') === 'agenda') {
             $tz = $this->unitTz($appointment->unit_id);

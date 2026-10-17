@@ -90,6 +90,18 @@ test('acessibilidade WCAG AA (axe): agenda', async ({ page }) => {
   }
 });
 
+test('acessibilidade WCAG AA (axe): prontuário', async ({ page }) => {
+  await loginInto(page, USERS.bruno);
+  await page.goto('pacientes/01K7FV0000000000000PTA0001'); // ficha com alertas, peso e linha do tempo
+  await axe(page);
+  await page.goto('atendimentos/01K7FV0000000000000ENA0002'); // finalizado (leitura + adendos)
+  await axe(page);
+  await page.goto('pacientes/01K7FV0000000000000PTA0003');
+  await page.getByRole('button', { name: 'Novo atendimento' }).click();
+  await expect(page.getByLabel('Queixa principal')).toBeVisible(); // rascunho (formulário)
+  await axe(page);
+});
+
 test('modo escuro mantém contraste AA', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.goto('login');
