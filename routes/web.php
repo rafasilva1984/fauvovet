@@ -6,6 +6,8 @@ use App\Http\Controllers\AppointmentTypeController;
 use App\Http\Controllers\Auth\ContextController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\DocumentTemplateController;
 use App\Http\Controllers\EncounterController;
 use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\InvitationController;
@@ -13,6 +15,7 @@ use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\PatientAlertController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PostalCodeController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UnitController;
 use Illuminate\Support\Facades\Route;
@@ -81,6 +84,28 @@ Route::middleware('auth')->group(function () {
             Route::get('/configuracoes/tipos-de-atendimento/{appointmentType}/editar', [AppointmentTypeController::class, 'edit'])->name('settings.appointment-types.edit');
             Route::put('/configuracoes/tipos-de-atendimento/{appointmentType}', [AppointmentTypeController::class, 'update'])->name('settings.appointment-types.update');
         });
+        Route::get('/perfil', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/perfil', [ProfileController::class, 'update'])->name('profile.update');
+
+        // Documentos clínicos: ler/baixar = clinical:read; emitir = clinical:write (receita/atestado/encaminhamento
+        // exigem clinical:sign, verificado no serviço); modelos = documents:templates.
+        Route::middleware('permission:clinical:read')->group(function () {
+            Route::get('/documentos/{document}', [DocumentController::class, 'show'])->name('documents.show');
+            Route::get('/documentos/{document}/pdf', [DocumentController::class, 'pdf'])->name('documents.pdf');
+        });
+        Route::middleware('permission:clinical:write')->group(function () {
+            Route::get('/pacientes/{patient}/documentos/novo', [DocumentController::class, 'create'])->name('documents.create');
+            Route::post('/pacientes/{patient}/documentos', [DocumentController::class, 'store'])->name('documents.store');
+            Route::post('/documentos/{document}/anular', [DocumentController::class, 'void'])->name('documents.void');
+        });
+        Route::middleware('permission:documents:templates')->group(function () {
+            Route::get('/configuracoes/modelos-de-documento', [DocumentTemplateController::class, 'index'])->name('document-templates.index');
+            Route::get('/configuracoes/modelos-de-documento/novo', [DocumentTemplateController::class, 'create'])->name('document-templates.create');
+            Route::post('/configuracoes/modelos-de-documento', [DocumentTemplateController::class, 'store'])->name('document-templates.store');
+            Route::get('/configuracoes/modelos-de-documento/{template}/editar', [DocumentTemplateController::class, 'edit'])->name('document-templates.edit');
+            Route::put('/configuracoes/modelos-de-documento/{template}', [DocumentTemplateController::class, 'update'])->name('document-templates.update');
+        });
+
         // Prontuário: leitura clínica; escrita clínica; assinatura (finalizar) verificada no serviço (clinical:sign).
         Route::middleware('permission:clinical:read')->group(function () {
             Route::get('/atendimentos/{encounter}', [EncounterController::class, 'show'])->name('encounters.show');

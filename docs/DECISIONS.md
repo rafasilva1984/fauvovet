@@ -166,3 +166,15 @@ modelo de outro projeto dele já operado na Locaweb (Laravel + Vite, Node só pa
   assinatura digital ICP-Brasil (§4.4) — isso fica para a integração com provedor especializado.
 - **CEP:** consulta pelo servidor (ViaCEP) em vez do navegador, para manter a CSP sem conexões externas; só o CEP
   sai do sistema; falha não impede o cadastro.
+
+## ADR-014 — Documentos em PDF com dompdf, arquivo privado e preservado (2026-10-17)
+
+- **Decisão:** gerar PDFs no servidor com **dompdf 3.1** (PHP puro, roda na Locaweb sem binários; licença LGPL-2.1,
+  usado sem modificação — compatível com o projeto MIT). Recursos remotos, PHP e JavaScript do dompdf desligados;
+  `chroot` em `resources/pdf`. Fonte DejaVu (acentos).
+- **Preservação:** o documento guarda o texto final e o PDF em disco privado (`storage/app/private`), com SHA-256
+  conferido a cada download; editar o modelo cria nova versão e não altera documentos emitidos; documento não é
+  apagado nem reescrito — é anulado com motivo.
+- **Assinatura:** eletrônica simples (profissional autenticado + CRMV + data + código de verificação). Assinatura
+  digital ICP-Brasil e receita de controle especial ficam para provedor especializado e validação jurídica (§4.4).
+- **Custo medido:** ~58 ms por PDF (local), ~23 KB por receita.

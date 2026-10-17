@@ -20,7 +20,8 @@ Ordem conforme CLAUDE.md §11. Atualizado em 2026-10-15 (stack PHP/MySQL — ADR
 - [x] Responsáveis e pacientes: cadastro rápido, 16 espécies + exóticos, vínculos N:N, busca, óbito, aviso de duplicado (15/10/2026).
 - [x] Agenda: dia/semana por unidade e profissional, fuso da unidade, tipos, status, conflito, encaixe, fila de espera (16/10/2026).
 - [x] Atendimento/prontuário: queixa, anamnese, sinais vitais, exame físico, hipóteses × diagnósticos, conduta; finalizar e assinar bloqueia; adendos; alertas; peso (17/10/2026).
-- [ ] Receitas e documentos em PDF (modelos básicos + dompdf), anexos privados ← próximo
+- [x] Receitas e documentos em PDF: modelos da clínica, variáveis whitelist, PDF preservado com código de verificação, anulação, Meu perfil com CRMV (17/10/2026).
+- [ ] Anexos privados no prontuário (exames, imagens, PDFs) ← próximo
 
 Depois: modelos de documento por clínica, vacinação.
 

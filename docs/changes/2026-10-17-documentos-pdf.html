@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FauvoVet — Receitas e documentos em PDF</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #1a2935; background: #f4f7f8; line-height: 1.65; font-size: 17px; }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 16px 80px; }
+    header { border-radius: 20px; padding: 32px; color: white; background: linear-gradient(120deg, #0b4652, #1a7375); }
+    header p { color: #e1f5f0; margin-bottom: 0; }
+    h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.2; margin: 0; }
+    h2 { font-size: 1.3rem; margin: 0 0 12px; }
+    h3 { font-size: 1.12rem; margin: 28px 0 8px; padding-top: 16px; border-top: 1px dashed #c9d6d8; }
+    h4 { font-size: 1rem; margin: 18px 0 6px; }
+    section { margin-top: 20px; background: #fff; padding: 24px; border: 1px solid #dee7e8; border-radius: 14px; }
+    p, li { overflow-wrap: anywhere; }
+    code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { background: #eaf1f2; padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+    pre code { background: none; padding: 0; }
+    kbd { border: 1px solid #b8c6c9; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: #fff; font-size: 0.9em; }
+    pre { overflow-x: auto; border-radius: 8px; padding: 14px; color: #e9fbff; background: #172b32; font-size: 0.9rem; line-height: 1.5; }
+    .tag { display: inline-block; font-size: 0.8rem; font-weight: 700; border: 1px solid #f5cf83; background: #fff8e4; color: #7a4b12; border-radius: 30px; padding: 3px 10px; }
+    .where { display: inline-block; font-size: 0.78rem; font-weight: 700; border-radius: 30px; padding: 2px 10px; margin-right: 6px; vertical-align: middle; }
+    .w-term { background: #1f3b44; color: #d9fbff; }
+    .w-web { background: #e1effd; color: #0f3e72; }
+    .w-fz { background: #fde8e1; color: #7a2a0f; }
+    .w-np { background: #ece5fb; color: #42237a; }
+    .w-panel { background: #e2f6e8; color: #145c2e; }
+    .note { border-left: 4px solid #338b96; background: #eef7f8; padding: 10px 12px; border-radius: 6px; }
+    .warn { border-left: 4px solid #c27c0e; background: #fff8e4; padding: 10px 12px; border-radius: 6px; }
+    .stop { border-left: 4px solid #b3261e; background: #fdecea; padding: 10px 12px; border-radius: 6px; }
+    .ok { border-left: 4px solid #1d7a45; background: #e8f6ee; padding: 10px 12px; border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid #e0e7e8; text-align: left; vertical-align: top; }
+    small { color: #52646d; }
+    .pass { color: #116b3a; font-weight: 700; }
+    .notrun { color: #8a5a00; font-weight: 700; }
+    ol.steps > li { margin-bottom: 12px; }
+    .map { font-size: 0.85rem; }
+    .shots { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .shots figure { margin: 0; }
+    .shots img { width: 100%; height: auto; border-radius: 12px; border: 1px solid #dee7e8; display: block; }
+    .shots figcaption { font-size: 0.85rem; color: #52646d; margin-top: 4px; }
+    .shots .tall img { max-height: 520px; object-fit: cover; object-position: top; }
+    nav ol { columns: 2; column-gap: 32px; }
+    @media (max-width: 640px) { nav ol { columns: 1; } body { font-size: 16px; } section { padding: 18px; } header { padding: 22px; } }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e4eef0; background: #0f1a1e; }
+      section { background: #15242a; border-color: #23373e; }
+      th, td { border-color: #23373e; }
+      code { background: #213840; }
+      kbd { background: #1d3138; border-color: #3b5760; }
+      .warn { background: #2a2210; } .note { background: #12303a; } .stop { background: #3a1614; } .ok { background: #12301f; }
+      small { color: #9fb3ba; }
+      h3 { border-color: #2c454c; }
+      .pass { color: #5fd28f; } .notrun { color: #f0b54a; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="tag">INCREMENTO IMPLEMENTADO — FASE 1 · DOCUMENTOS CLÍNICOS EM PDF</span>
+      <h1>Receitas, atestados, orientações, encaminhamentos e termos em PDF</h1>
+      <p>ID: <strong>2026-10-17-documentos-pdf</strong> · Data: <strong>17/10/2026</strong> · Versão: <strong>0.7.0</strong> · Módulo: <strong>G. Documentos, receituários e autorizações</strong> · Estado: <strong>implementado e testado localmente; publicação a cargo do proprietário (seção 7)</strong></p>
+    </header>
+
+    <section>
+      <h2>1. Objetivo</h2>
+      <p>Emitir os documentos do dia a dia direto da ficha do paciente ou do atendimento:</p>
+      <ul>
+        <li>o texto vem preenchido com os dados reais;</li>
+        <li>o veterinário ajusta o que precisar;</li>
+        <li>o sistema gera um PDF com a identidade da clínica, a identificação do paciente e do tutor e a assinatura com CRMV;</li>
+        <li>o PDF fica guardado de forma privada e imutável.</li>
+      </ul>
+      <p><strong>Critérios de aceite:</strong></p>
+      <ul>
+        <li>modelos por clínica, só com variáveis permitidas;</li>
+        <li>PDF preservado, com integridade conferida;</li>
+        <li>editar o modelo não muda documentos já emitidos;</li>
+        <li>receita e atestado só pelo veterinário com CRMV;</li>
+        <li>nada de documentos entre clínicas;</li>
+        <li>recepção não acessa.</li>
+      </ul>
+      <div class="shots">
+        <figure><img src="img/2026-10-17-documento-emitir.jpg" alt="Tela de emissão: escolha do modelo e texto preenchido (dados fictícios)" loading="lazy"><figcaption>Escolher modelo e revisar o texto</figcaption></figure>
+        <figure><img src="img/2026-10-17-documento-emitido.jpg" alt="Documento emitido com código de verificação (dados fictícios)" loading="lazy"><figcaption>Documento emitido</figcaption></figure>
+        <figure><img src="img/2026-10-17-documento-receita-pdf.jpg" alt="PDF de receita gerado pelo sistema (dados fictícios)" loading="lazy"><figcaption>PDF gerado (receita)</figcaption></figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>2. O que mudou</h2>
+      <h3>Para quem usa</h3>
+      <ul>
+        <li><strong>Emitir:</strong> na ficha do paciente (seção Prontuário → Documentos → <em>Emitir</em>) ou no atendimento (<em>Documentos deste atendimento</em> → <em>Emitir</em>). Neste caso, os dados do atendimento entram no texto: queixa, conduta, orientações e diagnósticos confirmados.
+          <ol>
+            <li>escolha o modelo;</li>
+            <li>revise o texto: os trechos entre [colchetes] são lembretes para completar;</li>
+            <li>clique em <em>Emitir PDF</em>.</li>
+          </ol>
+          Se ainda houver [colchetes] no texto, o sistema mostra quais faltam e só emite com "emitir mesmo assim".
+        </li>
+        <li><strong>5 modelos iniciais</strong>, criados no primeiro uso: Receita simples, Atestado de saúde, Orientações pós-consulta, Encaminhamento e Termo de consentimento.</li>
+        <li><strong>O PDF</strong> traz:
+          <ul>
+            <li>cabeçalho com nome, CNPJ/CPF e unidade da clínica, numa faixa com a cor da clínica;</li>
+            <li>quadro com paciente (espécie, raça, sexo, idade, peso) e responsável (documento, telefone, endereço);</li>
+            <li>o texto;</li>
+            <li>local e data;</li>
+            <li>assinatura com nome e CRMV. No termo de consentimento, há também a linha de assinatura do tutor;</li>
+            <li>no rodapé, "emitido eletronicamente", data e hora, e o <strong>código de verificação</strong>.</li>
+          </ul>
+        </li>
+        <li><strong>Documento emitido:</strong> abrir ou baixar o PDF, ver o texto e a integridade (SHA-256) e <strong>anular</strong> com motivo (quem emitiu ou o titular). Anulado, o PDF original continua guardado.</li>
+        <li><strong>Configurações → Modelos de documento</strong> (titular, gestão e veterinário):
+          <ul>
+            <li>criar e editar modelos, com a lista de variáveis permitidas ao lado;</li>
+            <li>salvar uma alteração de texto cria a próxima versão;</li>
+            <li>variável desconhecida é recusada.</li>
+          </ul>
+        </li>
+        <li><strong>Meu perfil</strong> (clicando no seu nome no menu): nome e <strong>CRMV</strong>. O CRMV é obrigatório para receitas, atestados e encaminhamentos.</li>
+        <li>Mensagens de erro agora usam o nome do campo em português ("o título", "o texto"…).</li>
+      </ul>
+      <h3>Quem pode</h3>
+      <table>
+        <tr><th>Ação</th><th>Quem</th></tr>
+        <tr><td>Emitir receita, atestado, encaminhamento</td><td>Médico-veterinário, com CRMV cadastrado</td></tr>
+        <tr><td>Emitir orientações e termo de consentimento</td><td>Equipe clínica (veterinário, assistente, titular)</td></tr>
+        <tr><td>Ver e baixar documentos</td><td>Equipe clínica. Cada leitura e download fica registrado.</td></tr>
+        <tr><td>Anular</td><td>Quem emitiu ou o titular</td></tr>
+        <tr><td>Modelos</td><td>Titular, gestão, veterinário</td></tr>
+        <tr><td>Recepção, financeiro, estoque, banho e tosa</td><td>Sem acesso</td></tr>
+      </table>
+      <h3>Arquivos</h3>
+      <ul>
+        <li><strong>Dependência nova:</strong> <code>dompdf/dompdf</code> 3.1.6 (PHP puro; LGPL-2.1, usado sem modificação), com <code>php-font-lib</code>, <code>php-svg-lib</code>, <code>html5</code> e <code>php-css-parser</code>.</li>
+        <li><strong>Migração:</strong> <code>2026_10_17_000001_create_document_tables</code> (<code>document_templates</code>, <code>issued_documents</code>).</li>
+        <li><strong>Código:</strong> <code>app/Documents/Placeholders.php</code> (lista de variáveis), <code>app/Services/DocumentService.php</code>, controllers <code>DocumentController</code>, <code>DocumentTemplateController</code>, <code>ProfileController</code>; models <code>DocumentTemplate</code>, <code>IssuedDocument</code> (imutável).</li>
+        <li><strong>Telas:</strong> <code>documents/*</code> (inclui <code>pdf.blade.php</code>, o layout do PDF), <code>profile/edit</code>. Permissão nova <code>documents:templates</code>.</li>
+        <li><strong>Diagnóstico de deploy:</strong> passa a exigir a extensão PHP <code>dom</code> e a mostrar <code>private_storage_writable</code>.</li>
+        <li><strong>Seed:</strong> CRMV fictício (<code>CRMV-XX 0000n</code>) para os veterinários de teste.</li>
+        <li><strong>Testes:</strong> <code>DocumentTest</code> (10, sendo 1 de isolamento), E2E <code>documents.spec.ts</code>, axe nas telas de documentos e perfil.</li>
+        <li><strong>Documentação:</strong> ADR-014, IDEAS (verificação pública por código, logo e timbre, controle especial/ICP, prescrição estruturada).</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>3. Pré-requisitos</h2>
+      <p>No seu computador: <code>composer install</code> (feito pelo <code>pnpm bootstrap</code>) para baixar o dompdf. No servidor: PHP com <code>dom</code> e <code>mbstring</code> (o diagnóstico confere) e a pasta <code>app-fauvovet/storage/app/private</code> gravável (criada na primeira instalação).</p>
+      <p class="warn"><strong>Git Bash/macOS:</strong> NOT RUN.</p>
+    </section>
+
+    <section>
+      <h2>4. Passo a passo (no seu computador)</h2>
+      <ol>
+        <li><code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm bootstrap</code> (instala o dompdf) → <code>pnpm db:start</code></li>
+        <li><code>pnpm db:migrate</code> → <code>pnpm db:seed</code> (grava os CRMV fictícios)</li>
+        <li><code>pnpm dev</code> → entre como <code>bruno.vet@aurora.exemplo.test</code>, abra o Thor → Prontuário → Documentos → <em>Emitir</em>.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>5. Como testar</h2>
+      <h3>Automático</h3>
+<pre><code>pnpm verify --e2e
+pnpm test:tenant-isolation</code></pre>
+      <h3>Manual</h3>
+      <ol>
+        <li><strong>Como Bruno</strong>, no Thor, emita uma <em>Receita simples</em> sem trocar os colchetes: aparece o aviso dos trechos a completar. Complete e emita. Abra o PDF e confira cabeçalho, paciente, tutor, assinatura com CRMV e código.</li>
+        <li>Abra um atendimento finalizado → <em>Documentos deste atendimento</em> → <em>Emitir</em> → <em>Encaminhamento</em>: a queixa e os diagnósticos confirmados aparecem no texto.</li>
+        <li>Anule o documento com um motivo: ele fica riscado na lista e mostra "Documento anulado".</li>
+        <li>Em <em>Meu perfil</em>, apague o CRMV e tente emitir uma receita: o sistema pede o CRMV.</li>
+        <li><strong>Como Ana</strong>, em <em>Modelos de documento</em>:
+          <ul>
+            <li>edite o atestado: a versão sobe;</li>
+            <li>escreva <code>{{paciente.senha}}</code> no texto: a variável é recusada.</li>
+          </ul>
+        </li>
+        <li><strong>Como Carla (recepção):</strong> nenhuma seção de documentos.</li>
+        <li><strong>Como Diana</strong> (clínica B): o endereço de um documento da clínica A responde 404.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>6. Performance e usabilidade</h2>
+      <ul>
+        <li><strong>Geração do PDF:</strong> ~58 ms por documento (média de 10, local); receita de ~23 KB.</li>
+        <li><strong>Download:</strong> o servidor confere o SHA-256 do arquivo (custo desprezível para PDFs desse tamanho).</li>
+        <li><strong>Emitir</strong> leva 3 ações: modelo, ajuste e emitir. Os dados do paciente, do tutor e do profissional nunca são digitados.</li>
+        <li><strong>Acessibilidade:</strong> o axe (WCAG 2.2 AA) não acusou violações nas telas de emissão, documento emitido, modelos e perfil, no computador e no celular.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>7. Implantação na Locaweb (1 migração + PDFs em disco)</h2>
+      <p><strong>Backup do banco antes.</strong> A partir desta versão, o backup também inclui a pasta dos PDFs (passo 11).</p>
+      <ol>
+        <li><strong>Terminal:</strong> <code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm bootstrap</code> → <code>pnpm db:start</code> → <code>pnpm verify --e2e</code> → <code>pnpm deploy:package</code> → <code>pnpm deploy:copiar</code></li>
+        <li><strong>Painel Locaweb:</strong> backup (exportação) do banco.</li>
+        <li><strong>Terminal:</strong> <code>pnpm deploy:token</code>.</li>
+        <li><strong>FileZilla:</strong> <code>.env</code> com <code>DEPLOY_TOOLS_ENABLED=true</code> + linha nova do token → enviar → apagar <code>bootstrap/cache/config.php</code> (se existir).</li>
+        <li><strong>FileZilla:</strong> <code>C:\fauvovet-deploy\app-fauvovet</code> → <code>/app-fauvovet</code>, tudo <strong>exceto <code>storage</code></strong>, com <em>Sobrescrever</em>. A pasta <code>vendor</code> agora traz o dompdf.</li>
+        <li><strong>FileZilla:</strong> <code>C:\fauvovet-deploy\public_html\fauvovet</code> → <code>/public_html/fauvovet</code>, com <em>Sobrescrever</em>.</li>
+        <li><strong>Terminal</strong> (sem HTTPS: <code>http</code> + <code>export FAUVOVET_ALLOW_HTTP=1</code>):
+<pre><code> export FAUVOVET_DEPLOY_TOKEN='TOKEN_NOVO'
+pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet diagnostico
+#   confira: extensions_missing: []  ·  private_storage_writable: true  ·  pending_migrations: 1
+pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet migrar        # exit_code: 0
+pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet otimizar      # tudo 0</code></pre>
+        </li>
+        <li><strong>FileZilla:</strong> <code>DEPLOY_TOOLS_ENABLED=false</code> → enviar → apagar <code>bootstrap/cache/config.php</code>.</li>
+        <li><strong>Terminal:</strong> <code>SMOKE_URL=https://dradeboragaldino.com.br/fauvovet pnpm smoke</code> (5 PASS) → <code>unset FAUVOVET_DEPLOY_TOKEN FAUVOVET_ALLOW_HTTP</code></li>
+        <li><strong>Navegador:</strong>
+          <ul>
+            <li>em <em>Meu perfil</em>, cadastre o seu CRMV;</li>
+            <li>num paciente <strong>fictício</strong>, emita um documento e abra o PDF.</li>
+          </ul>
+        </li>
+        <li><strong>Backup dos PDFs</strong> (rotina, a partir de agora): no FileZilla, baixe <code>/app-fauvovet/storage/app/private/documents</code> para um local seguro junto com o backup do banco. Os PDFs <strong>não</strong> ficam no banco.</li>
+      </ol>
+      <p class="warn">Se o diagnóstico mostrar <code>dom</code> em <code>extensions_missing</code>, peça à Locaweb para habilitar a extensão (ou troque a versão do PHP no painel). Sem ela, a emissão de PDF falha.</p>
+      <p class="stop">Sem HTTPS válido, emita apenas documentos de pacientes fictícios.</p>
+    </section>
+
+    <section>
+      <h2>8. Rollback</h2>
+      <ul>
+        <li><strong>Código:</strong> reenvie o pacote anterior (<code>.deploy/fauvovet-ca61106</code>) e rode o <em>otimizar</em>. As tabelas e os PDFs podem ficar; a versão anterior não os usa.</li>
+        <li><strong>Banco:</strong> restaure o backup do passo 2. Os registros de documentos emitidos depois dele somem, mas os PDFs continuam na pasta e podem ser apagados com segurança.</li>
+        <li><strong>Local:</strong> <code>git revert</code> do commit e <code>node scripts/php.mjs artisan migrate:rollback --step=1</code> (só no banco de desenvolvimento).</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>9. Troubleshooting</h2>
+      <table>
+        <tr><th>Sintoma</th><th>Causa e solução</th></tr>
+        <tr><td>"Cadastre seu CRMV em Meu perfil…"</td><td>Receita, atestado e encaminhamento exigem CRMV. Clique no seu nome no menu → <em>Meu perfil</em>.</td></tr>
+        <tr><td>Não aparece Receita na lista de modelos</td><td>Seu papel não é <em>Médico-veterinário</em>.</td></tr>
+        <tr><td>"Ainda há trechos entre colchetes…"</td><td>Complete os lembretes [assim] ou marque "emitir mesmo assim".</td></tr>
+        <tr><td>"Variáveis não reconhecidas"</td><td>Use só as variáveis da lista, escritas exatamente igual, por exemplo <code>{{paciente.nome}}</code>.</td></tr>
+        <tr><td>Erro 500 ao abrir o PDF</td><td>O arquivo sumiu ou foi alterado no servidor (o hash não confere). Restaure a pasta <code>storage/app/private/documents</code> do backup.</td></tr>
+        <tr><td>Erro ao emitir no servidor</td><td>Veja o <code>laravel.log</code>. Causas comuns: extensão <code>dom</code> ausente ou <code>storage/app/private</code> sem permissão de escrita (diagnóstico: <code>private_storage_writable</code>).</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>10. Evidências e status</h2>
+      <table>
+        <tr><th>Verificação</th><th>Status</th><th>Detalhe</th></tr>
+        <tr><td><code>pnpm verify --e2e</code></td><td class="pass">PASS</td><td>9/9 etapas</td></tr>
+        <tr><td>PHPUnit</td><td class="pass">PASS</td><td>127 testes / 1.110 asserções (10 novos de documentos)</td></tr>
+        <tr><td>Isolamento</td><td class="pass">PASS</td><td>33 testes (novo: documento, PDF, anulação, modelo e atendimento de outra clínica → 404)</td></tr>
+        <tr><td>Escape de HTML no PDF</td><td class="pass">PASS</td><td><code>&lt;script&gt;</code> e <code>&lt;b&gt;</code> no texto saem como texto</td></tr>
+        <tr><td>PDF visualmente conferido</td><td class="pass">PASS</td><td>Renderizado com poppler local (captura acima)</td></tr>
+        <tr><td>Geração no servidor da Locaweb (extensão <code>dom</code>)</td><td class="notrun">NOT RUN</td><td>Conferir no diagnóstico (seção 7)</td></tr>
+      </table>
+      <p><strong>Commit:</strong> registrado no <code>docs/PROGRESS.md</code> após a sincronização.</p>
+      <p><strong>Próximo passo:</strong> anexos privados no prontuário: exames, imagens e PDFs enviados pela clínica, validados por tipo e tamanho, guardados fora da área pública e baixados só por quem tem acesso.</p>
+    </section>
+  </main>
+</body>
+</html>

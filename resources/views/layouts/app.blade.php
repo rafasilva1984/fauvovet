@@ -14,6 +14,7 @@
         ],
         'Configurações' => [
             ['route' => 'settings.appointment-types', 'label' => 'Tipos de atendimento', 'icon' => 'list', 'perm' => 'schedule:configure'],
+            ['route' => 'document-templates.index', 'label' => 'Modelos de documento', 'icon' => 'copy', 'perm' => 'documents:templates'],
             ['route' => 'settings.appearance', 'label' => 'Aparência', 'icon' => 'palette', 'perm' => 'theme:update'],
         ],
     ];
@@ -81,10 +82,10 @@
 
             <div class="flex items-center gap-3 rounded-2xl bg-side-2 p-3 ring-1 ring-white/5">
                 <x-avatar :name="$user->name" size="sm" />
-                <div class="min-w-0 flex-1">
+                <a href="{{ route('profile.edit') }}" class="min-w-0 flex-1 rounded-lg hover:text-white" title="Meu perfil">
                     <p class="truncate text-sm font-semibold">{{ $user->name }}</p>
-                    <p class="truncate text-xs text-side-muted">{{ $user->email }}</p>
-                </div>
+                    <p class="truncate text-xs text-side-muted">Meu perfil · {{ $user->email }}</p>
+                </a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="flex size-10 items-center justify-center rounded-xl text-side-muted transition hover:bg-white/10 hover:text-white" title="Sair">
@@ -167,13 +168,12 @@
                             @endforeach
                         </div>
                     @endif
-                    @if ($navMore)
-                        <nav aria-label="Mais opções" class="mt-4 grid grid-cols-2 gap-2">
-                            @foreach ($navMore as $item)
-                                <a href="{{ route($item['route']) }}" class="flex min-h-12 items-center gap-2 rounded-2xl border border-line px-3 text-sm font-medium hover:bg-surface-2"><x-icon :name="$item['icon']" :size="18" /> {{ $item['label'] }}</a>
-                            @endforeach
-                        </nav>
-                    @endif
+                    <nav aria-label="Mais opções" class="mt-4 grid grid-cols-2 gap-2">
+                        @foreach ($navMore as $item)
+                            <a href="{{ route($item['route']) }}" class="flex min-h-12 items-center gap-2 rounded-2xl border border-line px-3 text-sm font-medium hover:bg-surface-2"><x-icon :name="$item['icon']" :size="18" /> {{ $item['label'] }}</a>
+                        @endforeach
+                        <a href="{{ route('profile.edit') }}" class="flex min-h-12 items-center gap-2 rounded-2xl border border-line px-3 text-sm font-medium hover:bg-surface-2"><x-icon name="user" :size="18" /> Meu perfil</a>
+                    </nav>
                     <form method="POST" action="{{ route('logout') }}" class="mt-4">
                         @csrf
                         <x-button variant="secondary" class="w-full"><x-icon name="logout" /> Sair</x-button>

@@ -59,10 +59,17 @@ CEP pela consulta `/cep/{cep}`). Migração aditiva.
 | `patient_weights`     | clínica | histórico de peso; 1 por atendimento (`UNIQUE (tenant_id, encounter_id)`)                                                                                                                                   |
 | `patient_alerts`      | clínica | alergia/condição crônica/medicação/comportamento/outro, gravidade; resolvido em vez de apagado                                                                                                              |
 
+## 2026_10_17_000001_create_document_tables
+
+| Tabela               | Escopo  | Integridade                                                                                                                                                                                      |
+| -------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `document_templates` | clínica | nome único por clínica; texto com variáveis só da whitelist (`App\Documents\Placeholders`); `version` incrementa ao editar texto/título/categoria; 5 modelos padrão criados no primeiro uso      |
+| `issued_documents`   | clínica | texto final + caminho do PDF (disco privado `storage/app/private/documents/{clínica}/{ano}/{id}.pdf`), SHA-256, bytes, código de verificação único, emissor e vínculo; **imutável**, só anulação |
+
 Tabelas de clínica registradas no firewall: `TenantQueryFirewall::TENANT_TABLES` (um teste falha se uma tabela com
 `tenant_id` não estiver na lista).
 
 ## Planejado (não migrado)
 
-Vacinas, exames, receitas/documentos, anexos, internação etc. conforme CLAUDE.md §6.3, cada um com `tenant_id`, FKs compostas,
+Vacinas, exames, anexos, internação etc. conforme CLAUDE.md §6.3, cada um com `tenant_id`, FKs compostas,
 model `BelongsToTenant` + `TenantOwned` e testes de isolamento.

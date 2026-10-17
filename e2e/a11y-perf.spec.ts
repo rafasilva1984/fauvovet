@@ -102,6 +102,25 @@ test('acessibilidade WCAG AA (axe): prontuário', async ({ page }) => {
   await axe(page);
 });
 
+test('acessibilidade WCAG AA (axe): documentos e perfil', async ({ page }) => {
+  await loginInto(page, USERS.ana);
+  for (const path of [
+    'pacientes/01K7FV0000000000000PTA0001/documentos/novo',
+    'configuracoes/modelos-de-documento',
+    'configuracoes/modelos-de-documento/novo',
+    'perfil',
+  ]) {
+    await page.goto(path);
+    await axe(page);
+  }
+  await page.goto('pacientes/01K7FV0000000000000PTA0001/documentos/novo');
+  await page.getByRole('link', { name: /Orientações pós-consulta/ }).click();
+  await axe(page);
+  await page.getByRole('button', { name: 'Emitir PDF' }).click();
+  await expect(page.getByText('Válido', { exact: true })).toBeVisible();
+  await axe(page);
+});
+
 test('modo escuro mantém contraste AA', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.goto('login');

@@ -1,6 +1,6 @@
 # FauvoVet — Checkpoint e ponto de retomada
 
-> **Atualizado em:** 2026-10-17 01:00 (America/Sao_Paulo) · **Fase:** 1 — MVP clínico (em andamento; Fase 0 concluída exceto HTTPS/backup)
+> **Atualizado em:** 2026-10-17 01:40 (America/Sao_Paulo) · **Fase:** 1 — MVP clínico (em andamento; Fase 0 concluída exceto HTTPS/backup)
 > **Regra:** atualizar a cada incremento, bloqueio e antes de encerrar qualquer sessão.
 
 ## Mudança de rumo nesta sessão
@@ -12,7 +12,7 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
 
 ## Situação atual
 
-- **Branch/remote:** `main` → `origin`. Reescrita sincronizada em `34ee508`; tutorial em `7d1546c`; deploy/domínio em `df8a793`; equipe em `5bc5577`; pacientes em `7aee4ec`; agenda em `8f91a50`; visual em `1dacafc`; ajustes de cadastro em `57a5c46` (CI success); CI (PHP 8.3) run 38796096959: **success** (bootstrap + verify --e2e).
+- **Branch/remote:** `main` → `origin`. Reescrita sincronizada em `34ee508`; tutorial em `7d1546c`; deploy/domínio em `df8a793`; equipe em `5bc5577`; pacientes em `7aee4ec`; agenda em `8f91a50`; visual em `1dacafc`; ajustes de cadastro em `57a5c46`; prontuário em `3767132`; teste de rede em `ca61106` (CI success); CI (PHP 8.3) run 38796096959: **success** (bootstrap + verify --e2e).
 - **Implementado e testado (local):** login seguro (Argon2id, bloqueio, rate limit, mensagem uniforme), sessão no
   servidor, CSRF, CSP com nonce, escolha de clínica/unidade, RBAC (8 papéis), cadastro de clínica PF/PJ, unidades
   (lista/criação/detalhe), equipe (leitura), aparência por clínica (AA), auditoria somente inclusão, páginas de erro
@@ -34,12 +34,16 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
   ("telas sem vida, quadradas"). Só design: fonte Plus Jakarta Sans auto-hospedada, menu lateral escuro em grupos,
   barra superior com busca rápida e "Novo", painel com faixa em degradê e indicadores, agenda em linha do tempo,
   avatares por espécie, cabeçalhos de perfil, login com prévia ilustrativa, modo escuro refeito (ADR-012).
-- **Ajustes pedidos + Prontuário (Fase 1, implementado e testado localmente; ainda não publicado):** sem "(opcional)",
+- **Ajustes pedidos + Prontuário (Fase 1): PUBLICADO** pelo proprietário (pacote `ca61106` gerado): sem "(opcional)",
   cor sem código, idade pela data, CEP→endereço (ViaCEP pelo servidor) + número/complemento/bairro, UF em lista;
   prontuário com rascunho → finalizar e assinar (só veterinário) → bloqueio + adendos, sinais vitais, hipóteses ×
   diagnósticos, alertas clínicos, peso com gráfico, auditoria de acesso, "Iniciar atendimento" abre o prontuário
   (ADR-013).
-- **Não implementado:** receitas/documentos PDF, anexos (alergias, peso, vacinas), busca clínica, lembretes, visão mensal/salas/recorrência; MFA, recuperação de senha, e-mail transacional; backup automático.
+- **Documentos em PDF (Fase 1, implementado e testado localmente; ainda não publicado):** modelos por clínica
+  (5 padrão) com variáveis whitelist e versão, emissão com texto preenchido e aviso de [colchetes], PDF dompdf com
+  identidade da clínica, paciente/tutor, assinatura com CRMV e código de verificação, disco privado + SHA-256,
+  anulação, Meu perfil (CRMV), auditoria de leitura/download (ADR-014).
+- **Não implementado:** anexos (alergias, peso, vacinas), busca clínica, lembretes, visão mensal/salas/recorrência; MFA, recuperação de senha, e-mail transacional; backup automático.
 - **PUBLICADO (teste) na Locaweb em 15/10/2026** pelo proprietário, seguindo o tutorial: `http://dradeboragaldino.com.br/fauvovet`.
   Domínio corrigido em todo o repositório (era "gakdino"; o certo é **galdino**). `pnpm smoke` contra o servidor real:
   **5/5 PASS** (143–245 ms). **HTTPS inválido**: certificado `*.websiteseguro.com` não cobre o domínio → sem dados reais
@@ -47,7 +51,7 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
 - **Tutorial de deploy didático:** o proprietário achou o passo a passo de `DEPLOY_LOCAWEB.md` difícil de seguir (faltava
   configuração do banco e o que copiar para onde). Reescrito como guia completo, etapas A–H, com glossário, mapa de pastas,
   folha de anotações e troubleshooting; novo comando `pnpm deploy:copiar` (pacote → `C:\fauvovet-deploy`, fora do OneDrive).
-- **Último guia HTML:** [`docs/changes/2026-10-17-prontuario.html`](changes/2026-10-17-prontuario.html)
+- **Último guia HTML:** [`docs/changes/2026-10-17-documentos-pdf.html`](changes/2026-10-17-documentos-pdf.html)
 
 ## Ambiente (verificado)
 
@@ -106,6 +110,13 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 - Migrações novas: `2026_10_16_000002_add_address_details_to_guardians`, `2026_10_16_000003_create_clinical_record_tables`.
 - Pendente de conferir no servidor: acesso de saída ao ViaCEP a partir da Locaweb.
 
+## Comandos executados e resultados (documentos PDF)
+
+- `pnpm verify --e2e` → **9/9 PASS**; PHPUnit **127/127** (1.110 asserções); isolamento **33/33**; axe OK.
+- PDF: ~58 ms por documento (local), ~23 KB; conferido visualmente com poppler extraído em `.data/tools/poppler`.
+- Dependência nova: `dompdf/dompdf` 3.1.6 (LGPL-2.1, sem modificação). Migração nova `2026_10_17_000001_create_document_tables`.
+- Produção precisa de `ext-dom` e `storage/app/private` gravável (diagnóstico confere); backup passa a incluir os PDFs.
+
 ## Pendências que dependem do proprietário
 
 1. **Ativar certificado SSL para `dradeboragaldino.com.br`** no painel (bloqueia dados reais). Depois: `.env` com
@@ -123,12 +134,11 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 
 ## Próxima ação exata
 
-1. Proprietário: publicar `docs/changes/2026-10-17-prontuario.html` › seção 7 (2 migrações; backup antes) e testar o
-   CEP no servidor. Sem HTTPS, só atendimentos fictícios. Design: proprietário vai retomar o assunto mais à frente.
-2. Próximo incremento: **receitas e documentos em PDF** — modelos básicos (receita simples, atestado, orientações,
-   termo de consentimento) com variáveis da clínica/profissional/paciente (whitelist §4.3), geração com dompdf, PDF
-   emitido preservado e vinculado ao atendimento; depois anexos privados (storage fora do public_html, download
-   autorizado).
+1. Proprietário: publicar `docs/changes/2026-10-17-documentos-pdf.html` › seção 7 (1 migração; conferir `dom` e
+   `private_storage_writable` no diagnóstico; cadastrar CRMV em Meu perfil; incluir PDFs no backup).
+2. Próximo incremento: **anexos privados no prontuário** — upload (PDF, JPG/PNG/WebP, DOCX) com validação de tipo
+   real (MIME por conteúdo), tamanho e nome, armazenamento em `storage/app/private/attachments/{clínica}`, vínculo a
+   paciente/atendimento, download autorizado e auditado, sem execução nem pré-visualização insegura; testes A/B.
 
 ## Histórico de incrementos
 
@@ -145,3 +155,4 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 | 2026-10-16 | **Fase 1 — Agenda**: dia/semana, fuso por unidade, tipos, status, conflito/encaixe, fila de espera              | [2026-10-16-agenda.html](changes/2026-10-16-agenda.html)                                     | verify --e2e 9/9 (PHPUnit 100, isolamento 29, E2E 47); perf volume | main — hash na próxima atualização | push nesta sessão      | Atendimento/prontuário                |
 | 2026-10-16 | **Novo visual (design 2.0)**: fonte própria, menu escuro, degradês da clínica, painel, agenda em linha do tempo | [2026-10-16-redesign-visual.html](changes/2026-10-16-redesign-visual.html)                   | verify --e2e 9/9 (PHPUnit 100, E2E 47); axe claro/escuro           | main — hash na próxima atualização | push nesta sessão      | Prontuário                            |
 | 2026-10-17 | **Fase 1 — Prontuário** + ajustes pedidos (sem "opcional", idade pela data, CEP, UF em lista)                   | [2026-10-17-prontuario.html](changes/2026-10-17-prontuario.html)                             | verify --e2e 9/9 (PHPUnit 117, isolamento 32, E2E 55)              | main — hash na próxima atualização | push nesta sessão      | Receitas/documentos PDF               |
+| 2026-10-17 | **Fase 1 — Documentos em PDF**: modelos, receita/atestado/orientações/encaminhamento/termo, PDF preservado      | [2026-10-17-documentos-pdf.html](changes/2026-10-17-documentos-pdf.html)                     | verify --e2e 9/9 (PHPUnit 127, isolamento 33)                      | main — hash na próxima atualização | push nesta sessão      | Anexos privados                       |

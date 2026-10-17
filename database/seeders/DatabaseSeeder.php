@@ -46,6 +46,9 @@ class DatabaseSeeder extends Seeder
         'eva' => ['id' => '01K7FV00000000000000ESRC01', 'email' => 'eva.plantonista@exemplo.test', 'name' => 'Eva Plantonista (fictícia)', 'm' => [self::TENANT_A => ['veterinarian'], self::TENANT_B => ['veterinarian']]],
     ];
 
+    /** CRMV fictícios dos veterinários do seed (aparecem nas receitas de teste). */
+    public const CRMV = ['ana' => 'CRMV-XX 00000', 'bruno' => 'CRMV-XX 00001', 'diana' => 'CRMV-XX 00002', 'eva' => 'CRMV-XX 00003'];
+
     /** Responsáveis fictícios (telefones e CPF de exemplo, sem relação com pessoas reais). */
     public const GUARDIANS = [
         ['id' => '01K7FV0000000000000GRDA001', 'tenant' => self::TENANT_A, 'name' => 'Marina Souza (fictícia)', 'phone' => '11987654321', 'email' => 'marina@aurora.exemplo.test', 'document_number' => '52998224725'],
@@ -92,7 +95,7 @@ class DatabaseSeeder extends Seeder
         foreach (self::USERS as $key => $u) {
             $user = User::query()->find($u['id']) ?? new User;
             $user->id = $u['id'];
-            $user->fill(['name' => $u['name'], 'email' => $u['email'], 'password' => $password]);
+            $user->fill(['name' => $u['name'], 'email' => $u['email'], 'password' => $password, 'crmv' => self::CRMV[$key] ?? null]);
             $user->failed_login_count = 0;
             $user->locked_until = null;
             $user->save();

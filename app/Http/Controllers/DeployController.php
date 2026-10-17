@@ -30,7 +30,7 @@ final class DeployController extends Controller
         } catch (Throwable $e) {
             $db['error'] = class_basename($e);
         }
-        $required = ['pdo_mysql', 'mbstring', 'openssl', 'tokenizer', 'xml', 'ctype', 'json', 'fileinfo', 'sodium'];
+        $required = ['pdo_mysql', 'mbstring', 'openssl', 'tokenizer', 'xml', 'ctype', 'json', 'fileinfo', 'sodium', 'dom'];
 
         return response()->json([
             'php' => PHP_VERSION,
@@ -42,6 +42,8 @@ final class DeployController extends Controller
             'app_debug' => (bool) config('app.debug'),
             'session_secure_cookie' => (bool) config('session.secure'),
             'storage_writable' => is_writable(storage_path('framework')) && is_writable(storage_path('logs')),
+            // PDFs emitidos (documentos clínicos) ficam aqui — fora da área pública.
+            'private_storage_writable' => is_dir(storage_path('app/private')) && is_writable(storage_path('app/private')),
             'bootstrap_cache_writable' => is_writable(base_path('bootstrap/cache')),
             'database' => $db,
             'warnings' => $this->warnings($request),
