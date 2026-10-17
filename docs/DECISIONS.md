@@ -244,3 +244,33 @@ modelo de outro projeto dele já operado na Locaweb (Laravel + Vite, Node só pa
   OpenSearch) sem mudar a interface.
 - **Limites:** sem sinônimos configuráveis e sem texto de anexos (próximos incrementos); a relevância é heurística
   (peso por origem × termos casados).
+
+## ADR-018 — Texto de anexos na busca, campo único de busca e demonstração versionada (2026-10-19)
+
+- **Contexto:** o proprietário relatou que exemplos do guia não funcionaram na produção (`xampu`, “recusa alimentar”
+  OU “não se alimenta”, filtro de diagnóstico). Análise:
+  - a demonstração tinha sido carregada antes da versão que trouxe os textos de exemplo, e nada avisava isso;
+  - a busca principal de Pacientes não olhava o prontuário;
+  - o filtro de diagnóstico exigia a frase exata;
+  - aspas curvas e "ou" minúsculo não eram operadores.
+    Na mesma publicação entra o próximo passo da Fase 2, texto de anexos (§3.3 ex. 4 e 10).
+- **Decisão:**
+  - **Campo único** (§3.2): para quem tem `clinical:read`, a busca de Pacientes (e a do topo) também roda a busca
+    clínica e mostra "No prontuário" com trecho. A auditoria registra a busca sem o termo.
+  - Parser aceita aspas tipográficas e `ou` minúsculo. `ou` não tem valor como palavra de busca; `NÃO` continua só em
+    maiúsculas, porque "não" é conteúdo clínico.
+  - Filtro de diagnóstico palavra por palavra, com a mesma normalização da busca (`SearchText::terms`).
+  - **Demonstração versionada** (`DemoDataService::VERSION`, gravada no 1º responsável demo): a tela e a Busca clínica
+    avisam quando ela está desatualizada, e "Atualizar demonstração" remove e carrega de novo. Subir a versão a cada
+    entrega que amplia os dados.
+  - **Texto de anexos:**
+    - extração no envio. PDF via `smalot/pdfparser` 2.13: PHP puro, cerca de 500 KB, LGPL-3.0 usada sem modificação
+      (compatível com distribuição MIT do app), requer zlib e iconv.
+    - DOCX por leitor de ZIP próprio, para não depender da extensão `zip` da hospedagem.
+    - Limite de 10 MB, teto de 200 mil caracteres e proteção contra zip bomb.
+    - O texto fica em colunas próprias do anexo; o original não muda.
+    - A situação de leitura é explícita: `indexed`, `no_text`, `failed`, `too_large`. Imagem e PDF escaneado aparecem
+      como "sem texto pesquisável" (sem OCR nesta versão).
+    - Anexos antigos são lidos em lotes de 30 (1ª abertura da busca ou botão).
+- **Riscos:** PDFs com codificação exótica podem sair sem texto ("failed"/"no_text", visível ao usuário); leitura
+  síncrona no envio pode pesar com PDFs grandes — limite de 10 MB e ideia de fila registrada em `docs/IDEAS.md`.

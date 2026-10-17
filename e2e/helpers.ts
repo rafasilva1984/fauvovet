@@ -52,3 +52,13 @@ export async function logout(page: Page, isMobile: boolean) {
   await page.getByRole('button', { name: 'Sair' }).locator('visible=true').click();
   await page.waitForURL(/\/login$/);
 }
+
+/** Na tela de dados de demonstração: remove a demonstração se uma tentativa anterior a deixou carregada. */
+export async function removeDemoIfLoaded(page: Page) {
+  const confirm = page.getByRole('checkbox', { name: /Entendo que/ });
+  if (await confirm.isEnabled()) {
+    await confirm.check();
+    await page.getByRole('button', { name: 'Remover demonstração' }).click();
+    await expect(page.getByRole('button', { name: 'Carregar demonstração' })).toBeVisible();
+  }
+}

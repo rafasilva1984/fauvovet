@@ -30,6 +30,10 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $removed_at
  * @property string|null $removed_by
  * @property string|null $removed_reason
+ * @property string|null $text_status
+ * @property string|null $extracted_text
+ * @property int|null $text_chars
+ * @property Carbon|null $text_extracted_at
  * @property Carbon $created_at
  * @property-read User $uploader
  */
@@ -41,18 +45,25 @@ class Attachment extends Model implements TenantOwned
 
     private const REMOVE_FIELDS = ['removed_at', 'removed_by', 'removed_reason', 'updated_at'];
 
+    /** Texto extraído é derivado (o arquivo original não muda): pode ser gravado/relido. */
+    private const TEXT_FIELDS = ['text_status', 'extracted_text', 'text_chars', 'text_extracted_at', 'updated_at'];
+
     protected $fillable = ['patient_id', 'encounter_id', 'category', 'title', 'description', 'original_name', 'mime', 'extension',
         'size_bytes', 'sha256', 'storage_path', 'uploaded_by'];
 
     protected function casts(): array
     {
-        return ['removed_at' => 'datetime', 'size_bytes' => 'integer'];
+        return ['removed_at' => 'datetime', 'size_bytes' => 'integer', 'text_chars' => 'integer', 'text_extracted_at' => 'datetime'];
     }
 
     protected static function booted(): void
     {
         static::updating(function (Attachment $a) {
-            if (array_diff(array_keys($a->getDirty()), self::REMOVE_FIELDS) !== [] || $a->getOriginal('removed_at') !== null) {
+            $dirty = array_keys($a->getDirty());
+            if (array_diff($dirty, self::TEXT_FIELDS) === []) {
+                return;
+            }
+            if (array_diff($dirty, self::REMOVE_FIELDS) !== [] || $a->getOriginal('removed_at') !== null) {
                 throw new ClinicalRecordLocked('Anexo enviado não é alterado; remova e envie outro.');
             }
         });

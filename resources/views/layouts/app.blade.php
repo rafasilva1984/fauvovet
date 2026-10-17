@@ -107,7 +107,7 @@
                     <form method="GET" action="{{ route('patients.index') }}" role="search" class="relative w-full max-w-md">
                         <label for="busca-rapida" class="sr-only">Busca rápida</label>
                         <x-icon name="search" :size="18" class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
-                        <input id="busca-rapida" name="q" type="search" autocomplete="off" placeholder="Paciente, tutor, telefone ou microchip…"
+                        <input id="busca-rapida" name="q" type="search" autocomplete="off" placeholder="{{ $fvCan('clinical:read') ? 'Paciente, tutor, telefone ou palavra do prontuário…' : 'Paciente, tutor, telefone ou microchip…' }}"
                             class="min-h-11 w-full rounded-xl border border-line bg-surface pl-10 pr-24 text-sm text-ink placeholder:text-muted transition hover:border-brand/40 focus:border-brand focus:outline-none focus:ring-4 focus:ring-ring/25">
                         <button type="submit" aria-label="Pesquisar" class="absolute right-1.5 top-1/2 inline-flex min-h-8 -translate-y-1/2 items-center rounded-lg bg-surface-2 px-3 text-xs font-semibold text-muted hover:text-ink">Enter ↵</button>
                     </form>

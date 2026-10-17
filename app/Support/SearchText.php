@@ -8,7 +8,7 @@ namespace App\Support;
  *    (posição no texto normalizado = posição no original), o que permite destacar o trecho original;
  *  - stem(): reduz plural comum do português ("dermatites" → "dermatite", "renais" → "renal", "lesões" → "lesao"),
  *    aplicado igual no índice e na consulta;
- *  - parse(): consulta com frases "entre aspas", OU/OR entre alternativas e NÃO/-termo para excluir.
+ *  - parse(): consulta com frases "entre aspas" (retas ou “curvas”), OU/ou entre alternativas e NÃO/-termo para excluir.
  */
 final class SearchText
 {
@@ -82,7 +82,7 @@ final class SearchText
 
     /**
      * Interpreta a consulta.
-     *  - Alternativas separadas por OU/OR (maiúsculas); em cada uma, todos os termos e frases são exigidos (E).
+     *  - Alternativas separadas por OU/ou/OR; em cada uma, todos os termos e frases são exigidos (E).
      *  - "frase entre aspas" = sequência exata (sem acento/maiúsculas).
      *  - NÃO termo, NAO termo, NOT termo ou -termo = excluir. Vale para a consulta inteira.
      *  - Termos com menos de 3 letras e palavras comuns ("de", "com"...) são ignorados fora de frases.
@@ -91,7 +91,8 @@ final class SearchText
      */
     public static function parse(string $query): array
     {
-        $query = mb_substr(trim($query), 0, 200);
+        // Aspas tipográficas (celular, Word, texto copiado) valem como aspas retas.
+        $query = str_replace(['“', '”', '„', '‟', '«', '»', '″'], '"', mb_substr(trim($query), 0, 200));
         preg_match_all('/(-?)"([^"]*)"|(\S+)/u', $query, $m, PREG_SET_ORDER);
         $groups = [['terms' => [], 'phrases' => []]];
         $exclude = $ignored = [];
@@ -99,7 +100,8 @@ final class SearchText
         foreach ($m as $part) {
             $isPhrase = isset($part[2]) && $part[2] !== '' && ($part[3] ?? '') === '';
             $raw = $isPhrase ? $part[2] : ($part[3] ?? '');
-            if (! $isPhrase && in_array($raw, ['OU', 'OR'], true)) {
+            // "ou" minúsculo também separa alternativas: como palavra de busca ele não teria valor (é comum demais).
+            if (! $isPhrase && in_array(mb_strtolower($raw), ['ou', 'or', '|'], true)) {
                 $groups[] = ['terms' => [], 'phrases' => []];
 
                 continue;

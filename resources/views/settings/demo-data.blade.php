@@ -11,6 +11,16 @@
         <x-card class="flex flex-col gap-4">
             <h2 class="text-lg font-semibold">Situação</h2>
             @if ($counts['patients'] > 0)
+                @if ($outdated !== null)
+                    <x-alert tone="warning">
+                        <strong>Demonstração desatualizada</strong> (versão {{ $outdated }}; a atual é {{ \App\Services\DemoDataService::VERSION }}).
+                        Os exemplos das entregas novas não existem nela. Clique em <em>Atualizar demonstração</em>.
+                    </x-alert>
+                    <form method="POST" action="{{ route('settings.demo-data.refresh') }}">
+                        @csrf
+                        <x-button><x-icon name="sparkles" /> Atualizar demonstração</x-button>
+                    </form>
+                @endif
                 <x-alert tone="info">
                     Demonstração carregada: {{ $counts['patients'] }} pacientes, {{ $counts['guardians'] }} responsáveis,
                     {{ $counts['encounters'] }} atendimentos e {{ $counts['cases'] }} casos científicos.
@@ -23,6 +33,8 @@
                     <li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('search.index', ['q' => '"recusa alimentar" OU "não se alimenta"']) }}">Busca clínica: “recusa alimentar” OU “não se alimenta”</a></li>
                     <li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('search.index', ['q' => 'uveíte', 'especie' => 'bird']) }}">Busca clínica: uveíte em aves</a></li>
                     <li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('search.index', ['q' => 'penicilina antibiótico']) }}">Busca clínica: alergia a penicilina + antibiótico</a></li>
+                    <li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('search.index', ['q' => 'tonometria']) }}">Busca clínica: “tonometria” (só existe dentro do laudo PDF anexado)</a></li>
+                    <li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('search.index', ['q' => 'encephalitozoon']) }}">Busca clínica: “encephalitozoon” (só existe dentro do DOCX anexado)</a></li>
                     <li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('vaccinations.index') }}">Vacinas atrasadas e a vencer</a></li>
                     <li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('cases.index') }}">Casos científicos (série aberta, série encerrada e relato)</a></li>
                     <li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('agenda.index') }}">Agenda de hoje</a></li>
@@ -31,7 +43,7 @@
                 <p class="text-sm">Nenhum dado de demonstração nesta clínica.</p>
                 <p class="text-sm text-muted">
                     Serão criados 10 responsáveis e 22 pacientes (cães, gatos, aves, jabuti, coelho, hamster e furão), 33 atendimentos
-                    finalizados em 3 anos com diagnósticos suspeitos, confirmados e descartados, adendos, pesos, alertas, 15 vacinas
+                    finalizados em 3 anos com diagnósticos suspeitos, confirmados e descartados, adendos, 3 anexos (laudo PDF, exame DOCX e uma foto), pesos, alertas, 15 vacinas
                     (atrasadas, a vencer e em dia), 10 agendamentos nesta semana e 3 casos científicos.
                 </p>
                 <form method="POST" action="{{ route('settings.demo-data.load') }}">

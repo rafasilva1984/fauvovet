@@ -26,7 +26,7 @@ final class DemoDataController extends Controller
     {
         $this->enabled();
 
-        return view('settings.demo-data', ['counts' => $this->demo->counts()]);
+        return view('settings.demo-data', ['counts' => $this->demo->counts(), 'outdated' => $this->demo->outdated()]);
     }
 
     public function load(Request $request): RedirectResponse
@@ -40,7 +40,22 @@ final class DemoDataController extends Controller
         }
         $this->audit->record('demo_data.loaded', $userId, 'tenant', null, $r);
 
-        return redirect()->route('settings.demo-data')->with('status', "Demonstração carregada: {$r['patients']} pacientes, {$r['encounters']} atendimentos, {$r['vaccinations']} vacinas, {$r['appointments']} agendamentos e {$r['cases']} casos científicos.");
+        return redirect()->route('settings.demo-data')->with('status', "Demonstração carregada: {$r['patients']} pacientes, {$r['encounters']} atendimentos, {$r['vaccinations']} vacinas, {$r['appointments']} agendamentos, {$r['attachments']} anexos e {$r['cases']} casos científicos.");
+    }
+
+    /** Demonstração desatualizada → remove e carrega a versão atual num clique. */
+    public function refresh(Request $request): RedirectResponse
+    {
+        $this->enabled();
+        $userId = (string) $request->user()?->getAuthIdentifier();
+        try {
+            $r = $this->demo->refresh($userId);
+        } catch (RuntimeException $e) {
+            return back()->withErrors(['demo' => $e->getMessage()]);
+        }
+        $this->audit->record('demo_data.refreshed', $userId, 'tenant', null, $r);
+
+        return redirect()->route('settings.demo-data')->with('status', "Demonstração atualizada: {$r['patients']} pacientes, {$r['encounters']} atendimentos, {$r['attachments']} anexos e {$r['cases']} casos científicos.");
     }
 
     public function remove(Request $request): RedirectResponse

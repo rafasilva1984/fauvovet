@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Files\TextExtractor;
 use App\Models\DocumentTemplate;
 use App\Models\Encounter;
 use App\Models\PatientAlert;
@@ -13,13 +14,13 @@ use Illuminate\Support\Str;
 
 /**
  * Indexação da busca clínica (ADR-017). O índice é DERIVADO do prontuário: cada alteração relevante (finalizar
- * atendimento, adendo, alerta, documento emitido/anulado, vacina registrada/anulada) reindexa o paciente na mesma
+ * atendimento, adendo, alerta, documento emitido/anulado, vacina registrada/anulada, anexo enviado/removido) reindexa o paciente na mesma
  * transação, então não há atraso. Rascunhos não entram (ainda não são registro assinado).
  * A versão permite reconstruir tudo automaticamente quando a regra de normalização mudar.
  */
 final class ClinicalSearchIndex
 {
-    public const VERSION = 1; // subir quando a forma de indexar mudar: a próxima busca reconstrói tudo
+    public const VERSION = 2; // subir quando a forma de indexar mudar: a próxima busca reconstrói tudo
 
     public function __construct(private readonly TenantContext $context) {}
 
@@ -110,6 +111,15 @@ final class ClinicalSearchIndex
         foreach ($vaccinations as $v) {
             $text = "Vacina {$v->name}, dose {$v->dose_number}, lote {$v->lot}.".($v->notes ? ' '.$v->notes : '');
             $docs[] = [$v->patient_id, $v->encounter_id, 'vaccination', $v->id, '', 'Vacina', null, $v->applied_on, $v->created_by, $text];
+        }
+
+        // Anexos: texto extraído (PDF/DOCX) quando houver; senão só título/descrição, sinalizando "sem texto pesquisável".
+        foreach ($t('attachments')->whereIn('patient_id', $patientIds)->whereNull('removed_at')->get() as $a) {
+            $readable = $a->text_status === 'indexed';
+            $label = 'Anexo '.strtoupper((string) $a->extension).': '.$a->title.($readable ? '' : ' — '.(TextExtractor::STATUS[$a->text_status] ?? 'texto ainda não lido'));
+            // O título entra pelo rótulo (também indexado); o trecho mostra o conteúdo do arquivo.
+            $body = $readable ? $a->extracted_text.($a->description ? "\n".$a->description : '') : $a->title.($a->description ? "\n".$a->description : '');
+            $docs[] = [$a->patient_id, $a->encounter_id, 'attachment', $a->id, '', $label, null, $a->created_at, $a->uploaded_by, $body];
         }
 
         $now = now();

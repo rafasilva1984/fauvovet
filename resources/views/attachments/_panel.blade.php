@@ -31,6 +31,15 @@
                         </span>
                     </div>
                     @if ($att->description)<p class="mt-1.5 px-1 text-xs text-muted">{{ $att->description }}</p>@endif
+                    <p class="mt-1.5 px-1">
+                        @switch($att->text_status)
+                            @case('indexed')<x-badge tone="success">Texto pesquisável na Busca clínica</x-badge>@break
+                            @case('no_text')<x-badge tone="neutral">Sem texto pesquisável{{ $att->isImage() ? ' (imagem)' : ' (PDF digitalizado?)' }}</x-badge>@break
+                            @case('failed')<x-badge tone="warning">Não foi possível ler o texto</x-badge>@break
+                            @case('too_large')<x-badge tone="warning">Grande demais para ler o texto</x-badge>@break
+                            @default<x-badge tone="neutral">Texto ainda não lido</x-badge>
+                        @endswitch
+                    </p>
                     @if ($fvCan('clinical:write'))
                         <details class="mt-1 px-1 text-xs">
                             <summary class="inline-flex min-h-8 cursor-pointer items-center text-muted hover:text-ink">Remover da ficha<span class="sr-only"> {{ $att->title }}</span></summary>

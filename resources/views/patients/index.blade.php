@@ -16,7 +16,7 @@
 
     <form method="GET" action="{{ route('patients.index') }}" class="mb-6 rounded-[1.25rem] border border-line bg-surface p-4 shadow-card" role="search" aria-label="Buscar pacientes">
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_14rem_auto] sm:items-end">
-            <x-field name="q" label="Buscar por paciente, responsável, telefone ou microchip" type="search" :value="$q" autocomplete="off" />
+            <x-field name="q" :label="$clinical ? 'Buscar paciente, responsável, telefone ou qualquer palavra do prontuário' : 'Buscar por paciente, responsável, telefone ou microchip'" type="search" :value="$q" autocomplete="off" />
             <x-select name="especie" label="Espécie" :options="\App\Support\Species::LABELS" :value="$species" placeholder="Todas" />
             <x-button variant="secondary">Buscar</x-button>
         </div>
@@ -38,7 +38,7 @@
                     <legend class="px-1 text-sm font-bold text-ink">Prontuário</legend>
                     <p class="mb-3 text-xs text-muted">Considera somente atendimentos finalizados. A situação do diagnóstico aparece em cada resultado.</p>
                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-                        <x-field name="diagnostico" label="Diagnóstico ou código" :value="$f['diagnostico']" autocomplete="off" class="lg:col-span-2" hint="Ex.: dermatite, doença renal" />
+                        <x-field name="diagnostico" label="Diagnóstico ou código" :value="$f['diagnostico']" autocomplete="off" class="lg:col-span-2" hint="Só o nome do diagnóstico (ex.: dermatite, renal, L20). Para palavras do prontuário, use a busca acima." />
                         <x-select name="situacao" label="Situação" :options="\App\Services\PatientSearch::DX_STATUS" :value="$f['situacao']" class="lg:col-span-2" />
                         <x-select name="ano" label="Ano de atendimento" :options="collect($years)->mapWithKeys(fn ($y) => [$y => (string) $y])->all()" :value="$f['ano']" placeholder="Qualquer" />
                     </div>
@@ -58,22 +58,39 @@
         </label>
     </form>
 
-    @if ($patients->isEmpty())
+    @if ($clinicalHits !== null && $clinicalHits['total'] > 0)
+        <section aria-labelledby="no-prontuario" class="mb-6 rounded-[1.25rem] border border-line bg-surface p-4 shadow-card">
+            <div class="mb-3 flex flex-wrap items-center gap-2">
+                <h2 id="no-prontuario" class="flex items-center gap-2 font-bold"><x-icon name="search" :size="18" class="text-link" /> No prontuário: {{ $clinicalHits['total'] }} {{ $clinicalHits['total'] === 1 ? 'paciente' : 'pacientes' }}</h2>
+                <a href="{{ route('search.index', ['q' => $q, 'especie' => $species]) }}" class="ml-auto inline-flex min-h-11 items-center text-sm font-semibold text-link underline underline-offset-4">Ver tudo na Busca clínica</a>
+            </div>
+            <ul class="flex flex-col gap-2">
+                @foreach (array_slice($clinicalHits['results'], 0, 5) as $hit)
+                    @php
+                        $ev = $hit['evidence'][0];
+                    @endphp
+                    <li class="rounded-xl bg-surface-2/60 p-3">
+                        <a href="{{ route('patients.show', $hit['patient']->id) }}" class="font-semibold hover:text-link hover:underline">{{ $hit['patient']->name }}</a>
+                        <span class="text-sm text-muted">· {{ \App\Support\Species::label($hit['patient']->species) }} · {{ $ev['label'] }} · {{ $ev['when']->format('d/m/Y') }}{{ $hit['hits'] > 1 ? ' · +'.($hit['hits'] - 1).' trecho(s)' : '' }}</span>
+                        <p class="fv-snippet mt-1 text-sm">{!! $ev['snippet'] !!}</p>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
+    @if ($patients->isEmpty() && $clinicalHits !== null && $clinicalHits['total'] > 0)
+        <p class="text-sm text-muted">Nenhum cadastro de paciente, tutor, telefone ou microchip para esta busca.</p>
+    @elseif ($patients->isEmpty())
         <x-empty-state :title="$q === '' && $species === '' && ! $advanced ? 'Nenhum paciente cadastrado' : 'Nenhum paciente encontrado'" icon="paw">
             @if ($advanced) Tente remover algum filtro avançado. @elseif ($q !== '') Tente parte do nome, do responsável ou os últimos dígitos do telefone. @endif
         </x-empty-state>
-        @if ($clinical && $q !== '')
-            <p class="mt-3 text-center"><a href="{{ route('search.index', ['q' => $q, 'especie' => $species]) }}" class="inline-flex min-h-11 items-center gap-2 font-semibold text-link underline underline-offset-4"><x-icon name="search" :size="16" /> Procurar “{{ $q }}” no prontuário</a></p>
-        @endif
     @else
         <div class="mb-3 flex flex-wrap items-center gap-2">
             <p class="text-sm font-semibold text-muted">{{ $patients->total() }} {{ $patients->total() === 1 ? 'paciente' : 'pacientes' }}</p>
             @foreach ($chips as $chip)
                 <x-badge tone="tint">{{ $chip }}</x-badge>
             @endforeach
-            @if ($clinical && $q !== '')
-                <a href="{{ route('search.index', ['q' => $q, 'especie' => $species]) }}" class="inline-flex min-h-11 items-center gap-2 rounded-xl px-2 text-sm font-semibold text-link underline-offset-4 hover:underline"><x-icon name="search" :size="16" /> Procurar “{{ $q }}” no prontuário</a>
-            @endif
             @if ($fvCan('research:manage') && ($advanced || $q !== '' || $species !== ''))
                 <a href="{{ route('cases.create', request()->query()) }}" class="ml-auto inline-flex min-h-11 items-center gap-2 rounded-xl border border-line bg-surface px-3.5 text-sm font-semibold shadow-card hover:bg-tint"><x-icon name="flask" :size="18" /> Criar série de casos</a>
             @endif

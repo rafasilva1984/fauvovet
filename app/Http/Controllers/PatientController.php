@@ -14,6 +14,8 @@ use App\Models\User;
 use App\Models\Vaccination;
 use App\Models\Vaccine;
 use App\Services\ClinicalRecordService;
+use App\Services\ClinicalSearchIndex;
+use App\Services\ClinicalSearchService;
 use App\Services\PatientRegistry;
 use App\Services\PatientSearch;
 use App\Services\VaccinationService;
@@ -42,8 +44,19 @@ final class PatientController extends Controller
             ]);
         }
 
+        // Campo único de busca (CLAUDE.md §3.2): para a equipe clínica, o mesmo termo também é procurado no prontuário.
+        $clinicalHits = null;
+        if ($f['q'] !== '' && $this->context->can('clinical:read')) {
+            $index = app(ClinicalSearchIndex::class);
+            if (! $index->isCurrent()) {
+                $index->rebuild();
+            }
+            $clinicalHits = app(ClinicalSearchService::class)->search(['q' => $f['q'], 'especie' => $f['especie'], 'periodo' => '', 'origem' => '', 'situacao' => '', 'ordem' => 'relevancia', 'pagina' => 1]);
+            $audit->record('clinical.search', (string) $request->user()?->getAuthIdentifier(), null, null, ['from' => 'patients', 'patients' => $clinicalHits['total']]);
+        }
+
         return view('patients.index', [
-            'patients' => $patients, 'f' => $f, 'q' => $f['q'], 'species' => $f['especie'],
+            'patients' => $patients, 'f' => $f, 'q' => $f['q'], 'species' => $f['especie'], 'clinicalHits' => $clinicalHits,
             'advanced' => PatientSearch::hasAdvancedFilter($f),
             'evidence' => $search->evidence($f, $patients->getCollection()->pluck('id')->all()),
             'years' => $this->context->can('clinical:read') ? $search->encounterYears() : [],

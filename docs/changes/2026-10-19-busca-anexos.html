@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FauvoVet — Busca em anexos</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #1a2935; background: #f4f7f8; line-height: 1.65; font-size: 17px; }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 16px 80px; }
+    header { border-radius: 20px; padding: 32px; color: white; background: linear-gradient(120deg, #0b4652, #1a7375); }
+    header p { color: #e1f5f0; margin-bottom: 0; }
+    h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.2; margin: 0; }
+    h2 { font-size: 1.3rem; margin: 0 0 12px; }
+    h3 { font-size: 1.12rem; margin: 28px 0 8px; padding-top: 16px; border-top: 1px dashed #c9d6d8; }
+    h4 { font-size: 1rem; margin: 18px 0 6px; }
+    section { margin-top: 20px; background: #fff; padding: 24px; border: 1px solid #dee7e8; border-radius: 14px; }
+    p, li { overflow-wrap: anywhere; }
+    code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { background: #eaf1f2; padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+    pre code { background: none; padding: 0; }
+    kbd { border: 1px solid #b8c6c9; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: #fff; font-size: 0.9em; }
+    pre { overflow-x: auto; border-radius: 8px; padding: 14px; color: #e9fbff; background: #172b32; font-size: 0.9rem; line-height: 1.5; }
+    .tag { display: inline-block; font-size: 0.8rem; font-weight: 700; border: 1px solid #f5cf83; background: #fff8e4; color: #7a4b12; border-radius: 30px; padding: 3px 10px; }
+    .where { display: inline-block; font-size: 0.78rem; font-weight: 700; border-radius: 30px; padding: 2px 10px; margin-right: 6px; vertical-align: middle; }
+    .w-term { background: #1f3b44; color: #d9fbff; }
+    .w-web { background: #e1effd; color: #0f3e72; }
+    .w-fz { background: #fde8e1; color: #7a2a0f; }
+    .w-np { background: #ece5fb; color: #42237a; }
+    .w-panel { background: #e2f6e8; color: #145c2e; }
+    .note { border-left: 4px solid #338b96; background: #eef7f8; padding: 10px 12px; border-radius: 6px; }
+    .warn { border-left: 4px solid #c27c0e; background: #fff8e4; padding: 10px 12px; border-radius: 6px; }
+    .stop { border-left: 4px solid #b3261e; background: #fdecea; padding: 10px 12px; border-radius: 6px; }
+    .ok { border-left: 4px solid #1d7a45; background: #e8f6ee; padding: 10px 12px; border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid #e0e7e8; text-align: left; vertical-align: top; }
+    small { color: #52646d; }
+    .pass { color: #116b3a; font-weight: 700; }
+    .notrun { color: #8a5a00; font-weight: 700; }
+    ol.steps > li { margin-bottom: 12px; }
+    .map { font-size: 0.85rem; }
+    .shots { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .shots figure { margin: 0; }
+    .shots img { width: 100%; height: auto; border-radius: 12px; border: 1px solid #dee7e8; display: block; }
+    .shots figcaption { font-size: 0.85rem; color: #52646d; margin-top: 4px; }
+    .shots .tall img { max-height: 520px; object-fit: cover; object-position: top; }
+    nav ol { columns: 2; column-gap: 32px; }
+    @media (max-width: 640px) { nav ol { columns: 1; } body { font-size: 16px; } section { padding: 18px; } header { padding: 22px; } }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e4eef0; background: #0f1a1e; }
+      section { background: #15242a; border-color: #23373e; }
+      th, td { border-color: #23373e; }
+      code { background: #213840; }
+      kbd { background: #1d3138; border-color: #3b5760; }
+      .warn { background: #2a2210; } .note { background: #12303a; } .stop { background: #3a1614; } .ok { background: #12301f; }
+      small { color: #9fb3ba; }
+      h3 { border-color: #2c454c; }
+      .pass { color: #5fd28f; } .notrun { color: #f0b54a; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="tag">INCREMENTO IMPLEMENTADO — CORREÇÃO DA BUSCA + TEXTO DE ANEXOS</span>
+      <h1>Correção dos exemplos da busca e busca dentro de anexos PDF/DOCX</h1>
+      <p>ID: <strong>2026-10-19-busca-anexos</strong> · Data: <strong>19/10/2026</strong> · Versão: <strong>0.14.0</strong> · Módulo: <strong>Fase 2 — Busca clínica (ADR-017, ADR-018)</strong> · Estado: <strong>implementado e testado localmente; publicação única a cargo do proprietário (seção 7)</strong></p>
+    </header>
+
+    <section>
+      <h2>1. Objetivo e análise do problema relatado</h2>
+      <p><strong>Relato do proprietário:</strong> na produção não funcionaram:</p>
+      <ul>
+        <li>a busca por <code>xampu</code>;</li>
+        <li><code>“recusa alimentar” OU “não se alimenta”</code>;</li>
+        <li>o filtro "Diagnóstico ou código" com os exemplos.</li>
+      </ul>
+      <p>O pedido é uma busca <strong>livre por palavras</strong>.</p>
+      <h3>O que foi verificado</h3>
+      <ul>
+        <li><strong>A Busca clínica estava publicada.</strong> No servidor, <code>/fauvovet/busca</code> pede login, enquanto um endereço inexistente responde 404.</li>
+        <li><strong>Causa principal: a demonstração era de uma versão anterior.</strong> Ela foi carregada na entrega anterior, antes de existirem os textos de exemplo:
+          <ul>
+            <li>na versão antiga não existe nenhuma ocorrência de "xampu", "recusa alimentar", "não se alimenta", "uveíte" ou "penicilina" (conferido no código da versão <code>bc41bf8</code>);</li>
+            <li>o sistema não avisava que a demonstração estava desatualizada, e o passo "remover e carregar de novo" ficava escondido num aviso do guia.</li>
+          </ul>
+        </li>
+        <li><strong>Causas que agravavam:</strong>
+          <ul>
+            <li>a busca principal de <em>Pacientes</em> (e a do topo) só procurava nome, tutor, telefone e microchip; a busca no prontuário estava num menu separado, "Busca clínica" (no celular, em "Mais opções");</li>
+            <li>o filtro "Diagnóstico ou código" exigia a frase inteira na mesma ordem e não aceitava plural (<code>dermatites atopicas</code> falhava); além disso, ele só olha nomes de diagnóstico, não textos como "recusa alimentar";</li>
+            <li>aspas curvas (“ ”), que o celular e o Word colocam sozinhos, e o "ou" minúsculo não eram reconhecidos como operadores.</li>
+          </ul>
+        </li>
+      </ul>
+      <h3>Solução nesta publicação</h3>
+      <ol>
+        <li><strong>Campo único de busca:</strong> para a equipe clínica, a busca de <em>Pacientes</em> e a busca do topo também procuram no prontuário e mostram o bloco <strong>"No prontuário: N pacientes"</strong>, com o trecho destacado.</li>
+        <li><strong>Aspas curvas e "ou" minúsculo</strong> funcionam: <code>“recusa alimentar” ou “não se alimenta”</code>.</li>
+        <li><strong>Filtro de diagnóstico por palavras:</strong> em qualquer ordem, sem acento e no plural (<code>dermatites atopicas</code>, <code>atopica dermatite</code> e <code>L20</code> encontram "Dermatite atópica").</li>
+        <li><strong>Demonstração com versão:</strong> a tela avisa "Demonstração desatualizada" e tem o botão <strong>Atualizar demonstração</strong>, que remove e carrega de novo num clique. A Busca clínica também avisa.</li>
+        <li><strong>Teste de regressão</strong> que reproduz exatamente o cenário da produção: demonstração antiga → aviso → atualizar → exemplos funcionando.</li>
+      </ol>
+      <h3>Próximo passo, na mesma publicação: texto de anexos</h3>
+      <p>O texto de PDF e DOCX anexados passa a ser lido e entra na busca (exemplos 4 e 10 do CLAUDE.md §3.3). Imagens aparecem como <strong>"Sem texto pesquisável"</strong>.</p>
+      <div class="shots">
+        <figure><img src="img/2026-10-19-anexos-pacientes-prontuario.jpg" alt="Tela Pacientes mostrando o bloco No prontuário com 2 pacientes para recusa alimentar ou não se alimenta (dados fictícios)" loading="lazy"><figcaption>Busca de Pacientes também no prontuário</figcaption></figure>
+        <figure><img src="img/2026-10-19-anexos-busca-laudo.jpg" alt="Busca por tonometria encontrando o laudo PDF anexado do papagaio (dados fictícios)" loading="lazy"><figcaption>Termo que só existe dentro do PDF anexado</figcaption></figure>
+        <figure class="tall"><img src="img/2026-10-19-anexos-sem-texto-celular.jpg" alt="Foto anexada marcada como sem texto pesquisável, no celular (dados fictícios)" loading="lazy"><figcaption>Imagem: "sem texto pesquisável"</figcaption></figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>2. O que mudou</h2>
+      <ul>
+        <li><strong>Pacientes / busca do topo</strong> (equipe clínica): o mesmo termo procura no cadastro e no prontuário. Aparecem até 5 pacientes com trecho, e o link <em>Ver tudo na Busca clínica</em> leva aos demais. Recepção continua vendo só o cadastro.</li>
+        <li><strong>Operadores:</strong> aspas retas ou curvas; <code>ou</code>/<code>OU</code> separa alternativas; <code>NÃO</code> ou <code>-palavra</code> exclui.</li>
+        <li><strong>Diagnóstico ou código:</strong> busca palavra por palavra. A dica do campo explica que palavras do prontuário vão na busca principal.</li>
+        <li><strong>Anexos com texto:</strong>
+          <ul>
+            <li>ao enviar PDF ou DOCX, o sistema lê o texto. O original não muda; o texto lido fica guardado à parte;</li>
+            <li>cada anexo mostra uma etiqueta: <em>Texto pesquisável na Busca clínica</em>, <em>Sem texto pesquisável (imagem / PDF digitalizado?)</em>, <em>Não foi possível ler o texto</em> ou <em>Grande demais</em> (acima de 10 MB);</li>
+            <li>na Busca clínica, o resultado mostra "Anexo PDF: título" e o trecho do arquivo. O filtro <em>Onde procurar → Anexo (texto extraído)</em> limita a busca aos anexos. Remover o anexo tira o texto da busca;</li>
+            <li><strong>anexos enviados antes desta versão:</strong> são lidos em lotes de 30 ao abrir a Busca clínica pela primeira vez. Se sobrar algum, aparece o botão <em>Ler anexos pendentes</em>;</li>
+            <li>OCR de imagens e PDFs escaneados não está incluído; eles ficam marcados como "sem texto pesquisável".</li>
+          </ul>
+        </li>
+        <li><strong>Demonstração (versão 3):</strong>
+          <ul>
+            <li>laudo oftalmológico em PDF do papagaio Sol: "tonometria", "flare", "clamidiose" só existem dentro do arquivo;</li>
+            <li>sorologia em DOCX do coelho Floco: "Encephalitozoon cuniculi";</li>
+            <li>foto PNG do casco da jabuti Tuga, sem texto;</li>
+            <li>novos atalhos na tela.</li>
+          </ul>
+        </li>
+        <li><strong>Arquivos:</strong>
+          <ul>
+            <li>migração <code>2026_10_19_000002_add_extracted_text_to_attachments</code>;</li>
+            <li><code>app/Files/TextExtractor.php</code>, <code>AttachmentService</code>, <code>ClinicalSearchIndex</code> (versão 2: reconstrói sozinho), <code>ClinicalSearchService</code>, <code>SearchText</code>, <code>PatientSearch</code>, <code>PatientController</code>, <code>DemoDataService</code> e <code>DemoDataController</code>;</li>
+            <li>views <code>patients/index</code>, <code>search/index</code>, <code>attachments/_panel</code> e <code>settings/demo-data</code>;</li>
+            <li>rotas <code>POST /busca/anexos</code> e <code>POST /configuracoes/dados-de-demonstracao/atualizar</code>;</li>
+            <li>diagnóstico de deploy mostra <code>zip_archive</code> (opcional).</li>
+          </ul>
+        </li>
+        <li><strong>Dependência nova:</strong> <code>smalot/pdfparser</code> 2.13 (PHP puro, cerca de 500 KB, licença LGPL-3.0 usada sem modificação; requer as extensões <code>zlib</code> e <code>iconv</code>, já presentes). O DOCX é lido sem precisar da extensão <code>zip</code>. ADR-018.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>3. Pré-requisitos</h2>
+      <p>Os mesmos das entregas anteriores. A nova biblioteca já vai dentro do pacote (<code>vendor</code>); nada para instalar no servidor.</p>
+      <p class="warn"><strong>Git Bash/macOS:</strong> NOT RUN.</p>
+    </section>
+
+    <section>
+      <h2>4. Passo a passo (no seu computador)</h2>
+      <ol class="steps">
+        <li><span class="where w-term">Terminal</span> <code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm bootstrap</code> (instala a biblioteca nova) → <code>pnpm db:start</code> → <code>pnpm db:migrate</code> (1 migração nova).</li>
+        <li><span class="where w-term">Terminal</span> <code>pnpm dev</code> → entre como titular → <em>Configurações → Dados de demonstração</em>. Se aparecer "Demonstração desatualizada", clique em <em>Atualizar demonstração</em>.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>5. Como testar</h2>
+<pre><code>pnpm verify --e2e
+pnpm test:tenant-isolation</code></pre>
+      <ul>
+        <li><strong>Regressão do relato:</strong> <code>DemoDataTest::test_demo_antiga_avisa_e_atualiza_e_exemplos_do_guia_funcionam</code> simula a demonstração antiga, confere o aviso, atualiza e testa <code>xampu</code>, as duas formas de “recusa alimentar” ou/OU “não se alimenta” (aspas curvas), o campo de Pacientes, o diagnóstico por palavras e os anexos.</li>
+        <li><strong>Anexos:</strong> <code>AttachmentSearchTest</code> cobre extrator (PDF, DOCX, imagem, arquivo corrompido, grande demais), laudo de ave (exemplo 4), imagem sem texto (exemplo 10), remoção, pendentes e isolamento A/B.</li>
+      </ul>
+
+      <h3>Confirmar o funcionamento com os dados de demonstração</h3>
+      <p>Faça na produção, depois de publicar (seção 7), com o usuário <strong>titular</strong>. Cada passo diz o que deve aparecer.</p>
+      <ol class="steps">
+        <li><span class="where w-web">Navegador</span> <em>Configurações → Dados de demonstração</em>.
+          <ul>
+            <li><strong>Deve aparecer:</strong> a faixa amarela <em>Demonstração desatualizada (versão 1; a atual é 3)</em> e o botão <em>Atualizar demonstração</em>. É exatamente o que causou o problema relatado.</li>
+            <li>Clique em <em>Atualizar demonstração</em>. <strong>Deve aparecer:</strong> "Demonstração atualizada: 22 pacientes, 33 atendimentos, 3 anexos e 3 casos científicos", e a faixa amarela some.</li>
+            <li>Se a tela mostrar "Nenhum dado de demonstração", clique em <em>Carregar demonstração</em>.</li>
+          </ul>
+        </li>
+        <li><strong>xampu pela busca principal:</strong> menu <em>Pacientes</em> → no campo "Buscar paciente, responsável, telefone ou qualquer palavra do prontuário", digite <code>xampu</code> → <em>Buscar</em>.
+          <ul>
+            <li><strong>Deve aparecer:</strong> o bloco <em>No prontuário: 1 paciente</em>, com Bento · Adendo e o trecho "…banho com <mark>xampu</mark> comum…".</li>
+            <li>Abaixo: "Nenhum cadastro de paciente… para esta busca" (ninguém se chama xampu).</li>
+          </ul>
+        </li>
+        <li><strong>Frases alternativas, do jeito que você digitou:</strong> no mesmo campo, <code>“recusa alimentar” ou “não se alimenta”</code> (aspas curvas e "ou" minúsculo valem).
+          <ul>
+            <li><strong>Deve aparecer:</strong> <em>No prontuário: 2 pacientes</em>, Simba ("…segue com <mark>recusa alimentar</mark>…", +1 trecho) e Frajola ("…água e <mark>não se alimenta</mark> direito…").</li>
+            <li>Clique em <em>Ver tudo na Busca clínica</em>: a mesma busca, com todos os trechos.</li>
+          </ul>
+        </li>
+        <li><strong>Busca do topo (computador):</strong> no campo do topo ("Paciente, tutor, telefone ou palavra do prontuário…"), digite <code>uveíte</code> + Enter. <strong>Deve aparecer:</strong> Sol, papagaio.</li>
+        <li><strong>Filtro de diagnóstico por palavras:</strong> <em>Pacientes → Filtros avançados</em> → Diagnóstico ou código: <code>dermatites atopicas</code> → <em>Aplicar filtros</em>.
+          <ul>
+            <li><strong>Deve aparecer:</strong> Bento, Luna, Zeus, Kiara (e Pipoca, com dermatite descartada, só se a situação incluir descartados), cada um com os selos Suspeita/Confirmado.</li>
+            <li>Teste também <code>L20</code> (código): mesmo resultado.</li>
+          </ul>
+        </li>
+        <li><strong>Texto dentro do PDF anexado:</strong> <em>Configurações → Dados de demonstração</em> → atalho <em>Busca clínica: “tonometria”</em>.
+          <ul>
+            <li><strong>Deve aparecer:</strong> Sol, com "Anexo PDF: Laudo oftalmológico" e o trecho "<mark>Tonometria</mark> de rebote: pressão intraocular de 9 mmHg…".</li>
+            <li>Abra o Sol (clique no nome) → bloco <em>Anexos</em>: o laudo tem a etiqueta verde <em>Texto pesquisável na Busca clínica</em>; <em>Baixar</em> abre o PDF original.</li>
+          </ul>
+        </li>
+        <li><strong>Texto dentro do DOCX:</strong> atalho <em>“encephalitozoon”</em>. <strong>Deve aparecer:</strong> Floco (coelho), "Anexo DOCX: Sorologia — resultado do laboratório".
+          <ul>
+            <li>Se o servidor não tiver a extensão <code>zip</code>, a demonstração não cria esse DOCX (o <code>diagnostico</code> mostra <code>zip_archive: false</code>). Envio e leitura de DOCX continuam funcionando normalmente.</li>
+          </ul>
+        </li>
+        <li><strong>Imagem sem texto:</strong> Busca clínica → <code>casco</code>. <strong>Deve aparecer:</strong> Tuga, "Anexo PNG: Foto do casco — Sem texto pesquisável". Na ficha da Tuga, a etiqueta cinza é <em>Sem texto pesquisável (imagem)</em>.</li>
+        <li><strong>Seu próprio anexo:</strong> abra qualquer paciente demo → <em>Anexos</em> → envie um PDF com texto (por exemplo, um PDF salvo do Word). <strong>Deve aparecer</strong> a etiqueta verde; na Busca clínica, uma palavra do arquivo encontra o paciente.
+          <ul>
+            <li>Um PDF escaneado (só imagem) fica "Sem texto pesquisável (PDF digitalizado?)".</li>
+          </ul>
+        </li>
+        <li><strong>Anexos antigos:</strong> se você já tinha enviado anexos antes desta versão, a primeira abertura da Busca clínica lê até 30. Se sobrar, aparece "N anexos… ainda não tiveram o texto lido" e o botão <em>Ler anexos pendentes</em>.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>6. Performance e usabilidade</h2>
+      <ul>
+        <li><strong>Busca</strong> (local, WSL, seed + demonstração ≈ 244 trechos; 30 requisições entre Busca clínica e Pacientes com prontuário): <strong>p50 35–39 ms, p95 46–50 ms, máx. 60 ms</strong>.</li>
+        <li><strong>Demonstração:</strong> remover ~0,3 s; carregar ~0,5–0,6 s (inclui gerar o PDF e ler os 3 anexos).</li>
+        <li><strong>Leitura de anexo:</strong> acontece no envio. PDFs comuns levam décimos de segundo; o limite de 10 MB evita travar o envio. PDFs muito grandes ficam "Grande demais para ler o texto". Medição com PDFs reais grandes: NOT RUN.</li>
+        <li><strong>Celular:</strong> o bloco "No prontuário" aparece antes da lista de cadastro; axe sem violações em Pacientes com prontuário e na busca de anexo sem texto.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>7. Publicação única na Locaweb</h2>
+      <p>Leva tudo o que ainda não estiver no servidor: vacinação, busca avançada, casos, demonstração, busca clínica e esta correção com anexos.</p>
+      <ol class="steps">
+        <li><span class="where w-term">Terminal</span> <code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm bootstrap</code> → <code>pnpm db:start</code> → <code>pnpm verify --e2e</code> → <code>pnpm deploy:package</code> → <code>pnpm deploy:copiar</code></li>
+        <li><span class="where w-panel">Painel Locaweb</span> backup do banco.</li>
+        <li><span class="where w-term">Terminal</span> <code>pnpm deploy:token</code>.</li>
+        <li><span class="where w-fz">FileZilla</span> <code>.env</code> do servidor:
+          <ul>
+            <li><code>DEPLOY_TOOLS_ENABLED=true</code> + o token novo;</li>
+            <li>mantenha <code>FAUVOVET_DEMO_DATA=true</code>;</li>
+            <li>envie e apague <code>bootstrap/cache/config.php</code> (se existir).</li>
+          </ul>
+        </li>
+        <li><span class="where w-fz">FileZilla</span> <code>app-fauvovet</code> (tudo exceto <code>storage</code>; a pasta <code>vendor</code> traz a biblioteca nova) e <code>public_html/fauvovet</code>, com <em>Sobrescrever</em>.</li>
+        <li><span class="where w-term">Terminal</span> <code>diagnostico</code> → confira <code>pending_migrations: 1</code> (1 nova desta entrega; a Busca clínica já está publicada) → <code>migrar</code> → <code>otimizar</code>.</li>
+        <li><span class="where w-fz">FileZilla</span> <code>DEPLOY_TOOLS_ENABLED=false</code> → enviar → apagar <code>bootstrap/cache/config.php</code>.</li>
+        <li><span class="where w-term">Terminal</span> <code>SMOKE_URL=https://dradeboragaldino.com.br/fauvovet pnpm smoke</code> (5 PASS).</li>
+        <li><span class="where w-web">Navegador</span> siga <strong>"Confirmar o funcionamento com os dados de demonstração"</strong> (seção 5), começando por <em>Atualizar demonstração</em>.</li>
+      </ol>
+      <p class="stop">Sem HTTPS válido, só dados fictícios. Antes do primeiro paciente real: remover a demonstração e voltar <code>FAUVOVET_DEMO_DATA=false</code>.</p>
+    </section>
+
+    <section>
+      <h2>8. Rollback</h2>
+      <ul>
+        <li><strong>Código:</strong> reenvie o pacote anterior em <code>.deploy/</code> e rode o <em>otimizar</em>. As colunas novas de anexos ficam sem uso; o índice volta a ser reconstruído pela versão anterior.</li>
+        <li><strong>Banco:</strong> restaure o backup do passo 2, se preciso. Arquivos de anexos não são alterados por esta entrega.</li>
+        <li><strong>Local:</strong> <code>git revert</code> e <code>migrate:rollback --step=1</code> (só desenvolvimento).</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>9. Troubleshooting</h2>
+      <table>
+        <tr><th>Sintoma</th><th>Causa e solução</th></tr>
+        <tr><td>Exemplos do guia não encontram nada</td><td>Demonstração desatualizada: <em>Configurações → Dados de demonstração → Atualizar demonstração</em>. A Busca clínica também avisa.</td></tr>
+        <tr><td>O bloco "No prontuário" não aparece em Pacientes</td><td>O usuário não tem acesso clínico (recepção/financeiro), ou nada foi encontrado no prontuário.</td></tr>
+        <tr><td>Anexo PDF "Sem texto pesquisável"</td><td>PDF escaneado (só imagem). OCR ainda não existe; registre o achado principal no atendimento ou na descrição do anexo.</td></tr>
+        <tr><td>"Não foi possível ler o texto"</td><td>PDF corrompido ou protegido por senha. O arquivo original continua disponível para download.</td></tr>
+        <tr><td>DOCX demo ausente</td><td>Servidor sem a extensão <code>zip</code> (<code>diagnostico</code> → <code>zip_archive: false</code>). Só a demonstração é afetada.</td></tr>
+        <tr><td>Erro 500 ao abrir a Busca clínica</td><td>A migração nova não foi aplicada: rode <code>diagnostico</code> e <code>migrar</code>.</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>10. Evidências e status</h2>
+      <table>
+        <tr><th>Verificação</th><th>Status</th><th>Detalhe</th></tr>
+        <tr><td><code>pnpm verify --e2e</code></td><td class="pass">PASS</td><td>9/9 etapas</td></tr>
+        <tr><td>PHPUnit</td><td class="pass">PASS</td><td>180 testes (5 novos: 4 de anexos + regressão do relato)</td></tr>
+        <tr><td>Isolamento</td><td class="pass">PASS</td><td>43 testes (1 novo: texto de anexo só na própria clínica)</td></tr>
+        <tr><td>E2E + axe + borda no celular</td><td class="pass">PASS</td><td>75 testes; demonstração (tonometria no PDF, Pacientes com aspas curvas e "ou"), axe em Pacientes com prontuário e anexo sem texto</td></tr>
+        <tr><td>Regressão do relato (demonstração antiga, aspas curvas, ou, diagnóstico por palavras)</td><td class="pass">PASS</td><td><code>DemoDataTest</code></td></tr>
+        <tr><td>Aceite §3.3 exemplos 4 e 10</td><td class="pass">PASS</td><td><code>AttachmentSearchTest</code></td></tr>
+        <tr><td>OCR de imagens/PDF escaneado; sinônimos</td><td class="notrun">NOT RUN</td><td>Fora desta entrega (<code>docs/IDEAS.md</code>)</td></tr>
+      </table>
+      <p><strong>Commit:</strong> registrado no <code>docs/PROGRESS.md</code> após a sincronização.</p>
+      <p><strong>Próximo passo sugerido:</strong> dicionário de sinônimos da clínica e pesquisas salvas (fecha a Fase 2 da busca), ou exames estruturados (Fase 3).</p>
+    </section>
+  </main>
+</body>
+</html>

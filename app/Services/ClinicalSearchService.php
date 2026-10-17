@@ -25,13 +25,13 @@ final class ClinicalSearchService
     /** Teto de registros por termo — protege contra consultas caras; acima disso pede para refinar. */
     public const MAX_HITS = 5000;
 
-    public const SOURCES = ['encounter' => 'Atendimento', 'diagnosis' => 'Diagnóstico', 'addendum' => 'Adendo', 'alert' => 'Alerta', 'document' => 'Documento emitido', 'vaccination' => 'Vacina'];
+    public const SOURCES = ['encounter' => 'Atendimento', 'diagnosis' => 'Diagnóstico', 'addendum' => 'Adendo', 'alert' => 'Alerta', 'document' => 'Documento emitido', 'vaccination' => 'Vacina', 'attachment' => 'Anexo (texto extraído)'];
 
     public const PERIODS = ['30' => 'Últimos 30 dias', '180' => 'Últimos 6 meses', '365' => 'Últimos 12 meses', '730' => 'Últimos 2 anos', '1825' => 'Últimos 5 anos'];
 
     public const SORTS = ['relevancia' => 'Relevância', 'recentes' => 'Mais recentes', 'antigos' => 'Mais antigos', 'nome' => 'Nome do paciente'];
 
-    private const WEIGHT = ['diagnosis' => 3, 'encounter' => 2, 'addendum' => 2, 'alert' => 2, 'document' => 1, 'vaccination' => 1];
+    private const WEIGHT = ['diagnosis' => 3, 'encounter' => 2, 'addendum' => 2, 'alert' => 2, 'document' => 1, 'vaccination' => 1, 'attachment' => 1];
 
     public function __construct(private readonly TenantContext $context) {}
 

@@ -134,6 +134,7 @@ Route::middleware('auth')->group(function () {
 
         // Busca clínica em texto livre no prontuário (ADR-017).
         Route::get('/busca', [ClinicalSearchController::class, 'index'])->middleware(['permission:clinical:read', 'throttle:clinical-search'])->name('search.index');
+        Route::post('/busca/anexos', [ClinicalSearchController::class, 'readAttachments'])->middleware(['permission:clinical:write', 'throttle:clinical-search'])->name('search.attachments');
         Route::post('/busca/reindexar', [ClinicalSearchController::class, 'rebuild'])->middleware(['permission:tenant:update', 'throttle:clinical-search'])->name('search.rebuild');
 
         // Casos científicos (séries e relatos a partir dos atendimentos): veterinário e titular.
@@ -171,6 +172,7 @@ Route::middleware('auth')->group(function () {
         Route::middleware('permission:tenant:update')->group(function () {
             Route::get('/configuracoes/dados-de-demonstracao', [DemoDataController::class, 'show'])->name('settings.demo-data');
             Route::post('/configuracoes/dados-de-demonstracao', [DemoDataController::class, 'load'])->name('settings.demo-data.load');
+            Route::post('/configuracoes/dados-de-demonstracao/atualizar', [DemoDataController::class, 'refresh'])->name('settings.demo-data.refresh');
             Route::post('/configuracoes/dados-de-demonstracao/remover', [DemoDataController::class, 'remove'])->name('settings.demo-data.remove');
         });
     });

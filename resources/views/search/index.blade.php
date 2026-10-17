@@ -5,11 +5,25 @@
     @php
         $dxTone = ['confirmed' => 'danger', 'suspected' => 'warning', 'ruled_out' => 'neutral'];
         $sources = \App\Services\ClinicalSearchService::SOURCES;
-        $examples = ['dermatite', '"recusa alimentar" OU "não se alimenta"', 'penicilina antibiótico', 'renal NÃO felino'];
+        $examples = ['dermatite', '"recusa alimentar" ou "não se alimenta"', 'penicilina antibiótico', 'renal NÃO felino', 'tonometria'];
     @endphp
     <x-page-header title="Busca clínica" icon="search" eyebrow="Prontuário"
-        description="Procure palavras e frases em todo o prontuário da clínica: atendimentos finalizados, diagnósticos, adendos, alertas, documentos emitidos e vacinas." />
+        description="Procure palavras e frases em todo o prontuário da clínica: atendimentos finalizados, diagnósticos, adendos, alertas, documentos emitidos, vacinas e o texto de anexos PDF/DOCX." />
 
+    @if ($demo !== null)
+        <x-alert tone="warning" class="mb-4">
+            Os dados de demonstração desta clínica são de uma versão anterior e não têm os exemplos novos.
+            @if ($fvCan('tenant:update'))<a href="{{ route('settings.demo-data') }}" class="font-semibold underline underline-offset-4">Atualizar demonstração</a>.@else Peça ao titular para atualizar em Configurações → Dados de demonstração.@endif
+        </x-alert>
+    @endif
+    @if ($pendingAttachments > 0)
+        <x-alert tone="info" class="mb-4">
+            {{ $pendingAttachments }} {{ $pendingAttachments === 1 ? 'anexo enviado antes desta versão ainda não teve o texto lido' : 'anexos enviados antes desta versão ainda não tiveram o texto lido' }}.
+            @if ($fvCan('clinical:write'))
+                <form method="POST" action="{{ route('search.attachments') }}" class="mt-2">@csrf<x-button variant="secondary">Ler anexos pendentes</x-button></form>
+            @endif
+        </x-alert>
+    @endif
     @if ($built)
         <x-alert tone="info" class="mb-4">O índice da busca desta clínica acabou de ser construído ({{ $status['documents'] ?? 0 }} trechos).</x-alert>
     @endif
@@ -17,7 +31,7 @@
     <form method="GET" action="{{ route('search.index') }}" class="mb-6 rounded-[1.25rem] border border-line bg-surface p-4 shadow-card" role="search" aria-label="Busca no prontuário">
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
             <x-field name="q" label="O que procurar no prontuário" type="search" :value="$f['q']" autocomplete="off"
-                hint="Sem acento e no singular também funciona. Frase exata entre aspas; OU para alternativas; NÃO (ou -palavra) para excluir." />
+                hint="Sem acento e no singular também funciona. Frase exata entre aspas; ou/OU para alternativas; NÃO (ou -palavra) para excluir." />
             <x-button><x-icon name="search" /> Buscar</x-button>
         </div>
         @php

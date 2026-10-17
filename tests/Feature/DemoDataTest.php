@@ -8,6 +8,7 @@ use App\Services\DemoDataService;
 use App\Tenancy\TenantContext;
 use Database\Seeders\DatabaseSeeder as Seed;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 
@@ -15,6 +16,12 @@ use Tests\TestCase;
 final class DemoDataTest extends TestCase
 {
     private const URL = '/configuracoes/dados-de-demonstracao';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Storage::fake('local'); // anexos demo não vão para o disco real
+    }
 
     private function sys(\Closure $fn): mixed
     {
@@ -65,7 +72,7 @@ final class DemoDataTest extends TestCase
         $this->get('/busca?q=renal+N%C3%83O+hipertens%C3%A3o')->assertSee($pt(11), false)->assertDontSee($pt(13), false)->assertSee('sem “hipertensao”');
         $this->get('/busca?q=dermatite&situacao=ruled_out')->assertSee($pt(3), false)->assertDontSee($pt(1), false);
         $this->get('/busca?q=uveite&especie=canine')->assertSee('Nada encontrado');
-        $this->get('/pacientes?q=xampu')->assertSee('Procurar “xampu” no prontuário');
+        $this->get('/pacientes?q=xampu')->assertSee('No prontuário: 1 paciente')->assertSee('<mark>xampu</mark>', false)->assertSee('Nenhum cadastro de paciente');
         $this->get('/vacinas')->assertOk()->assertSee('Bento')->assertSee('Atrasada');
         $this->get('/agenda')->assertOk()->assertSee('Zeus');
         $this->get('/casos')->assertOk()->assertSee('Dermatite atópica em cães')->assertSee('Doença renal crônica em gatos idosos')->assertSee('hipovitaminose A');
@@ -76,6 +83,56 @@ final class DemoDataTest extends TestCase
         $this->assertStringContainsString('[nome omitido] respondeu bem', $csv);
         foreach (['Bento', 'Beatriz', '90000-0101'] as $secret) {
             $this->assertStringNotContainsString($secret, $csv);
+        }
+    }
+
+    /**
+     * Regressão do relato de 19/10: na produção, a demonstração tinha sido carregada ANTES da versão com os exemplos
+     * da busca — "xampu" e "recusa alimentar" não existiam nela, e a tela não avisava. Também: aspas curvas e "ou".
+     */
+    public function test_demo_antiga_avisa_e_atualiza_e_exemplos_do_guia_funcionam(): void
+    {
+        config(['fauvovet.demo_data' => true]);
+        $this->loginInto('ana', Seed::TENANT_A);
+        $this->post(self::URL)->assertSessionHasNoErrors();
+        $gr1 = DemoDataService::idFor(Seed::TENANT_A, 'GR', 1);
+        $pt = fn (int $n) => '/pacientes/'.DemoDataService::idFor(Seed::TENANT_A, 'PT', $n);
+        // Simula a demonstração da versão 1 (marcador antigo, sem os textos novos).
+        $this->sys(fn () => DB::table('guardians')->where('tenant_id', Seed::TENANT_A)->where('id', $gr1)->update(['notes' => 'Cadastro fictício de demonstração.']));
+        $this->sys(fn () => DB::table('encounter_addenda')->where('tenant_id', Seed::TENANT_A)->where('id', 'like', DemoDataService::PREFIX.'%')->delete());
+        $this->post('/busca/reindexar');
+        $this->get('/busca?q=xampu')->assertSee('Nada encontrado')->assertSee('versão anterior');
+        $this->get(self::URL)->assertSee('Demonstração desatualizada')->assertSee('Atualizar demonstração');
+
+        $this->post(self::URL.'/atualizar')->assertRedirect(self::URL)->assertSessionHasNoErrors();
+        $this->get(self::URL)->assertDontSee('Demonstração desatualizada');
+        $this->assertSame(DemoDataService::VERSION, app(TenantContext::class)->runForTenant(Seed::TENANT_A, fn () => app(DemoDataService::class)->loadedVersion()));
+        $this->get('/busca?q=xampu')->assertSee($pt(1), false)->assertDontSee('versão anterior');
+        // Aspas curvas (celular/Word) e "ou" minúsculo, exatamente como digitado pelo proprietário.
+        $this->get('/busca?q='.urlencode('“recusa alimentar” OU “não se alimenta”'))->assertSee($pt(11), false)->assertSee($pt(13), false);
+        $this->get('/busca?q='.urlencode('“recusa alimentar” ou “não se alimenta”'))->assertSee($pt(11), false)->assertSee($pt(13), false);
+        // Campo principal de Pacientes também procura no prontuário.
+        $this->get('/pacientes?q=xampu')->assertSee('No prontuário: 1 paciente');
+        // Diagnóstico por palavras, sem acento, plural e fora de ordem.
+        $this->get('/pacientes?diagnostico=dermatites+atopicas')->assertSee($pt(1), false);
+        $this->get('/pacientes?diagnostico=atopica+dermatite&especie=canine')->assertSee($pt(2), false);
+        $this->get('/pacientes?diagnostico=L20')->assertSee($pt(1), false)->assertSee($pt(9), false)->assertDontSee($pt(3), false);
+        $res = $this->get('/pacientes?diagnostico=dermatites+atopicas');
+        foreach ([1, 2, 4, 9] as $n) {
+            $res->assertSee($pt($n), false); // Bento, Luna, Zeus, Kiara
+        }
+        $res->assertDontSee($pt(3), false); // Pipoca: descartado
+        $this->get('/pacientes?q=uve%C3%ADte')->assertSee('No prontuário: 1 paciente')->assertSee($pt(18), false); // busca do topo
+        // Anexos demo: texto só existe dentro do PDF/DOCX; a foto fica "sem texto pesquisável".
+        $this->get('/busca?q=tonometria')->assertSee($pt(18), false)->assertSee('Anexo PDF: Laudo oftalmológico');
+        $this->get('/busca?q=encephalitozoon')->assertSee($pt(20), false)->assertSee('Anexo DOCX');
+        $this->get('/busca?q=casco')->assertSee('Sem texto pesquisável');
+        $this->assertSame(3, $this->sys(fn () => DB::table('attachments')->where('tenant_id', Seed::TENANT_A)->where('id', 'like', DemoDataService::PREFIX.'%')->count()));
+        // Remover apaga também os arquivos dos anexos demo.
+        $paths = $this->sys(fn () => DB::table('attachments')->where('tenant_id', Seed::TENANT_A)->where('id', 'like', DemoDataService::PREFIX.'%')->pluck('storage_path')->all());
+        $this->post(self::URL.'/remover', ['confirm' => '1']);
+        foreach ($paths as $path) {
+            Storage::disk('local')->assertMissing($path);
         }
     }
 

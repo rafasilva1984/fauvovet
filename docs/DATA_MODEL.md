@@ -94,6 +94,13 @@ CEP pela consulta `/cep/{cep}`). Migração aditiva.
 | `clinical_search_terms`     | clínica | termos distintos normalizados por trecho; PK `(tenant_id, term, document_id)` para busca por prefixo; cascata ao apagar o trecho                                                   |
 | `clinical_search_status`    | clínica | versão, número de trechos e data da última (re)construção do índice da clínica                                                                                                     |
 
+## 2026_10_19_000002_add_extracted_text_to_attachments
+
+| Tabela                      | Mudança                                                                                                                                               |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `attachments`               | `text_status` (indexed/no_text/failed/too_large; nulo = não lido), `extracted_text`, `text_chars`, `text_extracted_at` — derivados, original intocado |
+| `clinical_search_documents` | `source_type` ganha `attachment`                                                                                                                      |
+
 Tabelas de clínica registradas no firewall: `TenantQueryFirewall::TENANT_TABLES` (um teste falha se uma tabela com
 `tenant_id` não estiver na lista).
 

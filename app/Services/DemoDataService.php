@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\AppointmentType;
+use App\Models\Attachment;
 use App\Models\Membership;
 use App\Models\Unit;
 use App\Models\Vaccine;
@@ -10,6 +11,7 @@ use App\Tenancy\TenantContext;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 /**
@@ -24,6 +26,13 @@ use RuntimeException;
 final class DemoDataService
 {
     public const PREFIX = '00DEM0';
+
+    /**
+     * Versão do conjunto de demonstração; SUBIR a cada entrega que amplia os dados. Fica gravada no 1º responsável demo
+     * para a tela avisar "demonstração desatualizada" e oferecer "Atualizar" (remover + carregar).
+     * 1 = 18/10 (base) · 2 = 19/10 (busca em texto livre) · 3 = 19/10 (anexos com texto + correções da busca).
+     */
+    public const VERSION = 3;
 
     /** Responsáveis: [nome, celular, cidade/UF]. */
     private const GUARDIANS = [
@@ -136,6 +145,16 @@ final class DemoDataService
         [26, 3, 'Retorno antecipado: uveíte com melhora parcial; manter colírio por mais 7 dias.'],
     ];
 
+    /**
+     * Anexos fictícios: [paciente, tipo (pdf|docx|png), título, categoria, texto do arquivo].
+     * O texto só existe DENTRO do arquivo (não está em atendimento), para provar a busca no conteúdo do anexo.
+     */
+    private const ATTACHMENTS = [
+        [17, 'pdf', 'Laudo oftalmológico', 'exam', 'Laudo oftalmológico (fictício) — Papagaio-verdadeiro. Tonometria de rebote: pressão intraocular de 9 mmHg no olho direito e 14 mmHg no olho esquerdo. Biomicroscopia: flare em câmara anterior compatível com uveíte anterior. Sugere-se pesquisa de clamidiose.'],
+        [19, 'docx', 'Sorologia — resultado do laboratório', 'exam', 'Resultado de exame (fictício). Sorologia para Encephalitozoon cuniculi: reagente, título 1:640. Interpretação: exposição ao agente; correlacionar com sinais neurológicos.'],
+        [18, 'png', 'Foto do casco', 'image', ''],
+    ];
+
     /** Alertas: [paciente, tipo, gravidade, descrição]. */
     private const ALERTS = [
         [0, 'allergy', 'high', 'Alergia a penicilina — demonstração'],
@@ -145,7 +164,7 @@ final class DemoDataService
         [3, 'behavior', 'low', 'Fica agitado na contenção — demonstração'],
     ];
 
-    public function __construct(private readonly TenantContext $context, private readonly ClinicalSearchIndex $search) {}
+    public function __construct(private readonly TenantContext $context, private readonly ClinicalSearchIndex $search, private readonly AttachmentService $attachments) {}
 
     /** ID demo da clínica: prefixo + 8 hex do tenant (evita colisão entre clínicas) + tipo + número. Hex é Crockford válido. */
     public static function idFor(string $tenantId, string $kind, int $n): string
@@ -174,7 +193,38 @@ final class DemoDataService
         return $this->counts()['patients'] > 0;
     }
 
-    /** @return array{patients: int, encounters: int, vaccinations: int, appointments: int, cases: int, addenda: int} */
+    /** Versão carregada (1 quando é anterior ao controle de versão) ou null se não há demonstração. */
+    public function loadedVersion(): ?int
+    {
+        $notes = DB::table('guardians')->where('tenant_id', $this->context->requireId())->where('id', $this->id('GR', 1))->value('notes');
+        if ($notes === null) {
+            return null;
+        }
+
+        return preg_match('/versão (\d+)/u', (string) $notes, $m) ? (int) $m[1] : 1;
+    }
+
+    /** Versão carregada quando é ANTERIOR à atual (para avisar e oferecer atualização); senão null. */
+    public function outdated(): ?int
+    {
+        $v = $this->loadedVersion();
+
+        return $v !== null && $v < self::VERSION ? $v : null;
+    }
+
+    /**
+     * Atualiza para a versão atual: remove a demonstração antiga e carrega a nova.
+     *
+     * @return array{patients: int, encounters: int, vaccinations: int, appointments: int, cases: int, addenda: int, attachments: int}
+     */
+    public function refresh(string $userId): array
+    {
+        $this->remove();
+
+        return $this->load($userId);
+    }
+
+    /** @return array{patients: int, encounters: int, vaccinations: int, appointments: int, cases: int, addenda: int, attachments: int} */
     public function load(string $userId): array
     {
         $tenant = $this->context->requireId();
@@ -193,101 +243,181 @@ final class DemoDataService
         $stamp = ['created_at' => $now, 'updated_at' => $now];
         $base = ['tenant_id' => $tenant];
 
-        DB::transaction(function () use ($userId, $membership, $unit, $tz, $now, $stamp, $base) {
-            foreach (self::GUARDIANS as $i => [$name, $phone, $city, $uf]) {
-                DB::table('guardians')->insert($base + $stamp + [
-                    'id' => $this->id('GR', $i + 1), 'name' => $name, 'person_type' => 'PF', 'phone' => $phone,
-                    'email' => 'tutor'.($i + 1).'@demo.exemplo.test', 'city' => $city, 'state' => $uf, 'status' => 'active',
-                    'notes' => 'Cadastro fictício de demonstração.', 'created_by' => $userId,
-                ]);
-            }
-            foreach (self::PATIENTS as $i => [$name, $species, $detail, $breed, $sex, $neutered, $birth, $g]) {
-                $pid = $this->id('PT', $i + 1);
-                DB::table('patients')->insert($base + $stamp + [
-                    'id' => $pid, 'name' => $name, 'species' => $species, 'species_detail' => $detail, 'breed' => $breed,
-                    'sex' => $sex, 'neutered' => $neutered, 'birth_date' => $birth, 'birth_date_estimated' => $birth !== null && str_ends_with($birth, '-01-01'),
-                    'status' => 'active', 'marks' => 'Paciente fictício de demonstração.', 'created_by' => $userId,
-                ]);
-                DB::table('guardian_patient')->insert($base + $stamp + ['guardian_id' => $this->id('GR', $g + 1), 'patient_id' => $pid, 'relationship' => 'primary']);
-            }
-
-            $encounterOf = []; // paciente => [[id, quando, diagnósticos]]
-            foreach (self::ENCOUNTERS as $i => [$p, $daysAgo, $weight, $complaint, $exam, $plan, $dxs]) {
-                $eid = $this->id('EN', $i + 1);
-                $pid = $this->id('PT', $p + 1);
-                $when = Carbon::now($tz)->subDays($daysAgo)->setTime(9 + $i % 8, ($i * 17) % 60)->utc();
-                DB::table('encounters')->insert($base + [
-                    'id' => $eid, 'unit_id' => $unit->id, 'patient_id' => $pid, 'status' => 'finalized', 'started_at' => $when,
-                    'chief_complaint' => $complaint, 'history' => 'Histórico fictício de demonstração.', 'physical_exam' => $exam,
-                    'plan' => $plan, 'guidance' => 'Orientações fictícias de demonstração.', 'weight_kg' => $weight,
-                    'temperature_c' => '38.'.($i % 9), 'finalized_at' => $when->copy()->addMinutes(35), 'finalized_by' => $userId,
-                    'signer_membership_id' => $membership, 'created_by' => $userId, 'created_at' => $when, 'updated_at' => $when->copy()->addMinutes(35),
-                ]);
-                foreach ($dxs as $pos => [$desc, $code, $status]) {
-                    DB::table('encounter_diagnoses')->insert($base + [
-                        'id' => $this->id('DX', ($i + 1) * 10 + $pos), 'encounter_id' => $eid, 'patient_id' => $pid, 'description' => $desc,
-                        'code' => $code, 'status' => $status, 'position' => $pos, 'created_by' => $userId, 'created_at' => $when, 'updated_at' => $when,
+        $written = [];
+        try {
+            DB::transaction(function () use ($userId, $membership, $unit, $tz, $now, $stamp, $base, &$written) {
+                foreach (self::GUARDIANS as $i => [$name, $phone, $city, $uf]) {
+                    DB::table('guardians')->insert($base + $stamp + [
+                        'id' => $this->id('GR', $i + 1), 'name' => $name, 'person_type' => 'PF', 'phone' => $phone,
+                        'email' => 'tutor'.($i + 1).'@demo.exemplo.test', 'city' => $city, 'state' => $uf, 'status' => 'active',
+                        'notes' => 'Cadastro fictício de demonstração (versão '.self::VERSION.').', 'created_by' => $userId,
                     ]);
                 }
-                DB::table('patient_weights')->insert($base + [
-                    'id' => $this->id('PW', $i + 1), 'patient_id' => $pid, 'encounter_id' => $eid, 'weight_kg' => $weight,
-                    'measured_at' => $when, 'created_by' => $userId, 'created_at' => $when, 'updated_at' => $when,
-                ]);
-                $encounterOf[$p][] = ['id' => $eid, 'dx' => array_column($dxs, 2, 0)];
-            }
-
-            foreach (self::ADDENDA as $i => [$e, $daysAfter, $body]) {
-                [$p, $daysAgo] = self::ENCOUNTERS[$e];
-                DB::table('encounter_addenda')->insert($base + [
-                    'id' => $this->id('AD', $i + 1), 'encounter_id' => $this->id('EN', $e + 1), 'body' => $body, 'author_id' => $userId,
-                    'author_membership_id' => $membership, 'created_at' => Carbon::now($tz)->subDays(max(0, $daysAgo - $daysAfter))->utc(),
-                ]);
-            }
-
-            foreach (self::ALERTS as $i => [$p, $kind, $severity, $desc]) {
-                DB::table('patient_alerts')->insert($base + $stamp + [
-                    'id' => $this->id('PA', $i + 1), 'patient_id' => $this->id('PT', $p + 1), 'kind' => $kind, 'severity' => $severity,
-                    'description' => $desc, 'created_by' => $userId,
-                ]);
-            }
-
-            $vaccines = Vaccine::query()->pluck('id', 'name');
-            foreach (self::VACCINES as $i => [$p, $name, $dose, $appliedAgo, $nextIn]) {
-                if (! isset($vaccines[$name])) {
-                    continue; // vacina padrão renomeada/removida pela clínica
+                foreach (self::PATIENTS as $i => [$name, $species, $detail, $breed, $sex, $neutered, $birth, $g]) {
+                    $pid = $this->id('PT', $i + 1);
+                    DB::table('patients')->insert($base + $stamp + [
+                        'id' => $pid, 'name' => $name, 'species' => $species, 'species_detail' => $detail, 'breed' => $breed,
+                        'sex' => $sex, 'neutered' => $neutered, 'birth_date' => $birth, 'birth_date_estimated' => $birth !== null && str_ends_with($birth, '-01-01'),
+                        'status' => 'active', 'marks' => 'Paciente fictício de demonstração.', 'created_by' => $userId,
+                    ]);
+                    DB::table('guardian_patient')->insert($base + $stamp + ['guardian_id' => $this->id('GR', $g + 1), 'patient_id' => $pid, 'relationship' => 'primary']);
                 }
-                DB::table('vaccinations')->insert($base + $stamp + [
-                    'id' => $this->id('VX', $i + 1), 'patient_id' => $this->id('PT', $p + 1), 'vaccine_id' => $vaccines[$name],
-                    'dose_number' => $dose, 'applied_on' => Carbon::now($tz)->subDays($appliedAgo)->toDateString(),
-                    'lot' => 'DEMO-'.str_pad((string) ($i + 1), 3, '0', STR_PAD_LEFT), 'manufacturer' => 'Fabricante fictício',
-                    'lot_expires_on' => Carbon::now($tz)->addYear()->toDateString(), 'site' => 'Subcutânea',
-                    'next_due_on' => Carbon::now($tz)->addDays($nextIn)->toDateString(), 'applied_by_membership_id' => $membership, 'created_by' => $userId,
-                ]);
+
+                $encounterOf = []; // paciente => [[id, quando, diagnósticos]]
+                foreach (self::ENCOUNTERS as $i => [$p, $daysAgo, $weight, $complaint, $exam, $plan, $dxs]) {
+                    $eid = $this->id('EN', $i + 1);
+                    $pid = $this->id('PT', $p + 1);
+                    $when = Carbon::now($tz)->subDays($daysAgo)->setTime(9 + $i % 8, ($i * 17) % 60)->utc();
+                    DB::table('encounters')->insert($base + [
+                        'id' => $eid, 'unit_id' => $unit->id, 'patient_id' => $pid, 'status' => 'finalized', 'started_at' => $when,
+                        'chief_complaint' => $complaint, 'history' => 'Histórico fictício de demonstração.', 'physical_exam' => $exam,
+                        'plan' => $plan, 'guidance' => 'Orientações fictícias de demonstração.', 'weight_kg' => $weight,
+                        'temperature_c' => '38.'.($i % 9), 'finalized_at' => $when->copy()->addMinutes(35), 'finalized_by' => $userId,
+                        'signer_membership_id' => $membership, 'created_by' => $userId, 'created_at' => $when, 'updated_at' => $when->copy()->addMinutes(35),
+                    ]);
+                    foreach ($dxs as $pos => [$desc, $code, $status]) {
+                        DB::table('encounter_diagnoses')->insert($base + [
+                            'id' => $this->id('DX', ($i + 1) * 10 + $pos), 'encounter_id' => $eid, 'patient_id' => $pid, 'description' => $desc,
+                            'code' => $code, 'status' => $status, 'position' => $pos, 'created_by' => $userId, 'created_at' => $when, 'updated_at' => $when,
+                        ]);
+                    }
+                    DB::table('patient_weights')->insert($base + [
+                        'id' => $this->id('PW', $i + 1), 'patient_id' => $pid, 'encounter_id' => $eid, 'weight_kg' => $weight,
+                        'measured_at' => $when, 'created_by' => $userId, 'created_at' => $when, 'updated_at' => $when,
+                    ]);
+                    $encounterOf[$p][] = ['id' => $eid, 'dx' => array_column($dxs, 2, 0)];
+                }
+
+                foreach (self::ADDENDA as $i => [$e, $daysAfter, $body]) {
+                    [$p, $daysAgo] = self::ENCOUNTERS[$e];
+                    DB::table('encounter_addenda')->insert($base + [
+                        'id' => $this->id('AD', $i + 1), 'encounter_id' => $this->id('EN', $e + 1), 'body' => $body, 'author_id' => $userId,
+                        'author_membership_id' => $membership, 'created_at' => Carbon::now($tz)->subDays(max(0, $daysAgo - $daysAfter))->utc(),
+                    ]);
+                }
+
+                foreach (self::ALERTS as $i => [$p, $kind, $severity, $desc]) {
+                    DB::table('patient_alerts')->insert($base + $stamp + [
+                        'id' => $this->id('PA', $i + 1), 'patient_id' => $this->id('PT', $p + 1), 'kind' => $kind, 'severity' => $severity,
+                        'description' => $desc, 'created_by' => $userId,
+                    ]);
+                }
+
+                $vaccines = Vaccine::query()->pluck('id', 'name');
+                foreach (self::VACCINES as $i => [$p, $name, $dose, $appliedAgo, $nextIn]) {
+                    if (! isset($vaccines[$name])) {
+                        continue; // vacina padrão renomeada/removida pela clínica
+                    }
+                    DB::table('vaccinations')->insert($base + $stamp + [
+                        'id' => $this->id('VX', $i + 1), 'patient_id' => $this->id('PT', $p + 1), 'vaccine_id' => $vaccines[$name],
+                        'dose_number' => $dose, 'applied_on' => Carbon::now($tz)->subDays($appliedAgo)->toDateString(),
+                        'lot' => 'DEMO-'.str_pad((string) ($i + 1), 3, '0', STR_PAD_LEFT), 'manufacturer' => 'Fabricante fictício',
+                        'lot_expires_on' => Carbon::now($tz)->addYear()->toDateString(), 'site' => 'Subcutânea',
+                        'next_due_on' => Carbon::now($tz)->addDays($nextIn)->toDateString(), 'applied_by_membership_id' => $membership, 'created_by' => $userId,
+                    ]);
+                }
+
+                $type = AppointmentType::query()->where('active', true)->orderBy('name')->first();
+                foreach ($type ? self::APPOINTMENTS : [] as $i => [$p, $inDays, $time, $status]) {
+                    $start = ScheduleService::toUtc(Carbon::now($tz)->addDays($inDays)->format('Y-m-d'), $time, $tz);
+                    DB::table('appointments')->insert($base + $stamp + [
+                        'id' => $this->id('AP', $i + 1), 'unit_id' => $unit->id, 'patient_id' => $this->id('PT', $p + 1),
+                        'appointment_type_id' => $type->id, 'professional_membership_id' => $membership, 'starts_at' => $start,
+                        'ends_at' => $start->copy()->addMinutes($type->duration_minutes), 'status' => $status, 'is_walk_in' => false,
+                        'notes' => 'Agendamento fictício de demonstração.', 'confirmed_at' => in_array($status, ['confirmed', 'waiting'], true) ? $now : null,
+                        'checked_in_at' => $status === 'waiting' ? $now : null, 'created_by' => $userId,
+                    ]);
+                }
+
+                $this->cases($base, $userId, $encounterOf, $now);
+                $written = $this->attachmentFiles($base, $userId, $now);
+                // Busca clínica: os pacientes demo já entram no índice.
+                foreach (array_keys(self::PATIENTS) as $i) {
+                    $this->search->reindexPatient($this->id('PT', $i + 1));
+                }
+            });
+        } catch (\Throwable $e) {
+            foreach ($written as $path) {
+                Storage::disk('local')->delete($path); // sem registro, sem arquivo órfão
             }
 
-            $type = AppointmentType::query()->where('active', true)->orderBy('name')->first();
-            foreach ($type ? self::APPOINTMENTS : [] as $i => [$p, $inDays, $time, $status]) {
-                $start = ScheduleService::toUtc(Carbon::now($tz)->addDays($inDays)->format('Y-m-d'), $time, $tz);
-                DB::table('appointments')->insert($base + $stamp + [
-                    'id' => $this->id('AP', $i + 1), 'unit_id' => $unit->id, 'patient_id' => $this->id('PT', $p + 1),
-                    'appointment_type_id' => $type->id, 'professional_membership_id' => $membership, 'starts_at' => $start,
-                    'ends_at' => $start->copy()->addMinutes($type->duration_minutes), 'status' => $status, 'is_walk_in' => false,
-                    'notes' => 'Agendamento fictício de demonstração.', 'confirmed_at' => in_array($status, ['confirmed', 'waiting'], true) ? $now : null,
-                    'checked_in_at' => $status === 'waiting' ? $now : null, 'created_by' => $userId,
-                ]);
-            }
-
-            $this->cases($base, $userId, $encounterOf, $now);
-            // Busca clínica: os pacientes demo já entram no índice.
-            foreach (array_keys(self::PATIENTS) as $i) {
-                $this->search->reindexPatient($this->id('PT', $i + 1));
-            }
-        });
+            throw $e;
+        }
 
         return [
             'patients' => count(self::PATIENTS), 'encounters' => count(self::ENCOUNTERS), 'vaccinations' => count(self::VACCINES),
-            'appointments' => count(self::APPOINTMENTS), 'cases' => 3, 'addenda' => count(self::ADDENDA),
+            'appointments' => count(self::APPOINTMENTS), 'cases' => 3, 'addenda' => count(self::ADDENDA), 'attachments' => count(self::ATTACHMENTS),
         ];
+    }
+
+    /**
+     * Grava os anexos fictícios no disco privado (como um envio real) e lê o texto pelo mesmo extrator do sistema.
+     *
+     * @param  array<string, string>  $base
+     * @return list<string> caminhos gravados
+     */
+    private function attachmentFiles(array $base, string $userId, Carbon $now): array
+    {
+        $paths = [];
+        foreach (self::ATTACHMENTS as $i => [$p, $type, $title, $category, $text]) {
+            $bytes = match ($type) {
+                'pdf' => app(DocumentService::class)->renderHtml('<html><body style="font-family: DejaVu Sans"><h2>'.e($title).'</h2><p>'.e($text).'</p></body></html>'),
+                'docx' => self::docx($text),
+                default => self::png(),
+            };
+            if ($bytes === null) {
+                continue; // servidor sem ZipArchive: DOCX demo fica de fora
+            }
+            [$mime, $ext] = ['pdf' => ['application/pdf', 'pdf'], 'docx' => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'docx'], 'png' => ['image/png', 'png']][$type];
+            $id = $this->id('AT', $i + 1);
+            $path = sprintf('attachments/%s/%s/%s.%s', $this->context->requireId(), $now->format('Y'), $id, $ext);
+            Storage::disk('local')->put($path, $bytes);
+            $paths[] = $path;
+            DB::table('attachments')->insert($base + [
+                'id' => $id, 'patient_id' => $this->id('PT', $p + 1), 'encounter_id' => null, 'category' => $category, 'title' => $title,
+                'description' => 'Arquivo fictício de demonstração.', 'original_name' => Str::slug($title).'.'.$ext, 'mime' => $mime,
+                'extension' => $ext, 'size_bytes' => strlen($bytes), 'sha256' => hash('sha256', $bytes), 'storage_path' => $path,
+                'uploaded_by' => $userId, 'created_at' => $now, 'updated_at' => $now,
+            ]);
+            $this->attachments->extractText(Attachment::query()->findOrFail($id), $bytes);
+        }
+
+        return $paths;
+    }
+
+    /** DOCX mínimo válido (Word abre) com um parágrafo por frase. */
+    private static function docx(string $text): ?string
+    {
+        if (! class_exists(\ZipArchive::class)) {
+            return null;
+        }
+        $paras = implode('', array_map(fn ($t) => '<w:p><w:r><w:t xml:space="preserve">'.htmlspecialchars($t, ENT_XML1).'</w:t></w:r></w:p>', preg_split('/(?<=\.)\s+/', $text) ?: [$text]));
+        $file = (string) tempnam(sys_get_temp_dir(), 'fvdocx');
+        $zip = new \ZipArchive;
+        $zip->open($file, \ZipArchive::OVERWRITE);
+        $zip->addFromString('[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
+        $zip->addFromString('_rels/.rels', '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
+        $zip->addFromString('word/document.xml', '<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'.$paras.'</w:body></w:document>');
+        $zip->close();
+        $bytes = (string) file_get_contents($file);
+        @unlink($file);
+
+        return $bytes;
+    }
+
+    /** PNG 32×32 (gradiente) gerado sem GD: imagem sem texto → "sem texto pesquisável". */
+    private static function png(): string
+    {
+        $raw = '';
+        for ($y = 0; $y < 32; $y++) {
+            $raw .= "\0";
+            for ($x = 0; $x < 32; $x++) {
+                $raw .= chr(120 + $x * 3).chr(90 + $y * 3).chr(60);
+            }
+        }
+        $chunk = fn (string $type, string $data) => pack('N', strlen($data)).$type.$data.pack('N', crc32($type.$data));
+
+        return "\x89PNG\r\n\x1a\n".$chunk('IHDR', pack('NNCCCCC', 32, 32, 8, 2, 0, 0, 0)).$chunk('IDAT', (string) gzcompress($raw)).$chunk('IEND', '');
     }
 
     /**

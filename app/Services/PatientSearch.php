@@ -8,6 +8,7 @@ use App\Models\EncounterDiagnosis;
 use App\Models\Guardian;
 use App\Models\Patient;
 use App\Support\BrazilianDocument;
+use App\Support\SearchText;
 use App\Support\Species;
 use App\Tenancy\TenantContext;
 use Illuminate\Database\Eloquent\Builder;
@@ -228,17 +229,23 @@ final class PatientSearch
 
     /**
      * Diagnósticos de atendimentos finalizados que casam com o texto (descrição ou código) e a situação.
-     * Collation utf8mb4_unicode_ci: "atopica" encontra "atópica" e maiúsculas/minúsculas não importam.
+     * Collation utf8mb4_unicode_ci: "atopica" encontra "atópica" e maiúsculas/minúsculas não importam; termos já
+     * normalizados por SearchText (só [a-z0-9], sem curingas do usuário).
      *
      * @param  array<string, mixed>  $f
      * @return Builder<EncounterDiagnosis>
      */
     private function diagnoses(array $f): Builder
     {
-        $term = (string) $f['diagnostico'];
+        // Palavra por palavra, em qualquer ordem, sem acento e sem plural ("dermatites atopicas" acha "Dermatite atópica").
+        $words = SearchText::terms((string) $f['diagnostico']);
 
         return EncounterDiagnosis::query()
-            ->when($term !== '', fn (Builder $q) => $q->where(fn ($w) => $w->where('description', 'like', '%'.addcslashes($term, '%_\\').'%')->orWhere('code', $term)))
+            ->when($words !== [], fn (Builder $q) => $q->where(function ($all) use ($words) {
+                foreach ($words as $w) {
+                    $all->where(fn ($one) => $one->where('description', 'like', '%'.$w.'%')->orWhere('code', 'like', $w.'%'));
+                }
+            }))
             ->when($f['situacao'] === '', fn (Builder $q) => $q->whereIn('status', ['suspected', 'confirmed']), fn (Builder $q) => $q->where('status', $f['situacao']))
             ->whereIn('encounter_id', $this->encounters($f)->select('id'));
     }

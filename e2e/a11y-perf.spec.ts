@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { USERS, loginInto, logout } from './helpers';
+import { USERS, loginInto, logout, removeDemoIfLoaded } from './helpers';
 
 async function axe(page: Page) {
   // Mede o estado FINAL da tela: com animação de entrada, o axe calcularia o contraste no meio do "fade".
@@ -208,6 +208,7 @@ test('acessibilidade WCAG AA (axe): casos científicos', async ({ page }) => {
 test('acessibilidade WCAG AA (axe): dados de demonstração', async ({ page }) => {
   await loginInto(page, USERS.diana);
   await page.goto('configuracoes/dados-de-demonstracao');
+  await removeDemoIfLoaded(page);
   await axe(page);
   await page.getByRole('button', { name: 'Carregar demonstração' }).click();
   await expect(page.getByText(/Demonstração carregada: 22 pacientes/).first()).toBeVisible();
@@ -218,6 +219,10 @@ test('acessibilidade WCAG AA (axe): dados de demonstração', async ({ page }) =
   await axe(page); // trechos com destaque
   await page.goto('busca');
   await axe(page); // exemplos
+  await page.goto('pacientes?q=xampu');
+  await axe(page); // campo único: resultados do prontuário na tela de Pacientes
+  await page.goto('busca?q=casco');
+  await axe(page); // anexo "sem texto pesquisável"
   await page.goto('configuracoes/dados-de-demonstracao');
   await page.getByRole('checkbox', { name: /Entendo que/ }).check();
   await page.getByRole('button', { name: 'Remover demonstração' }).click();

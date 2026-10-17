@@ -89,7 +89,7 @@ final class ClinicalSearchTest extends TestCase
             $this->post('/sair');
         }
         $this->loginInto('bruno', Seed::TENANT_A);
-        $this->get('/pacientes?q=dermatite')->assertSee('no prontuário'); // atalho a partir da busca de cadastro
+        $this->get('/pacientes?q=dermatite')->assertSee('No prontuário: 1 paciente')->assertSee('<mark>Dermatite</mark>', false); // campo único: cadastro + prontuário
         $this->post('/busca/reindexar')->assertForbidden();
         $this->post('/sair');
         $this->loginInto('ana', Seed::TENANT_A);
