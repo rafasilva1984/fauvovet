@@ -57,3 +57,8 @@ Bancos locais: `fauvovet_dev` (dev, seed fictício) e `fauvovet_test` (recriado 
   scripts usam timeouts curtos (≤ 1 s) ao sondar portas.
 - **E2E "Já existe um servidor":** encerre o processo na porta 8100 (`ss -ltnp | grep 8100`).
 - **Chromium ausente:** `pnpm exec playwright install chromium`.
+- **E2E falha com `net::ERR_NETWORK_CHANGED` ou `chrome-error://chromewebdata/`:** a rede do computador oscilou
+  (Wi-Fi/VPN/WSL reconectando; `dmesg` mostra `CheckConnection: getaddrinfo() failed`) e o Chrome abortou até
+  carregamentos em 127.0.0.1. Não é defeito do sistema. Localmente o Playwright faz 1 nova tentativa (`retries: 1`;
+  o relatório marca o teste como _flaky_); o erro de console `ERR_NETWORK_CHANGED` é ignorado em
+  `trackConsoleErrors`. Na CI não há nova tentativa. Falha repetida = investigar.

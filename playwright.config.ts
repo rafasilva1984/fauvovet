@@ -5,7 +5,10 @@ export default defineConfig({
   testDir: './e2e',
   fullyParallel: false,
   workers: 1,
-  retries: 0,
+  // Local (WSL): 1 nova tentativa só para absorver oscilação de rede da máquina (ERR_NETWORK_CHANGED aborta até
+  // páginas em 127.0.0.1). Falha nas duas = reprovado; passar só na 2ª aparece como "flaky" no relatório.
+  // CI: sem nova tentativa.
+  retries: process.env.CI ? 0 : 1,
   reporter: [['list'], ['html', { open: 'never' }]],
   timeout: 30_000,
   globalSetup: './e2e/global-setup.ts',
