@@ -15,9 +15,9 @@ use App\Models\Vaccination;
 use App\Models\Vaccine;
 use App\Services\ClinicalRecordService;
 use App\Services\PatientRegistry;
+use App\Services\PatientSearch;
 use App\Services\VaccinationService;
-use App\Support\BrazilianDocument;
-use App\Support\Species;
+use App\Support\Audit;
 use App\Tenancy\TenantContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,35 +30,24 @@ final class PatientController extends Controller
 {
     public function __construct(private readonly PatientRegistry $registry, private readonly TenantContext $context) {}
 
-    public function index(Request $request): View
+    public function index(Request $request, PatientSearch $search, Audit $audit): View
     {
-        $q = trim((string) $request->query('q', ''));
-        $species = (string) $request->query('especie', '');
-        $patients = Patient::query()
-            ->with('guardians:id,name,phone')
-            ->when($q !== '', function ($query) use ($q) {
-                // Em 2 passos (sem EXISTS correlacionado): responsáveis que casam com a busca → seus pacientes.
-                $guardianIds = GuardianController::search(Guardian::query(), $q)->limit(500)->pluck('id')->all();
-                $like = '%'.addcslashes($q, '%_\\').'%';
-                $digits = BrazilianDocument::digits($q);
-                $tenantId = $this->context->requireId();
-                $query->where(function ($w) use ($q, $like, $digits, $guardianIds, $tenantId) {
-                    $w->where('name', 'like', $like)
-                        ->orWhere('microchip', strtoupper(str_replace([' ', '.', '-'], '', $q)));
-                    if (strlen($digits) >= 4) {
-                        $w->orWhere('microchip', 'like', '%'.$digits.'%');
-                    }
-                    if ($guardianIds !== []) {
-                        $w->orWhereIn('id', DB::table('guardian_patient')->select('patient_id')
-                            ->where('tenant_id', $tenantId)->whereIn('guardian_id', $guardianIds));
-                    }
-                });
-            })
-            ->when(in_array($species, Species::codes(), true), fn ($query) => $query->where('species', $species))
-            ->when(! $request->boolean('todos'), fn ($query) => $query->where('status', 'active'))
-            ->orderBy('name')->paginate(25)->withQueryString();
+        $f = $search->filters($request);
+        $patients = $search->query($f)->with('guardians:id,name,phone')->orderBy('name')->paginate(25)->withQueryString();
+        if (PatientSearch::hasClinicalFilter($f)) {
+            // Busca por dado clínico fica na trilha: quais filtros (nunca o termo pesquisado) e quantos resultados.
+            $audit->record('patient.clinical_search', (string) $request->user()?->getAuthIdentifier(), null, null, [
+                'filters' => array_keys(array_filter(['diagnostico' => $f['diagnostico'] !== '', 'situacao' => $f['situacao'] !== '', 'ano' => $f['ano'] !== null])),
+                'results' => $patients->total(),
+            ]);
+        }
 
-        return view('patients.index', ['patients' => $patients, 'q' => $q, 'species' => $species]);
+        return view('patients.index', [
+            'patients' => $patients, 'f' => $f, 'q' => $f['q'], 'species' => $f['especie'],
+            'advanced' => PatientSearch::hasAdvancedFilter($f),
+            'evidence' => $search->evidence($f, $patients->getCollection()->pluck('id')->all()),
+            'years' => $this->context->can('clinical:read') ? $search->encounterYears() : [],
+        ]);
     }
 
     public function create(Request $request): View

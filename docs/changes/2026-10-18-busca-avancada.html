@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FauvoVet — Busca avançada</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #1a2935; background: #f4f7f8; line-height: 1.65; font-size: 17px; }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 16px 80px; }
+    header { border-radius: 20px; padding: 32px; color: white; background: linear-gradient(120deg, #0b4652, #1a7375); }
+    header p { color: #e1f5f0; margin-bottom: 0; }
+    h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.2; margin: 0; }
+    h2 { font-size: 1.3rem; margin: 0 0 12px; }
+    h3 { font-size: 1.12rem; margin: 28px 0 8px; padding-top: 16px; border-top: 1px dashed #c9d6d8; }
+    h4 { font-size: 1rem; margin: 18px 0 6px; }
+    section { margin-top: 20px; background: #fff; padding: 24px; border: 1px solid #dee7e8; border-radius: 14px; }
+    p, li { overflow-wrap: anywhere; }
+    code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { background: #eaf1f2; padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+    pre code { background: none; padding: 0; }
+    kbd { border: 1px solid #b8c6c9; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: #fff; font-size: 0.9em; }
+    pre { overflow-x: auto; border-radius: 8px; padding: 14px; color: #e9fbff; background: #172b32; font-size: 0.9rem; line-height: 1.5; }
+    .tag { display: inline-block; font-size: 0.8rem; font-weight: 700; border: 1px solid #f5cf83; background: #fff8e4; color: #7a4b12; border-radius: 30px; padding: 3px 10px; }
+    .where { display: inline-block; font-size: 0.78rem; font-weight: 700; border-radius: 30px; padding: 2px 10px; margin-right: 6px; vertical-align: middle; }
+    .w-term { background: #1f3b44; color: #d9fbff; }
+    .w-web { background: #e1effd; color: #0f3e72; }
+    .w-fz { background: #fde8e1; color: #7a2a0f; }
+    .w-np { background: #ece5fb; color: #42237a; }
+    .w-panel { background: #e2f6e8; color: #145c2e; }
+    .note { border-left: 4px solid #338b96; background: #eef7f8; padding: 10px 12px; border-radius: 6px; }
+    .warn { border-left: 4px solid #c27c0e; background: #fff8e4; padding: 10px 12px; border-radius: 6px; }
+    .stop { border-left: 4px solid #b3261e; background: #fdecea; padding: 10px 12px; border-radius: 6px; }
+    .ok { border-left: 4px solid #1d7a45; background: #e8f6ee; padding: 10px 12px; border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid #e0e7e8; text-align: left; vertical-align: top; }
+    small { color: #52646d; }
+    .pass { color: #116b3a; font-weight: 700; }
+    .notrun { color: #8a5a00; font-weight: 700; }
+    ol.steps > li { margin-bottom: 12px; }
+    .map { font-size: 0.85rem; }
+    .shots { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .shots figure { margin: 0; }
+    .shots img { width: 100%; height: auto; border-radius: 12px; border: 1px solid #dee7e8; display: block; }
+    .shots figcaption { font-size: 0.85rem; color: #52646d; margin-top: 4px; }
+    .shots .tall img { max-height: 520px; object-fit: cover; object-position: top; }
+    nav ol { columns: 2; column-gap: 32px; }
+    @media (max-width: 640px) { nav ol { columns: 1; } body { font-size: 16px; } section { padding: 18px; } header { padding: 22px; } }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e4eef0; background: #0f1a1e; }
+      section { background: #15242a; border-color: #23373e; }
+      th, td { border-color: #23373e; }
+      code { background: #213840; }
+      kbd { background: #1d3138; border-color: #3b5760; }
+      .warn { background: #2a2210; } .note { background: #12303a; } .stop { background: #3a1614; } .ok { background: #12301f; }
+      small { color: #9fb3ba; }
+      h3 { border-color: #2c454c; }
+      .pass { color: #5fd28f; } .notrun { color: #f0b54a; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="tag">INCREMENTO IMPLEMENTADO — BUSCA AVANÇADA</span>
+      <h1>Busca avançada de pacientes: diagnóstico, raça, idade, sexo e ano de atendimento</h1>
+      <p>ID: <strong>2026-10-18-busca-avancada</strong> · Data: <strong>18/10/2026</strong> · Versão: <strong>0.10.0</strong> · Módulo: <strong>Busca clínica (seção 3), primeira etapa</strong> · Estado: <strong>implementado e testado localmente; publicação a cargo do proprietário (seção 7)</strong></p>
+    </header>
+
+    <section>
+      <h2>1. Objetivo</h2>
+      <p>A busca de pacientes já existente ganhou novos filtros. Agora dá para encontrar, por exemplo, "machos com dermatite confirmada", "gatos persas de 3 a 6 anos" ou "quem foi atendido em 2026". Cada resultado mostra <strong>qual diagnóstico coincidiu, com que situação e em que atendimento</strong>, com link para o registro de origem. Esta busca é a base dos <em>casos científicos</em> (próximo incremento).</p>
+      <div class="shots">
+        <figure><img src="img/2026-10-18-busca-avancada-desktop.jpg" alt="Busca por dermatite em machos mostrando diagnóstico confirmado e suspeita com data (dados fictícios)" loading="lazy"><figcaption>Desktop: evidência por resultado</figcaption></figure>
+        <figure><img src="img/2026-10-18-busca-avancada-celular.jpg" alt="Busca por dermatite confirmada no celular (dados fictícios)" loading="lazy"><figcaption>Celular</figcaption></figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>2. O que mudou</h2>
+      <ul>
+        <li><strong>Pacientes → Filtros avançados</strong> (painel recolhível; o número indica quantos filtros estão ativos). A busca antiga continua igual: nome, responsável, telefone, microchip e espécie.
+          <ul>
+            <li><strong>Para todos com acesso a pacientes:</strong>
+              <ul>
+                <li>raça (parte do nome);</li>
+                <li>sexo;</li>
+                <li>castração;</li>
+                <li>idade mínima e máxima em anos completos. Quem não tem data de nascimento fica de fora quando a idade é filtrada.</li>
+              </ul>
+            </li>
+            <li><strong>Prontuário</strong> (só a equipe clínica):
+              <ul>
+                <li>diagnóstico ou código;</li>
+                <li>situação: <em>suspeita ou confirmado</em> (padrão), somente confirmado, somente suspeita ou somente descartado;</li>
+                <li>ano de atendimento.</li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li><strong>Regras clínicas:</strong>
+          <ul>
+            <li>só contam <strong>atendimentos finalizados</strong>: rascunho ainda pode mudar;</li>
+            <li>suspeita, confirmado e descartado nunca se misturam e aparecem como etiquetas diferentes;</li>
+            <li>acentos e maiúsculas não importam ("atopica" encontra "atópica").</li>
+          </ul>
+        </li>
+        <li><strong>Segurança:</strong>
+          <ul>
+            <li>para quem não é da equipe clínica (recepção, financeiro), os filtros de prontuário são <strong>ignorados no servidor</strong>, não apenas escondidos na tela;</li>
+            <li>buscas por dado clínico ficam na auditoria (<code>patient.clinical_search</code>) com os filtros usados e o número de resultados, <strong>sem o termo pesquisado</strong>;</li>
+            <li>tudo é restrito à clínica ativa.</li>
+          </ul>
+        </li>
+        <li><strong>Arquivos:</strong>
+          <ul>
+            <li><code>app/Services/PatientSearch.php</code> (novo; reutilizável);</li>
+            <li><code>PatientController@index</code>;</li>
+            <li><code>resources/views/patients/index.blade.php</code>;</li>
+            <li>testes <code>tests/Feature/PatientSearchTest.php</code> (5, sendo 1 de isolamento) e <code>e2e/search.spec.ts</code>;</li>
+            <li>axe na busca com filtros.</li>
+          </ul>
+        </li>
+      </ul>
+      <p><strong>Sem migração e sem dependência nova.</strong></p>
+    </section>
+
+    <section>
+      <h2>3. Pré-requisitos</h2>
+      <p>Os mesmos dos incrementos anteriores.</p>
+      <p class="warn"><strong>Git Bash/macOS:</strong> NOT RUN.</p>
+    </section>
+
+    <section>
+      <h2>4. Passo a passo (no seu computador)</h2>
+      <ol>
+        <li><code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm db:start</code> → <code>pnpm db:seed</code></li>
+        <li><code>pnpm dev</code> → entre como <code>bruno.vet@aurora.exemplo.test</code> → <em>Pacientes</em> → <em>Filtros avançados</em>.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>5. Como testar</h2>
+<pre><code>pnpm verify --e2e
+pnpm test:tenant-isolation</code></pre>
+      <ol>
+        <li><strong>Como Bruno:</strong>
+          <ul>
+            <li>diagnóstico <code>dermatite atopica</code>: aparece o Thor, com uma linha <em>Confirmado</em> e outra <em>Suspeita</em>, cada uma com a data do atendimento;</li>
+            <li>situação <em>Somente confirmado</em>: fica só a linha confirmada; clique nela para abrir o atendimento;</li>
+            <li>raça <code>persa</code> mostra a Mia, e idade mínima de 6 anos mostra o Thor;</li>
+            <li>ano de atendimento igual ao atual: aparece o Thor.</li>
+          </ul>
+        </li>
+        <li><strong>Como Carla</strong> (recepção): o bloco "Prontuário" não aparece. Se ela digitar <code>?diagnostico=dermatite</code> na URL, nada é filtrado e nenhum diagnóstico aparece.</li>
+        <li><strong>Como Diana</strong> (clínica B): <code>dermatite</code> não encontra o Thor; <code>renal</code> encontra o Jabu.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>6. Performance e usabilidade</h2>
+      <ul>
+        <li><strong>Consultas:</strong>
+          <ul>
+            <li>busca com filtros clínicos: 1 consulta com subconsultas <code>IN</code> sobre índices por clínica, mais 2 consultas leves de evidência, só para os 25 pacientes da página;</li>
+            <li>sem filtro clínico, o custo é o mesmo de antes;</li>
+            <li>volume grande e <code>EXPLAIN</code>: <strong>NOT RUN</strong> (base fictícia pequena), previsto para a etapa de busca em texto do prontuário.</li>
+          </ul>
+        </li>
+        <li><strong>Tela:</strong>
+          <ul>
+            <li>com resultados, o painel de filtros fica recolhido e os filtros ativos aparecem como etiquetas acima da lista, o que no celular deixa o resultado logo abaixo da busca;</li>
+            <li>sem resultados, o painel abre para ajustar;</li>
+            <li>axe sem violações e conteúdo dentro da tela no celular.</li>
+          </ul>
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>7. Implantação na Locaweb (sem migração)</h2>
+      <ol>
+        <li><strong>Terminal:</strong> <code>pnpm verify --e2e</code> → <code>pnpm deploy:package</code> → <code>pnpm deploy:copiar</code></li>
+        <li><strong>FileZilla:</strong> <code>app-fauvovet</code> (tudo exceto <code>storage</code> e <code>.env</code>) e <code>public_html/fauvovet</code>, com <em>Sobrescrever</em>.</li>
+        <li><strong>Apenas se o otimizar for necessário:</strong>
+          <ol>
+            <li><strong>Terminal:</strong> <code>pnpm deploy:token</code>;</li>
+            <li><strong>FileZilla:</strong> <code>DEPLOY_TOOLS_ENABLED=true</code> no <code>.env</code>;</li>
+            <li><strong>Terminal:</strong> <code>diagnostico</code> (<code>pending_migrations: 0</code>) → <code>otimizar</code>;</li>
+            <li><strong>FileZilla:</strong> volte <code>DEPLOY_TOOLS_ENABLED=false</code> e apague <code>bootstrap/cache/config.php</code>.</li>
+          </ol>
+        </li>
+        <li><strong>Terminal:</strong> <code>SMOKE_URL=https://dradeboragaldino.com.br/fauvovet pnpm smoke</code></li>
+      </ol>
+      <p class="warn">Se a vacinação ainda não foi publicada, use o guia da vacinação: ele inclui a migração, e este pacote já contém as duas entregas.</p>
+      <p class="stop">Sem HTTPS válido, só dados fictícios.</p>
+    </section>
+
+    <section>
+      <h2>8. Rollback</h2>
+      <p>Reenvie o pacote anterior em <code>.deploy/</code> e rode o <em>otimizar</em>. Não há mudança de banco.</p>
+      <p><strong>Local:</strong> <code>git revert</code> do commit.</p>
+    </section>
+
+    <section>
+      <h2>9. Troubleshooting</h2>
+      <table>
+        <tr><th>Sintoma</th><th>Causa e solução</th></tr>
+        <tr><td>Diagnóstico registrado não aparece</td><td>O atendimento ainda é rascunho: finalize-o. Se o diagnóstico foi descartado, escolha <em>Somente descartado</em>.</td></tr>
+        <tr><td>Paciente some ao filtrar por idade</td><td>Ele não tem data de nascimento; cadastre uma data, mesmo estimada.</td></tr>
+        <tr><td>Recepção não vê "Prontuário"</td><td>Comportamento esperado: dado clínico é restrito à equipe clínica.</td></tr>
+        <tr><td>Ano não aparece na lista</td><td>A lista começa no ano do primeiro atendimento finalizado da clínica.</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>10. Evidências e status</h2>
+      <table>
+        <tr><th>Verificação</th><th>Status</th><th>Detalhe</th></tr>
+        <tr><td><code>pnpm verify --e2e</code></td><td class="pass">PASS</td><td>9/9 etapas</td></tr>
+        <tr><td>PHPUnit</td><td class="pass">PASS</td><td>156 testes (5 novos de busca)</td></tr>
+        <tr><td>Isolamento</td><td class="pass">PASS</td><td>38 testes (1 novo: busca clínica A/B)</td></tr>
+        <tr><td>E2E + axe + borda no celular</td><td class="pass">PASS</td><td>busca desktop/celular</td></tr>
+        <tr><td>Busca em texto livre do prontuário (queixa, evolução) e em anexos</td><td class="notrun">NOT RUN</td><td>Fase 2: índice de texto completo, sinônimos e destaque de trechos</td></tr>
+        <tr><td>Benchmark com volume</td><td class="notrun">NOT RUN</td><td>Base fictícia pequena</td></tr>
+      </table>
+      <p><strong>Commit:</strong> registrado no <code>docs/PROGRESS.md</code> após a sincronização.</p>
+      <p><strong>Próximo passo:</strong> casos científicos a partir desta busca.</p>
+    </section>
+  </main>
+</body>
+</html>

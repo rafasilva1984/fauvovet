@@ -50,6 +50,9 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
 - **Vacinação (implementado e testado localmente; ainda não publicado):** catálogo/protocolos (7 modelos genéricos),
   aplicação imutável com lote/validade/local/próxima dose, carteira PDF, "Vacinas a vencer" (recepção vê, clínica
   registra), painel com vencimentos.
+- **Busca avançada de pacientes (implementado e testado localmente; ainda não publicado):** raça, sexo, castração,
+  idade; para a equipe clínica, diagnóstico com situação (suspeita/confirmado/descartado) e ano de atendimento, só
+  atendimentos finalizados, com evidência e link ao atendimento; auditoria sem o termo. Falta: texto livre/anexos.
 - **Não implementado:** exames estruturados, internação, (alergias, peso, vacinas), busca clínica, lembretes, visão mensal/salas/recorrência; MFA, recuperação de senha, e-mail transacional; backup automático.
 - **PUBLICADO (teste) na Locaweb em 15/10/2026** pelo proprietário, seguindo o tutorial: `http://dradeboragaldino.com.br/fauvovet`.
   Domínio corrigido em todo o repositório (era "gakdino"; o certo é **galdino**). `pnpm smoke` contra o servidor real:
@@ -58,7 +61,7 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
 - **Tutorial de deploy didático:** o proprietário achou o passo a passo de `DEPLOY_LOCAWEB.md` difícil de seguir (faltava
   configuração do banco e o que copiar para onde). Reescrito como guia completo, etapas A–H, com glossário, mapa de pastas,
   folha de anotações e troubleshooting; novo comando `pnpm deploy:copiar` (pacote → `C:\fauvovet-deploy`, fora do OneDrive).
-- **Último guia HTML:** [`docs/changes/2026-10-18-vacinacao.html`](changes/2026-10-18-vacinacao.html)
+- **Último guia HTML:** [`docs/changes/2026-10-18-busca-avancada.html`](changes/2026-10-18-busca-avancada.html)
 
 ## Ambiente (verificado)
 
@@ -147,10 +150,10 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 
 ## Próxima ação exata
 
-1. Sessão em andamento (pedido do proprietário): **busca avançada de pacientes** (diagnóstico com situação, raça,
-   idade, sexo, ano de atendimento; filtros clínicos só para a equipe clínica) e depois **casos científicos** (séries e
-   relatos de casos a partir dos atendimentos, estatísticas, exportação CSV/PDF anonimizada, consentimento do tutor).
-2. Proprietário: publicar vacinação (`docs/changes/2026-10-18-vacinacao.html` › seção 7; revisar protocolos).
+1. Sessão em andamento (pedido do proprietário): **casos científicos** (séries a partir da busca avançada e relatos a
+   partir de um atendimento; pergunta clínica, resumo e desfecho por caso; estatísticas; exportação CSV/PDF anonimizada;
+   consentimento do tutor). Entrada: `app/Services/PatientSearch.php`.
+2. Proprietário: publicar vacinação + busca (`docs/changes/2026-10-18-vacinacao.html` › seção 7, inclui a migração).
 
 ## Histórico de incrementos
 
@@ -169,4 +172,5 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 | 2026-10-17 | **Fase 1 — Prontuário** + ajustes pedidos (sem "opcional", idade pela data, CEP, UF em lista)                   | [2026-10-17-prontuario.html](changes/2026-10-17-prontuario.html)                             | verify --e2e 9/9 (PHPUnit 117, isolamento 32, E2E 55)              | main — hash na próxima atualização | push nesta sessão      | Receitas/documentos PDF               |
 | 2026-10-17 | **Fase 1 — Documentos em PDF**: modelos, receita/atestado/orientações/encaminhamento/termo, PDF preservado      | [2026-10-17-documentos-pdf.html](changes/2026-10-17-documentos-pdf.html)                     | verify --e2e 9/9 (PHPUnit 127, isolamento 33)                      | main — hash na próxima atualização | push nesta sessão      | Anexos privados                       |
 | 2026-10-18 | **Fase 1 — Anexos privados** + correções de layout no celular                                                   | [2026-10-18-anexos.html](changes/2026-10-18-anexos.html)                                     | verify --e2e 9/9 (PHPUnit 143, isolamento 35, E2E 61)              | main — hash na próxima atualização | push nesta sessão      | Vacinação                             |
-| 2026-10-18 | **Vacinação**: catálogo, carteira, próxima dose, vencimentos, PDF                                               | [2026-10-18-vacinacao.html](changes/2026-10-18-vacinacao.html)                               | verify --e2e 9/9 (PHPUnit 151, isolamento 37)                      | main — hash na próxima atualização | push nesta sessão      | Busca avançada + casos científicos    |
+| 2026-10-18 | **Vacinação**: catálogo, carteira, próxima dose, vencimentos, PDF                                               | [2026-10-18-vacinacao.html](changes/2026-10-18-vacinacao.html)                               | verify --e2e 9/9 (PHPUnit 151, isolamento 37)                      | `6fd9d73`                          | push OK, CI            | Busca avançada + casos científicos    |
+| 2026-10-18 | **Busca avançada de pacientes**: raça, sexo, idade, castração, diagnóstico/situação, ano                        | [2026-10-18-busca-avancada.html](changes/2026-10-18-busca-avancada.html)                     | verify --e2e 9/9 (PHPUnit 156, isolamento 38)                      | main — hash na próxima atualização | push nesta sessão      | Casos científicos                     |

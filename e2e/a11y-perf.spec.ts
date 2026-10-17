@@ -123,6 +123,7 @@ test('acessibilidade WCAG AA (axe): prontuário', async ({ page }) => {
 test('acessibilidade WCAG AA (axe): documentos e perfil', async ({ page }) => {
   await loginInto(page, USERS.ana);
   for (const path of [
+    'pacientes?diagnostico=dermatite&idade_min=1', // filtros avançados abertos + evidência
     'vacinas',
     'configuracoes/vacinas',
     'configuracoes/vacinas/nova',

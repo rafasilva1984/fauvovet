@@ -23,7 +23,7 @@ Ordem conforme CLAUDE.md §11. Atualizado em 2026-10-15 (stack PHP/MySQL — ADR
 - [x] Receitas e documentos em PDF: modelos da clínica, variáveis whitelist, PDF preservado com código de verificação, anulação, Meu perfil com CRMV (17/10/2026).
 - [x] Anexos privados no prontuário: PDF, imagens e DOCX validados pelo conteúdo, disco privado, download seguro e auditado (18/10/2026).
 - [x] Vacinação: catálogo/protocolos, aplicação com lote/validade, próxima dose, carteira PDF, vencimentos (18/10/2026).
-- [ ] Busca avançada de pacientes (diagnóstico, raça, idade, sexo, ano de atendimento) ← pedido do proprietário
+- [x] Busca avançada de pacientes (diagnóstico, raça, idade, sexo, ano de atendimento) ← pedido do proprietário
 - [ ] Casos científicos: séries/relatos de casos a partir dos atendimentos, exportação anonimizada ← pedido do proprietário
 
 Depois: modelos de documento por clínica, vacinação.
