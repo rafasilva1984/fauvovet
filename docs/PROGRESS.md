@@ -1,6 +1,6 @@
 # FauvoVet — Checkpoint e ponto de retomada
 
-> **Atualizado em:** 2026-10-17 01:40 (America/Sao_Paulo) · **Fase:** 1 — MVP clínico (em andamento; Fase 0 concluída exceto HTTPS/backup)
+> **Atualizado em:** 2026-10-17 (America/Sao_Paulo) — fim da sessão · **Fase:** 1 — MVP clínico (em andamento; Fase 0 concluída exceto HTTPS/backup)
 > **Regra:** atualizar a cada incremento, bloqueio e antes de encerrar qualquer sessão.
 
 ## Mudança de rumo nesta sessão
@@ -12,7 +12,7 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
 
 ## Situação atual
 
-- **Branch/remote:** `main` → `origin`. Reescrita sincronizada em `34ee508`; tutorial em `7d1546c`; deploy/domínio em `df8a793`; equipe em `5bc5577`; pacientes em `7aee4ec`; agenda em `8f91a50`; visual em `1dacafc`; ajustes de cadastro em `57a5c46`; prontuário em `3767132`; teste de rede em `ca61106` (CI success); CI (PHP 8.3) run 38796096959: **success** (bootstrap + verify --e2e).
+- **Branch/remote:** `main` → `origin`. Reescrita sincronizada em `34ee508`; tutorial em `7d1546c`; deploy/domínio em `df8a793`; equipe em `5bc5577`; pacientes em `7aee4ec`; agenda em `8f91a50`; visual em `1dacafc`; ajustes de cadastro em `57a5c46`; prontuário em `3767132`; teste de rede em `ca61106`; documentos em `7cf93a2` (CI success); CI (PHP 8.3) run 38796096959: **success** (bootstrap + verify --e2e).
 - **Implementado e testado (local):** login seguro (Argon2id, bloqueio, rate limit, mensagem uniforme), sessão no
   servidor, CSRF, CSP com nonce, escolha de clínica/unidade, RBAC (8 papéis), cadastro de clínica PF/PJ, unidades
   (lista/criação/detalhe), equipe (leitura), aparência por clínica (AA), auditoria somente inclusão, páginas de erro
@@ -39,7 +39,7 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
   prontuário com rascunho → finalizar e assinar (só veterinário) → bloqueio + adendos, sinais vitais, hipóteses ×
   diagnósticos, alertas clínicos, peso com gráfico, auditoria de acesso, "Iniciar atendimento" abre o prontuário
   (ADR-013).
-- **Documentos em PDF (Fase 1, implementado e testado localmente; ainda não publicado):** modelos por clínica
+- **Documentos em PDF (Fase 1): PUBLICADO e funcionando** segundo o proprietário (pacote `7cf93a2`; `/perfil` e `/configuracoes/modelos-de-documento` respondendo no servidor, smoke 5/5): modelos por clínica
   (5 padrão) com variáveis whitelist e versão, emissão com texto preenchido e aviso de [colchetes], PDF dompdf com
   identidade da clínica, paciente/tutor, assinatura com CRMV e código de verificação, disco privado + SHA-256,
   anulação, Meu perfil (CRMV), auditoria de leitura/download (ADR-014).
@@ -134,8 +134,8 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 
 ## Próxima ação exata
 
-1. Proprietário: publicar `docs/changes/2026-10-17-documentos-pdf.html` › seção 7 (1 migração; conferir `dom` e
-   `private_storage_writable` no diagnóstico; cadastrar CRMV em Meu perfil; incluir PDFs no backup).
+1. Tudo publicado até `7cf93a2`. Sessão encerrada pelo proprietário em 17/10/2026. Pendências dele: HTTPS do
+   domínio (bloqueia dados reais) e rotina de backup do banco + `storage/app/private/documents`.
 2. Próximo incremento: **anexos privados no prontuário** — upload (PDF, JPG/PNG/WebP, DOCX) com validação de tipo
    real (MIME por conteúdo), tamanho e nome, armazenamento em `storage/app/private/attachments/{clínica}`, vínculo a
    paciente/atendimento, download autorizado e auditado, sem execução nem pré-visualização insegura; testes A/B.
