@@ -13,7 +13,7 @@ test('recepção cadastra paciente exótico com responsável novo, busca e vincu
   await page.goto('pacientes/novo');
   await page.getByLabel('Nome do paciente').fill(petName);
   await page.getByRole('combobox', { name: 'Espécie', exact: true }).selectOption('bird');
-  await page.getByLabel('Qual espécie / tipo (opcional)').fill('Calopsita');
+  await page.getByLabel('Qual espécie / tipo ').fill('Calopsita');
   await page.getByLabel('Sexo').selectOption('female');
   await page.getByLabel('ou idade: anos').fill('2');
   await page.getByLabel('Nome completo').fill(tutorName);
@@ -52,4 +52,40 @@ test('clínica B não vê pacientes da clínica A na interface', async ({ page }
   await expect(page.getByText('Thor', { exact: true })).toHaveCount(0);
   const res = await page.goto('pacientes/01K7FV0000000000000PTA0001'); // Thor, clínica A
   expect(res?.status()).toBe(404);
+});
+
+test('data de nascimento preenche a idade e CEP preenche o endereço', async ({ page }) => {
+  const errors = trackConsoleErrors(page);
+  await loginInto(page, USERS.carla);
+  await page.goto('pacientes/novo');
+  const birth = new Date();
+  birth.setFullYear(birth.getFullYear() - 3);
+  birth.setMonth(birth.getMonth() - 2);
+  // Data no fuso LOCAL (o navegador calcula a idade no fuso local; toISOString usaria UTC).
+  const pad = (n: number) => String(n).padStart(2, '0');
+  await page
+    .getByLabel('Data de nascimento')
+    .fill(`${birth.getFullYear()}-${pad(birth.getMonth() + 1)}-${pad(birth.getDate())}`);
+  await expect(page.getByLabel('ou idade: anos')).toHaveValue('3');
+  await expect(page.getByLabel('meses', { exact: true })).toHaveValue('2');
+  // Digitar a idade limpa a data (vira estimada no servidor).
+  await page.getByLabel('ou idade: anos').fill('5');
+  await expect(page.getByLabel('Data de nascimento')).toHaveValue('');
+
+  // CEP: a resposta do FauvoVet (/cep/…) é simulada aqui; o servidor real consultaria o ViaCEP.
+  await page.route('**/cep/01001000', (route) =>
+    route.fulfill({
+      json: { postal_code: '01001000', street: 'Praça da Sé', district: 'Sé', city: 'São Paulo', state: 'SP' },
+    }),
+  );
+  await page.goto('responsaveis/novo');
+  await page.getByLabel('CEP').fill('01001000');
+  await expect(page.getByLabel('Rua / logradouro')).toHaveValue('Praça da Sé');
+  await expect(page.getByLabel('Bairro')).toHaveValue('Sé');
+  await expect(page.getByLabel('Cidade')).toHaveValue('São Paulo');
+  await expect(page.getByRole('combobox', { name: 'UF' })).toHaveValue('SP');
+  await expect(page.getByText('Endereço encontrado. Informe o número.')).toBeVisible();
+  await expect(page.getByLabel('Número')).toBeFocused();
+  await expect(page.getByLabel('CEP')).toHaveValue('01001-000');
+  expect(errors).toEqual([]);
 });

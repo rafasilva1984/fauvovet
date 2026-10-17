@@ -14,7 +14,7 @@
             @if ($required) required @endif
             @if ($error) aria-invalid="true" @endif
             @if ($describedBy) aria-describedby="{{ $describedBy }}" @endif
-            {{ $attributes->except(['class', 'id'])->merge(['class' => 'min-h-11 w-full rounded-xl border bg-surface px-3.5 text-base text-ink shadow-[0_1px_2px_rgb(13_27_33/4%)] placeholder:text-muted/80 transition hover:border-brand/40 focus:border-brand focus:outline-none focus:ring-4 focus:ring-ring/25 '.($error ? 'border-danger' : 'border-line').(isset($trailing) ? ' pr-12' : '')]) }} />
+            {{ $attributes->except(['class', 'id'])->merge(['class' => ($type === 'color' ? 'h-11 cursor-pointer p-1 ' : '').'min-h-11 w-full rounded-xl border bg-surface px-3.5 text-base text-ink shadow-[0_1px_2px_rgb(13_27_33/4%)] placeholder:text-muted/80 transition hover:border-brand/40 focus:border-brand focus:outline-none focus:ring-4 focus:ring-ring/25 '.($error ? 'border-danger' : 'border-line').(isset($trailing) ? ' pr-12' : '')]) }} />
         @isset($trailing)
             <div class="absolute inset-y-0 right-1 flex items-center">{{ $trailing }}</div>
         @endisset

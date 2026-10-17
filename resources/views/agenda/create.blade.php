@@ -78,7 +78,7 @@
                             <input type="checkbox" name="is_walk_in" value="1" class="size-4" @checked(old('is_walk_in', $editing && $appointment->is_walk_in))>
                             <span><strong>Encaixe</strong> — permite marcar mesmo se o profissional já tiver alguém nesse horário.</span>
                         </label>
-                        <x-textarea name="notes" label="Observação para a recepção (opcional)" :value="$editing ? $appointment->notes : null" hint="Ex.: trazer exames anteriores. Não registre informações clínicas aqui." rows="2" class="sm:col-span-2" />
+                        <x-textarea name="notes" label="Observação para a recepção" :value="$editing ? $appointment->notes : null" hint="Ex.: trazer exames anteriores. Não registre informações clínicas aqui." rows="2" class="sm:col-span-2" />
                     </div>
                 </x-card>
 

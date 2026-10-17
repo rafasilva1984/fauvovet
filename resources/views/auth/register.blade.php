@@ -27,12 +27,12 @@
         <div class="grid gap-4 sm:grid-cols-2">
             <x-field name="trade_name" label="Nome da clínica ou nome profissional" required class="sm:col-span-2" />
             <div x-show="isPj" class="sm:col-span-1"><x-field name="legal_name" label="Razão social" /></div>
-            <x-field name="document" label="CPF ou CNPJ (opcional)" inputmode="numeric" hint="CPF para autônomo; CNPJ para clínica. Validamos só os dígitos verificadores." />
+            <x-field name="document" label="CPF ou CNPJ" inputmode="numeric" hint="CPF para autônomo; CNPJ para clínica. Validamos só os dígitos verificadores." />
         </div>
 
         <div class="grid gap-4 sm:grid-cols-2">
             <x-field name="owner_name" label="Seu nome" autocomplete="name" required />
-            <x-field name="owner_crmv" label="CRMV (opcional)" hint="Ex.: CRMV-SP 00000" />
+            <x-field name="owner_crmv" label="CRMV" hint="Ex.: CRMV-SP 00000" />
             <x-field name="email" label="E-mail de acesso" type="email" autocomplete="email" inputmode="email" required class="sm:col-span-2" />
             <x-field name="password" label="Senha" type="password" autocomplete="new-password" required hint="Mínimo de 12 caracteres." />
             <x-field name="password_confirmation" label="Confirme a senha" type="password" autocomplete="new-password" required />

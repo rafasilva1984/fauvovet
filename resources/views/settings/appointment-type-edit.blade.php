@@ -9,7 +9,7 @@
             @method('PUT')
             <x-field name="name" label="Nome" :value="$type->name" required />
             <x-field name="duration_minutes" label="Duração (minutos)" type="number" min="5" max="480" step="5" :value="$type->duration_minutes" required />
-            <x-field name="color" label="Cor (#RRGGBB)" :value="$type->color" maxlength="7" required hint="Cor escura o bastante para aparecer sobre o branco (contraste mínimo 3:1)." />
+            <x-field name="color" label="Cor na agenda" type="color" :value="$type->color" required class="max-w-40" hint="Escolha uma cor escura o bastante para aparecer sobre o branco." />
             <label class="flex min-h-11 items-center gap-2 text-sm">
                 <input type="hidden" name="active" value="0">
                 <input type="checkbox" name="active" value="1" class="size-4" @checked(old('active', $type->active))>

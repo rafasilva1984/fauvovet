@@ -42,6 +42,80 @@ Alpine.data('copyLink', () => ({
   },
 }));
 
+/**
+ * Nascimento ↔ idade: ao escolher a data, preenche anos/meses; ao digitar a idade, limpa a data (o servidor
+ * calcula uma data estimada). O servidor recalcula tudo — aqui é só conveniência.
+ */
+Alpine.data('birthAge', () => ({
+  init() {
+    this.fromBirth();
+  },
+  fromBirth() {
+    const value = this.$refs.birth?.value;
+    if (!value) return;
+    const birth = new Date(`${value}T00:00:00`);
+    const now = new Date();
+    if (Number.isNaN(birth.getTime()) || birth > now) return;
+    let months = (now.getFullYear() - birth.getFullYear()) * 12 + (now.getMonth() - birth.getMonth());
+    if (now.getDate() < birth.getDate()) months -= 1;
+    this.$refs.years.value = String(Math.floor(months / 12));
+    this.$refs.months.value = String(months % 12);
+  },
+  fromAge() {
+    if (this.$refs.birth.value) this.$refs.birth.value = '';
+  },
+}));
+
+/**
+ * CEP → endereço. Consulta o próprio FauvoVet (/cep/{cep}), que pergunta ao ViaCEP: a CSP do navegador continua
+ * bloqueando conexões externas. Só preenche campos vazios ou ainda não editados; depois foca o "Número".
+ */
+Alpine.data('cepLookup', () => ({
+  status: '',
+  statusClass: 'text-muted',
+  last: '',
+  async lookup() {
+    const digits = (this.$refs.cep.value || '').replace(/\D/g, '');
+    if (digits.length === 8) this.$refs.cep.value = `${digits.slice(0, 5)}-${digits.slice(5)}`;
+    if (digits.length !== 8 || digits === this.last) return;
+    this.last = digits;
+    this.status = 'Buscando endereço…';
+    this.statusClass = 'text-muted';
+    try {
+      const res = await fetch(this.$root.dataset.url.replace('00000000', digits), {
+        headers: { Accept: 'application/json' },
+        credentials: 'same-origin',
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        this.status =
+          res.status === 404
+            ? 'CEP não encontrado. Preencha o endereço manualmente.'
+            : 'Não foi possível consultar o CEP. Preencha manualmente.';
+        this.statusClass = 'text-danger';
+        return;
+      }
+      const set = (ref, value) => {
+        if (ref && value) {
+          ref.value = value;
+          ref.dispatchEvent(new Event('change'));
+        }
+      };
+      set(this.$refs.street, data.street);
+      set(this.$refs.district, data.district);
+      set(this.$refs.city, data.city);
+      set(this.$refs.state, data.state);
+      this.status = data.street ? 'Endereço encontrado. Informe o número.' : 'Cidade encontrada. Complete a rua.';
+      this.statusClass = 'text-success';
+      (data.street ? this.$refs.number : this.$refs.street)?.focus();
+    } catch (e) {
+      this.status =
+        e.message && e.message.length < 90 ? e.message : 'Não foi possível consultar o CEP. Preencha manualmente.';
+      this.statusClass = 'text-danger';
+    }
+  },
+}));
+
 Alpine.data('personType', () => ({
   type: 'PJ',
   init() {

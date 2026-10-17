@@ -42,7 +42,7 @@
                     <p class="min-h-11 rounded-xl border border-line bg-surface-2 px-3.5 py-2.5 text-ink">{{ $invitation->email }}</p>
                 </div>
                 <x-field name="name" label="Seu nome" autocomplete="name" required />
-                <x-field name="crmv" label="CRMV (opcional)" hint="Ex.: CRMV-SP 00000" />
+                <x-field name="crmv" label="CRMV" hint="Ex.: CRMV-SP 00000" />
                 <x-field name="password" label="Crie uma senha" type="password" autocomplete="new-password" required hint="Mínimo de 12 caracteres." />
                 <x-field name="password_confirmation" label="Confirme a senha" type="password" autocomplete="new-password" required />
                 <x-button class="w-full sm:w-auto sm:self-start">Criar conta e entrar na equipe</x-button>

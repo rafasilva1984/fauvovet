@@ -172,7 +172,7 @@ final class PatientRegistryTest extends TestCase
     public function test_responsavel_editado_e_arquivado_sai_da_busca_padrao(): void
     {
         $this->loginInto('carla', Seed::TENANT_A);
-        $this->put('/responsaveis/'.self::RAFAEL, ['name' => 'Rafael Lima (fictício)', 'phone' => '11912345678', 'city' => 'Cidade Fictícia', 'state' => 'sp', 'status' => 'archived'])
+        $this->put('/responsaveis/'.self::RAFAEL, ['name' => 'Rafael Lima (fictício)', 'phone' => '11912345678', 'city' => 'Cidade Fictícia', 'state' => 'SP', 'status' => 'archived'])
             ->assertRedirect('/responsaveis/'.self::RAFAEL)->assertSessionHasNoErrors();
         $this->get('/responsaveis')->assertDontSee('Rafael Lima');
         $this->get('/responsaveis?arquivados=1')->assertSee('Rafael Lima')->assertSee('Arquivado');

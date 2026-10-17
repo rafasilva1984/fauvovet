@@ -34,7 +34,7 @@ final class RbacTest extends TestCase
     public function test_titular_cria_unidade_com_uf_normalizada_e_nome_unico(): void
     {
         $this->loginInto('ana', Seed::TENANT_A);
-        $this->post('/unidades', ['name' => 'Aurora — Norte', 'city' => 'Cidade Fictícia', 'state' => 'sp'])->assertRedirect('/unidades');
+        $this->post('/unidades', ['name' => 'Aurora — Norte', 'city' => 'Cidade Fictícia', 'state' => 'SP'])->assertRedirect('/unidades');
         $this->get('/unidades')->assertSee('Aurora — Norte')->assertSee('SP');
         $this->post('/unidades', ['name' => 'AURORA — NORTE'])->assertSessionHasErrors(['name' => 'Já existe uma unidade com este nome.']);
     }

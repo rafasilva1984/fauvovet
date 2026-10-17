@@ -16,7 +16,7 @@
                             <span aria-hidden="true" class="fv-at-dot-{{ strtolower($t->id) }} size-4 shrink-0 rounded-full"></span>
                             <span class="min-w-0">
                                 <span class="block font-medium">{{ $t->name }}</span>
-                                <span class="block text-sm text-muted">{{ $t->duration_minutes }} min · {{ $t->color }}{{ $t->active ? '' : ' · desativado' }}</span>
+                                <span class="block text-sm text-muted">{{ $t->duration_minutes }} min{{ $t->active ? '' : ' · desativado' }}</span>
                             </span>
                         </span>
                         <a href="{{ route('settings.appointment-types.edit', $t) }}" class="inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold text-link underline underline-offset-4">Editar<span class="sr-only"> {{ $t->name }}</span></a>
@@ -31,7 +31,7 @@
                     @csrf
                     <x-field name="name" label="Nome" required />
                     <x-field name="duration_minutes" label="Duração (minutos)" type="number" min="5" max="480" step="5" value="30" required />
-                    <x-field name="color" label="Cor (#RRGGBB)" value="#0e5e66" maxlength="7" required hint="Cor escura o bastante para aparecer sobre o branco (contraste mínimo 3:1)." />
+                    <x-field name="color" label="Cor na agenda" type="color" value="#0e5e66" required class="max-w-40" hint="Escolha uma cor escura o bastante para aparecer sobre o branco." />
                     <x-button>Criar tipo</x-button>
                 </form>
             </x-card>

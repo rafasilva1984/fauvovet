@@ -35,7 +35,7 @@ test('titular cria unidade e personaliza a aparência (Alpine sob CSP estrita)',
   const name = `Aurora — ${testInfo.project.name} ${Date.now() % 100000}`;
   await page.getByRole('textbox', { name: 'Nome', exact: true }).fill(name);
   await page.getByLabel('Cidade').fill('Cidade Fictícia');
-  await page.getByLabel('UF').fill('mg');
+  await page.getByRole('combobox', { name: 'UF' }).selectOption('MG');
   await page.getByRole('button', { name: 'Criar unidade' }).click();
   await expect(page.getByRole('main').getByRole('status')).toContainText('criada');
   await expect(page.getByRole('main').getByText(name, { exact: true })).toBeVisible();
@@ -68,7 +68,7 @@ test('cadastro de nova clínica entra direto no painel do novo ambiente', async 
   await page.goto('cadastro');
   await page.getByText('Profissional autônomo (CPF)').click();
   await page.getByLabel('Nome da clínica ou nome profissional').fill('Dra. Exóticos Fictícia');
-  await page.getByLabel('CPF ou CNPJ (opcional)').fill('529.982.247-25');
+  await page.getByLabel('CPF ou CNPJ ').fill('529.982.247-25');
   await page.getByLabel('Seu nome').fill('Dra. Fictícia');
   await page.getByLabel('E-mail de acesso').fill(`e2e-${testInfo.project.name}-${Date.now()}@exemplo.test`);
   await page.getByRole('textbox', { name: 'Senha', exact: true }).fill('curta');

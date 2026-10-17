@@ -34,9 +34,9 @@
                     <form method="POST" action="{{ route('units.store') }}" class="flex flex-col gap-4" novalidate>
                         @csrf
                         <x-field name="name" label="Nome" required />
-                        <div class="grid grid-cols-[minmax(0,1fr)_5.5rem] gap-3">
+                        <div class="grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] gap-3">
                             <x-field name="city" label="Cidade" />
-                            <x-field name="state" label="UF" maxlength="2" />
+                            <x-select name="state" label="UF" :options="\App\Support\BrazilianStates::options()" placeholder="Selecione" />
                         </div>
                         <x-button>Criar unidade</x-button>
                     </form>

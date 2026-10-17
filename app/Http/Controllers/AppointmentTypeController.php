@@ -60,7 +60,7 @@ final class AppointmentTypeController extends Controller
                     $fail('Cor muito clara: ela quase não aparece na agenda. Use uma cor mais escura (contraste mínimo 3:1 com o branco).');
                 }
             }],
-        ], ['name.unique' => 'Já existe um tipo com este nome.', 'color.regex' => 'Use o formato #RRGGBB.']);
+        ], ['name.unique' => 'Já existe um tipo com este nome.', 'color.regex' => 'Escolha uma cor válida.']);
 
         return ['name' => trim($data['name']), 'duration_minutes' => (int) $data['duration_minutes'], 'color' => strtolower($data['color'])];
     }

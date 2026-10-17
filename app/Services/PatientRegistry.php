@@ -6,6 +6,7 @@ use App\Models\Guardian;
 use App\Models\Patient;
 use App\Support\Audit;
 use App\Support\BrazilianDocument;
+use App\Support\BrazilianStates;
 use App\Support\Species;
 use App\Tenancy\TenantContext;
 use Closure;
@@ -47,8 +48,11 @@ final class PatientRegistry
             $prefix.'phone_alt' => ['nullable', 'string', 'max:25', $this->digitsRule(8, 13, 'Telefone inválido.')],
             $prefix.'postal_code' => ['nullable', 'string', 'max:10', $this->digitsRule(8, 8, 'CEP com 8 dígitos.')],
             $prefix.'address_line' => ['nullable', 'string', 'max:200'],
+            $prefix.'address_number' => ['nullable', 'string', 'max:20'],
+            $prefix.'address_complement' => ['nullable', 'string', 'max:80'],
+            $prefix.'district' => ['nullable', 'string', 'max:80'],
             $prefix.'city' => ['nullable', 'string', 'max:80'],
-            $prefix.'state' => ['nullable', 'string', 'regex:/^[A-Za-z]{2}$/'],
+            $prefix.'state' => ['nullable', 'string', Rule::in(BrazilianStates::codes())],
             $prefix.'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }
@@ -59,7 +63,7 @@ final class PatientRegistry
         return [
             $prefix.'email.required_without' => 'Informe telefone ou e-mail para contato.',
             $prefix.'phone.required_without' => 'Informe telefone ou e-mail para contato.',
-            $prefix.'state.regex' => 'UF deve ter 2 letras.',
+            $prefix.'state.in' => 'Escolha a UF na lista.',
         ];
     }
 
@@ -80,6 +84,9 @@ final class PatientRegistry
             'phone_alt' => $digits('phone_alt'),
             'postal_code' => $digits('postal_code'),
             'address_line' => $data[$prefix.'address_line'] ?? null,
+            'address_number' => $data[$prefix.'address_number'] ?? null,
+            'address_complement' => $data[$prefix.'address_complement'] ?? null,
+            'district' => $data[$prefix.'district'] ?? null,
             'city' => $data[$prefix.'city'] ?? null,
             'state' => isset($data[$prefix.'state']) ? strtoupper((string) $data[$prefix.'state']) : null,
             'notes' => $data[$prefix.'notes'] ?? null,

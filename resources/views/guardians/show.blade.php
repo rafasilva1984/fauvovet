@@ -28,7 +28,12 @@
             <dl class="grid gap-4">
                 @include('guardians._contact', ['guardian' => $guardian])
                 <div><dt class="text-sm text-muted">{{ $guardian->person_type === 'PJ' ? 'CNPJ' : 'CPF' }}</dt><dd class="font-medium tabular-nums">{{ $docShown ?? '—' }}</dd></div>
-                <div><dt class="text-sm text-muted">Endereço</dt><dd class="font-medium">{{ collect([$guardian->address_line, collect([$guardian->city, $guardian->state])->filter()->join('/'), $guardian->postal_code ? 'CEP '.$guardian->postal_code : null])->filter()->join(' · ') ?: '—' }}</dd></div>
+                <div><dt class="text-sm text-muted">Endereço</dt><dd class="font-medium">{{ collect([
+                    collect([$guardian->address_line, $guardian->address_number])->filter()->join(', ').($guardian->address_complement ? ' — '.$guardian->address_complement : ''),
+                    $guardian->district,
+                    collect([$guardian->city, $guardian->state])->filter()->join('/'),
+                    $guardian->postal_code ? 'CEP '.substr($guardian->postal_code, 0, 5).'-'.substr($guardian->postal_code, 5) : null,
+                ])->filter()->join(' · ') ?: '—' }}</dd></div>
                 @if ($guardian->notes)
                     <div><dt class="text-sm text-muted">Observações</dt><dd class="whitespace-pre-line">{{ $guardian->notes }}</dd></div>
                 @endif

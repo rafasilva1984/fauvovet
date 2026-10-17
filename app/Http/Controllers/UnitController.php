@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Unit;
 use App\Support\Audit;
+use App\Support\BrazilianStates;
 use App\Tenancy\TenantContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,10 +30,10 @@ final class UnitController extends Controller
             'name' => ['required', 'string', 'min:2', 'max:120',
                 Rule::unique('units', 'name')->where('tenant_id', $context->requireId())],
             'city' => ['nullable', 'string', 'max:80'],
-            'state' => ['nullable', 'string', 'regex:/^[A-Za-z]{2}$/'],
+            'state' => ['nullable', 'string', Rule::in(BrazilianStates::codes())],
             'address_line' => ['nullable', 'string', 'max:200'],
             'timezone' => ['nullable', 'timezone:all'],
-        ], ['name.unique' => 'Já existe uma unidade com este nome.', 'state.regex' => 'UF deve ter 2 letras.']);
+        ], ['name.unique' => 'Já existe uma unidade com este nome.', 'state.in' => 'Escolha a UF na lista.']);
 
         // Somente campos permitidos (tenant_id do formulário é ignorado; vem da sessão).
         $unit = Unit::create([

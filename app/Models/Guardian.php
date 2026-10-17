@@ -22,6 +22,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property string|null $phone_alt
  * @property string|null $postal_code
  * @property string|null $address_line
+ * @property string|null $address_number
+ * @property string|null $address_complement
+ * @property string|null $district
  * @property string|null $city
  * @property string|null $state
  * @property string|null $notes
@@ -32,7 +35,7 @@ class Guardian extends Model implements TenantOwned
 {
     use BelongsToTenant, HasUlids;
 
-    protected $fillable = ['name', 'person_type', 'document_number', 'email', 'phone', 'phone_alt', 'postal_code', 'address_line', 'city', 'state', 'notes', 'status', 'created_by'];
+    protected $fillable = ['name', 'person_type', 'document_number', 'email', 'phone', 'phone_alt', 'postal_code', 'address_line', 'address_number', 'address_complement', 'district', 'city', 'state', 'notes', 'status', 'created_by'];
 
     /** @return BelongsToMany<Patient, $this> */
     public function patients(): BelongsToMany

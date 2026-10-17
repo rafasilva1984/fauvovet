@@ -10,6 +10,7 @@ use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\PatientController;
+use App\Http\Controllers\PostalCodeController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UnitController;
 use Illuminate\Support\Facades\Route;
@@ -33,6 +34,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/sair', [LoginController::class, 'destroy'])->name('logout');
     Route::get('/contexto', [ContextController::class, 'show'])->name('context.show');
     Route::post('/contexto', [ContextController::class, 'store'])->name('context.store');
+    Route::get('/cep/{cep}', PostalCodeController::class)->where('cep', '[0-9]{8}')->middleware('throttle:cep')->name('cep');
 
     // Tudo abaixo exige clínica ativa (validada a cada requisição) e permissão do papel.
     Route::middleware('tenant')->group(function () {
