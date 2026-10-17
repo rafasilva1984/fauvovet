@@ -178,3 +178,27 @@ modelo de outro projeto dele já operado na Locaweb (Laravel + Vite, Node só pa
 - **Assinatura:** eletrônica simples (profissional autenticado + CRMV + data + código de verificação). Assinatura
   digital ICP-Brasil e receita de controle especial ficam para provedor especializado e validação jurídica (§4.4).
 - **Custo medido:** ~58 ms por PDF (local), ~23 KB por receita.
+
+## ADR-015 — Casos científicos: referência ao prontuário, pseudônimo e consentimento (2026-10-18)
+
+- **Contexto:** o proprietário pediu que o sistema tenha "um viés para criar, ao longo do tempo, casos científicos"
+  com os casos já tratados. Isso envolve uso secundário de dados clínicos e pessoais (LGPD; ética em pesquisa).
+- **Decisão:**
+  - **Série de casos** nasce da busca avançada: os critérios ficam gravados, para reproduzir a seleção. **Relato de
+    caso** nasce de um atendimento finalizado.
+  - O caso **referencia** o prontuário (paciente + atendimento de referência) e **não copia** texto clínico. O texto
+    científico (pergunta, resumo, desfecho, observações) é escrito pela equipe.
+  - Na **exportação** (CSV/PDF), cada paciente vira "Caso NN", as datas viram mês/ano e a idade é a da referência.
+    Nunca saem nome, responsável, documento, microchip, IDs ou texto livre do prontuário.
+  - Os textos da equipe passam por **redação automática**: e-mails, sequências longas de números e nomes conhecidos
+    de pacientes e responsáveis do caso são omitidos. É uma rede de segurança, não substitui a revisão humana.
+  - O consentimento do tutor é registrado **por caso**: só "Autorizado" entra na exportação, e o rodapé informa
+    quantos casos ficaram de fora.
+  - Permissão `research:manage` (veterinário e titular). Criação, visualização, consentimento e exportação são
+    auditados.
+- **Riscos e limites:**
+  - A anonimização reduz o risco de reidentificação, mas não o elimina: raça rara, espécie exótica ou série pequena
+    podem identificar o animal.
+  - O rodapé do PDF pede revisão e aprovação ética (ex.: CEUA, quando aplicável) antes de publicar.
+  - O termo de consentimento propriamente dito (texto, assinatura) fica para um modelo de documento da clínica;
+    aqui só se registra a situação e a data.

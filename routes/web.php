@@ -6,6 +6,7 @@ use App\Http\Controllers\AppointmentTypeController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\Auth\ContextController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\ClinicalCaseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\DocumentTemplateController;
@@ -127,6 +128,18 @@ Route::middleware('auth')->group(function () {
             Route::post('/configuracoes/vacinas', [VaccineController::class, 'store'])->name('vaccines.store');
             Route::get('/configuracoes/vacinas/{vaccine}/editar', [VaccineController::class, 'edit'])->name('vaccines.edit');
             Route::put('/configuracoes/vacinas/{vaccine}', [VaccineController::class, 'update'])->name('vaccines.update');
+        });
+
+        // Casos científicos (séries e relatos a partir dos atendimentos): veterinário e titular.
+        Route::middleware('permission:research:manage')->group(function () {
+            Route::get('/casos', [ClinicalCaseController::class, 'index'])->name('cases.index');
+            Route::get('/casos/novo', [ClinicalCaseController::class, 'create'])->name('cases.create');
+            Route::post('/casos', [ClinicalCaseController::class, 'store'])->name('cases.store');
+            Route::get('/casos/{case}', [ClinicalCaseController::class, 'show'])->name('cases.show');
+            Route::put('/casos/{case}', [ClinicalCaseController::class, 'update'])->name('cases.update');
+            Route::put('/casos/{case}/pacientes/{entry}', [ClinicalCaseController::class, 'updateEntry'])->name('cases.entries.update');
+            Route::post('/casos/{case}/pacientes/{entry}/remover', [ClinicalCaseController::class, 'removeEntry'])->name('cases.entries.remove');
+            Route::get('/casos/{case}/exportar.{format}', [ClinicalCaseController::class, 'export'])->whereIn('format', ['csv', 'pdf'])->name('cases.export');
         });
 
         // Prontuário: leitura clínica; escrita clínica; assinatura (finalizar) verificada no serviço (clinical:sign).

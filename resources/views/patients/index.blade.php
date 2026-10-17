@@ -6,16 +6,7 @@
         $clinical = $fvCan('clinical:read');
         $dxTone = ['confirmed' => 'danger', 'suspected' => 'warning', 'ruled_out' => 'neutral'];
         $ages = ['' => 'Qualquer'] + collect(range(0, 30))->mapWithKeys(fn ($n) => [$n => $n.' '.($n === 1 ? 'ano' : 'anos')])->all();
-        $chips = array_filter([
-            'raca' => $f['raca'] !== '' ? 'Raça: '.$f['raca'] : null,
-            'sexo' => $f['sexo'] !== '' ? \App\Models\Patient::SEX[$f['sexo']] : null,
-            'castrado' => $f['castrado'] !== '' ? \App\Models\Patient::NEUTERED[$f['castrado']] : null,
-            'idade' => $f['idade_min'] !== null || $f['idade_max'] !== null
-                ? 'Idade: '.($f['idade_min'] ?? 0).($f['idade_max'] !== null ? ' a '.$f['idade_max'] : ' ou mais').' anos' : null,
-            'diagnostico' => $f['diagnostico'] !== '' ? 'Diagnóstico: '.$f['diagnostico'] : null,
-            'situacao' => $f['situacao'] !== '' ? \App\Services\PatientSearch::DX_STATUS[$f['situacao']] : null,
-            'ano' => $f['ano'] !== null ? 'Atendido em '.$f['ano'] : null,
-        ]);
+        $chips = \App\Services\PatientSearch::describe(array_merge($f, ['q' => '', 'especie' => '', 'todos' => false]));
     @endphp
     <x-page-header title="Pacientes" icon="paw" eyebrow="Cadastro" description="Animais atendidos por esta clínica, de todas as espécies.">
         @if ($fvCan('patients:write'))
@@ -77,6 +68,9 @@
             @foreach ($chips as $chip)
                 <x-badge tone="tint">{{ $chip }}</x-badge>
             @endforeach
+            @if ($fvCan('research:manage') && ($advanced || $q !== '' || $species !== ''))
+                <a href="{{ route('cases.create', request()->query()) }}" class="ml-auto inline-flex min-h-11 items-center gap-2 rounded-xl border border-line bg-surface px-3.5 text-sm font-semibold shadow-card hover:bg-tint"><x-icon name="flask" :size="18" /> Criar série de casos</a>
+            @endif
         </div>
         <ul class="grid grid-cols-1 gap-3 xl:grid-cols-2">
             @foreach ($patients as $pt)

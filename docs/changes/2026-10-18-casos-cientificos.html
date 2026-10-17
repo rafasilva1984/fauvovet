@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FauvoVet — Casos científicos</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #1a2935; background: #f4f7f8; line-height: 1.65; font-size: 17px; }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 16px 80px; }
+    header { border-radius: 20px; padding: 32px; color: white; background: linear-gradient(120deg, #0b4652, #1a7375); }
+    header p { color: #e1f5f0; margin-bottom: 0; }
+    h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.2; margin: 0; }
+    h2 { font-size: 1.3rem; margin: 0 0 12px; }
+    h3 { font-size: 1.12rem; margin: 28px 0 8px; padding-top: 16px; border-top: 1px dashed #c9d6d8; }
+    h4 { font-size: 1rem; margin: 18px 0 6px; }
+    section { margin-top: 20px; background: #fff; padding: 24px; border: 1px solid #dee7e8; border-radius: 14px; }
+    p, li { overflow-wrap: anywhere; }
+    code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { background: #eaf1f2; padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+    pre code { background: none; padding: 0; }
+    kbd { border: 1px solid #b8c6c9; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: #fff; font-size: 0.9em; }
+    pre { overflow-x: auto; border-radius: 8px; padding: 14px; color: #e9fbff; background: #172b32; font-size: 0.9rem; line-height: 1.5; }
+    .tag { display: inline-block; font-size: 0.8rem; font-weight: 700; border: 1px solid #f5cf83; background: #fff8e4; color: #7a4b12; border-radius: 30px; padding: 3px 10px; }
+    .where { display: inline-block; font-size: 0.78rem; font-weight: 700; border-radius: 30px; padding: 2px 10px; margin-right: 6px; vertical-align: middle; }
+    .w-term { background: #1f3b44; color: #d9fbff; }
+    .w-web { background: #e1effd; color: #0f3e72; }
+    .w-fz { background: #fde8e1; color: #7a2a0f; }
+    .w-np { background: #ece5fb; color: #42237a; }
+    .w-panel { background: #e2f6e8; color: #145c2e; }
+    .note { border-left: 4px solid #338b96; background: #eef7f8; padding: 10px 12px; border-radius: 6px; }
+    .warn { border-left: 4px solid #c27c0e; background: #fff8e4; padding: 10px 12px; border-radius: 6px; }
+    .stop { border-left: 4px solid #b3261e; background: #fdecea; padding: 10px 12px; border-radius: 6px; }
+    .ok { border-left: 4px solid #1d7a45; background: #e8f6ee; padding: 10px 12px; border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid #e0e7e8; text-align: left; vertical-align: top; }
+    small { color: #52646d; }
+    .pass { color: #116b3a; font-weight: 700; }
+    .notrun { color: #8a5a00; font-weight: 700; }
+    ol.steps > li { margin-bottom: 12px; }
+    .map { font-size: 0.85rem; }
+    .shots { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .shots figure { margin: 0; }
+    .shots img { width: 100%; height: auto; border-radius: 12px; border: 1px solid #dee7e8; display: block; }
+    .shots figcaption { font-size: 0.85rem; color: #52646d; margin-top: 4px; }
+    .shots .tall img { max-height: 520px; object-fit: cover; object-position: top; }
+    nav ol { columns: 2; column-gap: 32px; }
+    @media (max-width: 640px) { nav ol { columns: 1; } body { font-size: 16px; } section { padding: 18px; } header { padding: 22px; } }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e4eef0; background: #0f1a1e; }
+      section { background: #15242a; border-color: #23373e; }
+      th, td { border-color: #23373e; }
+      code { background: #213840; }
+      kbd { background: #1d3138; border-color: #3b5760; }
+      .warn { background: #2a2210; } .note { background: #12303a; } .stop { background: #3a1614; } .ok { background: #12301f; }
+      small { color: #9fb3ba; }
+      h3 { border-color: #2c454c; }
+      .pass { color: #5fd28f; } .notrun { color: #f0b54a; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="tag">INCREMENTO IMPLEMENTADO — CASOS CIENTÍFICOS</span>
+      <h1>Casos científicos: séries e relatos a partir dos casos tratados pela clínica</h1>
+      <p>ID: <strong>2026-10-18-casos-cientificos</strong> · Data: <strong>18/10/2026</strong> · Versão: <strong>0.11.0</strong> · Módulo: <strong>Diferencial FauvoVet (ADR-015)</strong> · Estado: <strong>implementado e testado localmente; publicação a cargo do proprietário (seção 7)</strong></p>
+    </header>
+
+    <section>
+      <h2>1. Objetivo</h2>
+      <p>Aproveitar o histórico da clínica para produzir ciência:</p>
+      <ul>
+        <li>agrupar casos já tratados (ex.: "dermatite atópica confirmada em cães") numa <strong>série de casos</strong>, ou transformar um atendimento interessante num <strong>relato de caso</strong>;</li>
+        <li>registrar a pergunta clínica, o desfecho de cada caso e o consentimento do tutor;</li>
+        <li>exportar tudo <strong>anonimizado</strong>, pronto para análise e publicação.</li>
+      </ul>
+      <p>O sistema não interpreta nem conclui nada sozinho: o texto científico é sempre da equipe.</p>
+      <div class="shots">
+        <figure><img src="img/2026-10-18-casos-serie.jpg" alt="Série de casos com estatísticas, caso 01 com desfecho e consentimento, e painel do estudo (dados fictícios)" loading="lazy"><figcaption>Série de casos (desktop)</figcaption></figure>
+        <figure><img src="img/2026-10-18-casos-novo.jpg" alt="Criação de série de casos com os critérios da busca (dados fictícios)" loading="lazy"><figcaption>Criar série a partir da busca</figcaption></figure>
+        <figure><img src="img/2026-10-18-casos-celular.jpg" alt="Série de casos no celular (dados fictícios)" loading="lazy"><figcaption>Celular</figcaption></figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>2. O que mudou</h2>
+      <ul>
+        <li><strong>Pacientes → filtros → Criar série de casos:</strong>
+          <ul>
+            <li>os pacientes que atendem aos filtros entram como "Caso 01, 02…" (até 200);</li>
+            <li>para cada um, o sistema guarda o <strong>atendimento de referência</strong>: o atendimento finalizado mais recente com o diagnóstico procurado;</li>
+            <li>os critérios ficam gravados;</li>
+            <li>uma série sem nenhum filtro (clínica inteira) ou sem pacientes é recusada.</li>
+          </ul>
+        </li>
+        <li><strong>Atendimento finalizado → Criar relato de caso:</strong> o paciente desse atendimento entra como Caso 01. Rascunho não vira caso.</li>
+        <li><strong>Menu → Casos científicos</strong>, com lista e detalhe de cada série ou relato:
+          <ul>
+            <li><strong>estatísticas agregadas:</strong> número de casos, consentimentos, idade mediana (mín–máx) na referência, distribuição por espécie, sexo e desfecho;</li>
+            <li><strong>por caso:</strong> desfecho (resolvido, melhora, estável, piora, óbito, perda de seguimento), consentimento do tutor (pendente, autorizado ou recusado, com data) e observações;</li>
+            <li><strong>estudo:</strong> título, pergunta clínica, resumo e discussão, área, situação (encerrado = somente leitura);</li>
+            <li><strong>remover um caso da série</strong> não altera o prontuário.</li>
+          </ul>
+        </li>
+        <li><strong>Exportação anonimizada</strong> (<em>Planilha (CSV)</em> e <em>PDF anonimizado</em>):
+          <ul>
+            <li>cada caso traz espécie, raça, sexo, castração, idade na referência, <strong>mês/ano</strong>, peso, diagnósticos do atendimento de referência com a situação, desfecho e observações;</li>
+            <li><strong>nunca saem:</strong> nome do animal, responsável, telefone, documento, microchip, identificadores internos, datas exatas e texto livre do prontuário;</li>
+            <li>só entram casos com consentimento <strong>Autorizado</strong>, e o rodapé informa quantos ficaram de fora;</li>
+            <li>nas observações e no resumo, e-mails, números longos (telefone, CPF, microchip, datas) e nomes de pacientes e responsáveis do caso viram "[… omitido]";</li>
+            <li>a planilha neutraliza células que começam com <code>=</code>, <code>+</code>, <code>-</code> ou <code>@</code> (proteção contra fórmula maliciosa).</li>
+          </ul>
+        </li>
+        <li><strong>Quem pode:</strong>
+          <ul>
+            <li>veterinário e titular (<code>research:manage</code>);</li>
+            <li>recepção, financeiro e gestão não acessam;</li>
+            <li>criação, visualização, consentimento e exportação ficam na auditoria.</li>
+          </ul>
+        </li>
+        <li><strong>Arquivos:</strong>
+          <ul>
+            <li>migração <code>2026_10_18_000003_create_clinical_case_tables</code>;</li>
+            <li>modelos <code>ClinicalCase</code> e <code>ClinicalCasePatient</code>;</li>
+            <li><code>app/Services/ClinicalCaseService.php</code>, <code>ClinicalCaseController</code>, views <code>resources/views/cases/*</code> e ícone <code>flask</code>;</li>
+            <li><code>PatientSearch::describe()</code> e <code>referenceEncounters()</code>;</li>
+            <li><code>x-textarea</code> passou a marcar campo obrigatório com <code>*</code>;</li>
+            <li>testes <code>ClinicalCaseTest</code> (8, sendo 2 de isolamento), E2E <code>cases.spec.ts</code> e axe dos casos;</li>
+            <li>ADR-015.</li>
+          </ul>
+        </li>
+      </ul>
+      <p>Dependências novas: nenhuma.</p>
+    </section>
+
+    <section>
+      <h2>3. Pré-requisitos</h2>
+      <p>Os mesmos dos incrementos anteriores. O PDF usa o dompdf já instalado.</p>
+      <p class="warn"><strong>Git Bash/macOS:</strong> NOT RUN.</p>
+    </section>
+
+    <section>
+      <h2>4. Passo a passo (no seu computador)</h2>
+      <ol>
+        <li><code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm db:start</code> → <code>pnpm db:migrate</code> → <code>pnpm db:seed</code></li>
+        <li><code>pnpm dev</code> → entre como <code>bruno.vet@aurora.exemplo.test</code> → <em>Pacientes</em> → <em>Filtros avançados</em> → diagnóstico <code>dermatite</code>, situação <em>Somente confirmado</em> → <em>Aplicar filtros</em> → <em>Criar série de casos</em>.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>5. Como testar</h2>
+<pre><code>pnpm verify --e2e
+pnpm test:tenant-isolation</code></pre>
+      <ol>
+        <li><strong>Como Bruno:</strong>
+          <ul>
+            <li>crie a série descrita no passo 4: aparece "Série de casos criada com 1 caso" e o Thor como <em>Caso 01</em>, com o atendimento de referência confirmado;</li>
+            <li>baixe a <em>Planilha (CSV)</em>: só o cabeçalho, porque o consentimento está pendente;</li>
+            <li>no Caso 01, escolha <em>Melhora</em> e <em>Autorizado</em> e escreva "Thor melhorou, tutora ligou do 11 98765-4321"; salve;</li>
+            <li>baixe o CSV de novo: aparece "Caso 01; Cão; SRD; …; [nome omitido] melhorou, tutora ligou do [número omitido]", sem nome, microchip ou data exata;</li>
+            <li>abra o <em>PDF anonimizado</em>;</li>
+            <li>em <em>Situação</em>, escolha <em>Encerrado</em>: os casos ficam somente leitura.</li>
+          </ul>
+        </li>
+        <li><strong>Relato:</strong> abra um atendimento finalizado do Thor → <em>Criar relato de caso</em>.</li>
+        <li><strong>Como Carla</strong> (recepção): o menu não mostra <em>Casos científicos</em> e <code>/casos</code> responde 403.</li>
+        <li><strong>Como Diana</strong> (clínica B): o endereço de um caso da clínica A responde 404, e uma série com <code>dermatite</code> é recusada (nenhum paciente na B).</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>6. Performance e usabilidade</h2>
+      <ul>
+        <li><strong>Criar série:</strong> 1 consulta para os pacientes (até 200), 1 para os atendimentos de referência e inserções numa transação.</li>
+        <li><strong>Tela do caso:</strong> estatísticas calculadas em memória sobre os casos já carregados (sem consultas extras por caso).</li>
+        <li><strong>Exportação:</strong> 2 consultas.</li>
+        <li><strong>Volume:</strong> NOT RUN; o limite de 200 casos por série mantém a tela e o PDF leves.</li>
+        <li><strong>Tela:</strong>
+          <ul>
+            <li>no celular, as estatísticas vêm primeiro, depois o estudo e os casos;</li>
+            <li>cada caso tem o próprio formulário, para salvar sem perder os outros;</li>
+            <li>axe sem violações (lista, criação e detalhe) e nada passa da borda no celular.</li>
+          </ul>
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>7. Implantação na Locaweb (1 migração; 2 se a vacinação ainda não foi publicada)</h2>
+      <ol>
+        <li><strong>Terminal:</strong> <code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm db:start</code> → <code>pnpm verify --e2e</code> → <code>pnpm deploy:package</code> → <code>pnpm deploy:copiar</code></li>
+        <li><strong>Painel Locaweb:</strong> backup do banco.</li>
+        <li><strong>Terminal:</strong> <code>pnpm deploy:token</code>.</li>
+        <li><strong>FileZilla:</strong> <code>.env</code> com <code>DEPLOY_TOOLS_ENABLED=true</code> + token novo → enviar → apagar <code>bootstrap/cache/config.php</code> (se existir).</li>
+        <li><strong>FileZilla:</strong> <code>app-fauvovet</code> (tudo exceto <code>storage</code>) e <code>public_html/fauvovet</code>, com <em>Sobrescrever</em>.</li>
+        <li><strong>Terminal:</strong> <code>diagnostico</code> (<code>pending_migrations: 1</code>, ou <code>2</code> com a vacinação) → <code>migrar</code> → <code>otimizar</code>.</li>
+        <li><strong>FileZilla:</strong> <code>DEPLOY_TOOLS_ENABLED=false</code> → enviar → apagar <code>bootstrap/cache/config.php</code>.</li>
+        <li><strong>Terminal:</strong> <code>SMOKE_URL=https://dradeboragaldino.com.br/fauvovet pnpm smoke</code> (5 PASS).</li>
+        <li><strong>Se a vacinação também entrou:</strong> abra <em>Configurações → Catálogo de vacinas</em> e revise os protocolos.</li>
+      </ol>
+      <p class="stop">Sem HTTPS válido, só dados fictícios. Antes de usar casos reais em publicação, colete o termo de consentimento do tutor e confira as exigências éticas aplicáveis.</p>
+    </section>
+
+    <section>
+      <h2>8. Rollback</h2>
+      <ul>
+        <li><strong>Código:</strong> reenvie o pacote anterior em <code>.deploy/</code> e rode o <em>otimizar</em>. As tabelas novas ficam sem uso e não afetam o resto.</li>
+        <li><strong>Banco:</strong> restaure o backup do passo 2 (os casos criados depois somem; o prontuário não é afetado).</li>
+        <li><strong>Local:</strong> <code>git revert</code> e <code>migrate:rollback --step=1</code> (só desenvolvimento).</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>9. Troubleshooting</h2>
+      <table>
+        <tr><th>Sintoma</th><th>Causa e solução</th></tr>
+        <tr><td>Botão "Criar série de casos" não aparece</td><td>Aplique ao menos um filtro, ou a busca/espécie. O botão só aparece para veterinário e titular.</td></tr>
+        <tr><td>"Nenhum paciente atende a estes filtros"</td><td>Lembre que só atendimentos finalizados contam; ajuste os filtros.</td></tr>
+        <tr><td>CSV só com cabeçalho</td><td>Nenhum caso com consentimento <em>Autorizado</em>; registre o consentimento em cada caso.</td></tr>
+        <tr><td>"[nome omitido]" num termo clínico</td><td>Uma palavra coincide com o nome de um paciente ou responsável do caso. A omissão é de propósito (segurança); reescreva a frase.</td></tr>
+        <tr><td>"Caso encerrado: reabra para alterar"</td><td>Mude a situação do estudo para <em>Em andamento</em>.</td></tr>
+        <tr><td>Planilha com acentos estranhos</td><td>Abra pelo Excel com "Dados → De texto/CSV", em UTF-8, com separador ponto e vírgula.</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>10. Evidências e status</h2>
+      <table>
+        <tr><th>Verificação</th><th>Status</th><th>Detalhe</th></tr>
+        <tr><td><code>pnpm verify --e2e</code></td><td class="pass">PASS</td><td>9/9 etapas</td></tr>
+        <tr><td>PHPUnit</td><td class="pass">PASS</td><td>164 testes (8 novos de casos)</td></tr>
+        <tr><td>Isolamento</td><td class="pass">PASS</td><td>40 testes (2 novos: rotas A/B e FK composta)</td></tr>
+        <tr><td>E2E + axe + borda no celular</td><td class="pass">PASS</td><td>série → consentimento → CSV anonimizado; axe em lista, criação e detalhe</td></tr>
+        <tr><td>Revisão jurídica/ética (LGPD, consentimento, CEUA)</td><td class="notrun">NOT RUN</td><td>Necessária antes de publicar estudos com dados reais</td></tr>
+        <tr><td>Incluir pacientes numa série já criada; testes estatísticos</td><td class="notrun">NOT RUN</td><td>Registrados em <code>docs/IDEAS.md</code></td></tr>
+      </table>
+      <p><strong>Commit:</strong> registrado no <code>docs/PROGRESS.md</code> após a sincronização.</p>
+      <p><strong>Próximo passo sugerido:</strong> publicar vacinação, busca e casos; depois, busca em texto livre do prontuário e anexos (Fase 2).</p>
+    </section>
+  </main>
+</body>
+</html>

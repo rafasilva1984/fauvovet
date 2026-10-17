@@ -191,3 +191,16 @@ test('Web Vitals de laboratório (LCP/CLS) e peso de JS/CSS', async ({ page }, t
   expect(loginVitals.cls).toBeLessThan(0.1);
   expect(painelVitals.cls).toBeLessThan(0.1);
 });
+
+test('acessibilidade WCAG AA (axe): casos científicos', async ({ page }) => {
+  await loginInto(page, USERS.ana);
+  await page.goto('casos');
+  await axe(page);
+  await page.goto('casos/novo?especie=canine');
+  await axe(page);
+  await page.getByRole('textbox', { name: 'Título' }).fill('Cães atendidos (a11y)');
+  await page.getByRole('textbox', { name: 'Pergunta clínica ou objetivo' }).fill('Perfil dos pacientes.');
+  await page.getByRole('button', { name: /Criar série com/ }).click();
+  await expect(page.getByRole('heading', { level: 2, name: 'Casos' })).toBeVisible();
+  await axe(page); // estatísticas, formulários por caso e painel do estudo
+});

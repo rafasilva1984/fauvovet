@@ -19,6 +19,9 @@
             @if ($patient->ageLabel())<x-badge>{{ $patient->ageLabel() }}</x-badge>@endif
         </x-slot:meta>
         <a href="{{ route('patients.show', $patient) }}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 text-sm font-semibold shadow-card transition hover:border-brand/40 hover:bg-tint"><x-icon name="paw" :size="18" /> Ficha do paciente</a>
+        @if (! $encounter->isDraft() && $fvCan('research:manage'))
+            <a href="{{ route('cases.create', ['atendimento' => $encounter->id]) }}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 text-sm font-semibold shadow-card transition hover:border-brand/40 hover:bg-tint"><x-icon name="flask" :size="18" /> Criar relato de caso</a>
+        @endif
     </x-profile-header>
 
     @include('patients._alerts-banner', ['alerts' => $alerts])

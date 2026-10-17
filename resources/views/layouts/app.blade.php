@@ -10,6 +10,7 @@
             ['route' => 'vaccinations.index', 'label' => 'Vacinas a vencer', 'icon' => 'syringe', 'perm' => 'vaccines:read'],
         ],
         'Clínica' => [
+            ['route' => 'cases.index', 'label' => 'Casos científicos', 'icon' => 'flask', 'perm' => 'research:manage'],
             ['route' => 'units.index', 'label' => 'Unidades', 'icon' => 'building', 'perm' => 'units:read'],
             ['route' => 'team.index', 'label' => 'Equipe', 'icon' => 'shield', 'perm' => 'members:read'],
         ],

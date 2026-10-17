@@ -89,6 +89,31 @@ final class PatientSearch
     }
 
     /**
+     * Descrição legível dos filtros ativos (etiquetas na tela e critérios gravados de uma série de casos).
+     *
+     * @param  array<string, mixed>  $f
+     * @return list<string>
+     */
+    public static function describe(array $f): array
+    {
+        $min = $f['idade_min'] ?? null;
+        $max = $f['idade_max'] ?? null;
+
+        return array_values(array_filter([
+            ($f['q'] ?? '') !== '' ? 'Busca: '.$f['q'] : null,
+            ($f['especie'] ?? '') !== '' ? Species::label((string) $f['especie']) : null,
+            ($f['raca'] ?? '') !== '' ? 'Raça: '.$f['raca'] : null,
+            ($f['sexo'] ?? '') !== '' ? Patient::SEX[$f['sexo']] ?? null : null,
+            ($f['castrado'] ?? '') !== '' ? Patient::NEUTERED[$f['castrado']] ?? null : null,
+            $min !== null || $max !== null ? 'Idade: '.($min ?? 0).($max !== null ? ' a '.$max : ' ou mais').' anos' : null,
+            ($f['diagnostico'] ?? '') !== '' ? 'Diagnóstico: '.$f['diagnostico'] : null,
+            ($f['situacao'] ?? '') !== '' ? self::DX_STATUS[$f['situacao']] ?? null : null,
+            ($f['ano'] ?? null) !== null ? 'Atendido em '.$f['ano'] : null,
+            ! empty($f['todos']) ? 'Inclui óbitos e arquivados' : null,
+        ]));
+    }
+
+    /**
      * @param  array<string, mixed>  $f
      * @return Builder<Patient>
      */
@@ -147,6 +172,29 @@ final class PatientSearch
         foreach ($out as $id => $rows) {
             usort($rows, fn ($a, $b) => $b['date'] <=> $a['date']);
             $out[$id] = array_slice($rows, 0, 3);
+        }
+
+        return $out;
+    }
+
+    /**
+     * Atendimento de referência de cada paciente (casos científicos): o atendimento finalizado mais recente que atende
+     * aos filtros clínicos (com o diagnóstico procurado, no ano pedido) ou, sem filtro clínico, o mais recente.
+     *
+     * @param  array<string, mixed>  $f
+     * @param  list<string>  $patientIds
+     * @return array<string, string> paciente → atendimento
+     */
+    public function referenceEncounters(array $f, array $patientIds): array
+    {
+        if ($patientIds === []) {
+            return [];
+        }
+        $query = $this->encounters($f)->whereIn('patient_id', $patientIds)
+            ->when(self::hasDiagnosisFilter($f), fn (Builder $q) => $q->whereIn('id', $this->diagnoses($f)->select('encounter_id')));
+        $out = [];
+        foreach ($query->orderBy('started_at')->get(['id', 'patient_id']) as $e) {
+            $out[$e->patient_id] = $e->id; // ordem crescente: o último sobrescreve = mais recente
         }
 
         return $out;

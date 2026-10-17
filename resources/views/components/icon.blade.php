@@ -99,6 +99,9 @@
         @case('syringe')
             <path d="m18 2 4 4M17 7l3-3M19 9 8.5 19.5a2.1 2.1 0 0 1-3 0l-1-1a2.1 2.1 0 0 1 0-3L15 5M9 11l4 4M5 19l-3 3M14 4l6 6" />
         @break
+        @case('flask')
+            <path d="M9 3h6M10 3v6l-5.4 9.4A1.7 1.7 0 0 0 6.1 21h11.8a1.7 1.7 0 0 0 1.5-2.6L14 9V3" /><path d="M7.6 15h8.8" />
+        @break
         @case('check')
             <path d="m5 12.5 4.5 4.5L19 7.5" />
         @break
