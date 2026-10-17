@@ -11,10 +11,17 @@ export const USERS = {
 };
 
 /** Coleta erros de console (inclui violações de CSP) para falhar o teste se aparecerem. */
+/**
+ * Oscilação de rede do PRÓPRIO computador (ex.: WSL/Wi-Fi/VPN reconectando): o Chrome cancela downloads em
+ * andamento com ERR_NETWORK_CHANGED. Não é defeito do sistema — só este erro é ignorado; CSP, JS e 404 continuam
+ * reprovando o teste.
+ */
+const ENVIRONMENT_NOISE = /net::ERR_NETWORK_CHANGED/;
+
 export function trackConsoleErrors(page: Page): string[] {
   const errors: string[] = [];
   page.on('console', (m) => {
-    if (m.type() === 'error') errors.push(m.text());
+    if (m.type() === 'error' && !ENVIRONMENT_NOISE.test(m.text())) errors.push(m.text());
   });
   page.on('pageerror', (e) => errors.push(e.message));
   return errors;
