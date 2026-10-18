@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FauvoVet — Correção do endereço inicial em /fauvovet</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #1a2935; background: #f4f7f8; line-height: 1.65; }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 20px 80px; }
+    header { border-radius: 20px; padding: 32px; color: white; background: linear-gradient(120deg, #0b4652, #1a7375); }
+    header p { color: #e1f5f0; margin-bottom: 0; }
+    h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.2; margin: 0; }
+    h2 { font-size: 1.2rem; margin: 0 0 12px; }
+    section { margin-top: 20px; background: #fff; padding: 24px; border: 1px solid #dee7e8; border-radius: 14px; }
+    p, li { overflow-wrap: anywhere; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    pre { overflow-x: auto; border-radius: 8px; padding: 14px; color: #e9fbff; background: #172b32; }
+    .tag { display: inline-block; font-size: 0.8rem; font-weight: 700; border: 1px solid #f5cf83; background: #fff8e4; color: #7a4b12; border-radius: 30px; padding: 3px 10px; }
+    .note { border-left: 4px solid #338b96; padding-left: 12px; }
+    .todo { color: #9e3d26; font-weight: 650; }
+    table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+    th, td { padding: 10px; border-bottom: 1px solid #e0e7e8; text-align: left; }
+    small { color: #52646d; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="tag">CORREÇÃO · TESTADA LOCALMENTE · AINDA NÃO PUBLICADA</span>
+      <h1>FauvoVet — Endereço inicial em /fauvovet + diagnóstico do deploy respondendo 404</h1>
+      <p>ID: <strong>2026-10-21-correcao-raiz-subpasta</strong> · Data: <strong>18/10/2026</strong> · Módulo: <strong>rotas / publicação</strong> · Estado: <strong>IMPLEMENTADO E TESTADO LOCALMENTE</strong></p>
+    </header>
+    <section><h2>1. Objetivo e contexto</h2>
+      <p>Durante a atualização do servidor, o proprietário rodou <code>deploy:remote … diagnostico</code> e recebeu <code>HTTP 404</code>. Para investigar, conferimos o servidor de fora, só com pedidos públicos e sem token:</p>
+      <ul>
+        <li><code>/fauvovet/up</code> → 200, <code>/fauvovet/login</code> → 200 e <code>/fauvovet/painel</code> → 302 para <code>/fauvovet/login</code>: <strong>o sistema está no ar</strong>.</li>
+        <li><code>/fauvovet/_deploy/diagnostico</code> → 404 em JSON com os cabeçalhos de segurança do próprio FauvoVet. É a recusa proposital das ferramentas de deploy: elas respondem 404 quando estão desligadas ou o token não confere. Ver a seção 9.</li>
+        <li><strong>Defeito encontrado:</strong> <code>http://dradeboragaldino.com.br/fauvovet/</code> redirecionava para <code>http://dradeboragaldino.com.br/painel</code>, sem o <code>/fauvovet</code>, e caía numa página inexistente do domínio. Quem digitava só o endereço base não chegava ao sistema.</li>
+      </ul></section>
+    <section><h2>2. O que mudou</h2>
+      <ul>
+        <li><code>routes/web.php</code>: <code>Route::redirect('/', '/painel')</code> deu lugar a <code>redirect()->route('dashboard')</code>. O <code>Route::redirect</code> do Laravel gera um caminho relativo ao domínio e descarta a subpasta; o redirecionamento pelo nome da rota mantém o caminho base.</li>
+        <li><code>tests/Feature/DeployAndHeadersTest.php</code>: novo teste que simula o Apache servindo <code>/fauvovet/index.php</code> e exige o destino <code>http://localhost/fauvovet/painel</code>. Antes da correção, o mesmo teste falhava com <code>'/painel'</code>.</li>
+        <li>Sem migração, sem dependência nova e sem mudança no <code>.env</code>.</li>
+      </ul></section>
+    <section><h2>3. Pré-requisitos (WSL2 e Git Bash)</h2><p>Os mesmos do guia anterior (<a href="2026-10-21-fundos-exames-estruturados.html">fundos e exames estruturados</a>): PHP 8.3+, Node e pnpm do projeto e MySQL local via <code>pnpm db:start</code>.</p></section>
+    <section><h2>4. Passo a passo para aplicar a mudança</h2>
+<pre><code>git pull --ff-only
+pnpm bootstrap
+pnpm db:start
+node scripts/php.mjs vendor/bin/phpunit --filter raiz_em_subpasta</code></pre>
+      <p>Resultado esperado: 1 teste passando. A correção vai junto com o pacote da versão anterior (fundos e exames estruturados), então basta gerar o pacote depois deste commit.</p></section>
+    <section><h2>5. Como testar</h2>
+<pre><code>pnpm verify --e2e</code></pre>
+      <p>Manual, no computador: com <code>pnpm dev</code>, abra a URL base local (<code>http://127.0.0.1:8000/fauvovet/</code>). Ela deve levar a <code>/fauvovet/login</code>, ou a <code>/fauvovet/painel</code> se você já estiver logado.</p>
+      <h3>Confirmar o funcionamento com os dados de demonstração</h3>
+      <p>Esta correção não cria dados novos, então a demonstração (versão 5) não muda. Para conferir: entre com a clínica de demonstração, abra a barra de endereço, apague tudo depois de <code>/fauvovet/</code> e pressione Enter. O painel da clínica deve aparecer, com os indicadores da demonstração (vacinas a vencer, exames fora da faixa). Na produção, depois de publicar, faça o mesmo em <code>http://dradeboragaldino.com.br/fauvovet</code>.</p></section>
+    <section><h2>6. Performance e usabilidade</h2><p>Sem impacto de desempenho: continua sendo um único redirecionamento. Para a usabilidade, quem digita só o endereço base passa a chegar ao sistema, no computador e no celular.</p></section>
+    <section><h2>7. Publicação na Locaweb / FileZilla (se aplicável)</h2>
+      <p>Siga a seção 7 do <a href="2026-10-21-fundos-exames-estruturados.html">guia de fundos e exames estruturados</a>, gerando o pacote a partir deste commit. Para destravar o <code>diagnostico</code> que respondeu 404, faça <strong>nesta ordem</strong>:</p>
+      <ol>
+        <li><strong>Terminal Ubuntu:</strong> <code>pnpm deploy:token</code>. Ele mostra um TOKEN e uma linha <code>DEPLOY_TOKEN_SHA256=…</code>, gerados juntos. Use os dois da <strong>mesma</strong> execução.</li>
+        <li><strong>FileZilla:</strong> no <code>/app-fauvovet/.env</code>, coloque <code>DEPLOY_TOOLS_ENABLED=true</code> e troque a linha <code>DEPLOY_TOKEN_SHA256</code> pela recém-gerada. Salve e envie de volta. Ao pedir para editar, o FileZilla baixa uma cópia, então confirme o envio quando ele perguntar.</li>
+        <li><strong>FileZilla:</strong> apague <code>/app-fauvovet/bootstrap/cache/config.php</code>. Este é o passo mais esquecido: depois de um <code>otimizar</code>, o Laravel lê esse cache e ignora o <code>.env</code>.</li>
+        <li><strong>Terminal Ubuntu</strong>, no mesmo terminal em que vai rodar o comando: <code> export FAUVOVET_DEPLOY_TOKEN='&lt;TOKEN do passo 1&gt;'</code> e depois <code>FAUVOVET_ALLOW_HTTP=1 pnpm deploy:remote http://dradeboragaldino.com.br/fauvovet diagnostico</code>. Enquanto não houver HTTPS, o token viaja sem criptografia; por isso ele é novo a cada atualização e as ferramentas são desligadas ao final.</li>
+      </ol></section>
+    <section><h2>8. Backup e rollback</h2><p>Para reverter só esta correção, reenvie o pacote anterior. Não há migração nem dados envolvidos. O backup do banco antes de <code>migrar</code> continua obrigatório por causa da migração da versão anterior.</p></section>
+    <section><h2>9. Troubleshooting</h2>
+      <table><thead><tr><th>Sintoma</th><th>Causa e solução</th></tr></thead><tbody>
+        <tr><td><code>diagnostico</code> → <code>HTTP 404</code> com <code>{"message": ""}</code></td><td>O sistema respondeu e recusou de propósito. Há três causas possíveis: (1) <code>DEPLOY_TOOLS_ENABLED</code> não está <code>true</code> no <code>.env</code> do servidor; (2) existe um <code>bootstrap/cache/config.php</code> antigo, gravado quando o flag estava <code>false</code>; (3) o TOKEN exportado não corresponde ao <code>DEPLOY_TOKEN_SHA256</code>, por ser de outra execução do <code>deploy:token</code>, ter um espaço sobrando ou ter sido exportado em outro terminal. Refaça os passos 1 a 4 da seção 7.</td></tr>
+        <tr><td><code>HTTP 404</code> com página HTML da Locaweb</td><td>O endereço está sem <code>/fauvovet</code>, ou o <code>public_html/fauvovet/index.php</code> não está no servidor.</td></tr>
+        <tr><td><code>HTTP 429</code></td><td>Muitas tentativas seguidas (limite das ferramentas de deploy). Aguarde alguns minutos.</td></tr>
+        <tr><td>O endereço base leva a <code>/painel</code> sem <code>/fauvovet</code></td><td>A versão anterior a esta correção ainda está no servidor.</td></tr>
+      </tbody></table></section>
+    <section>
+      <h2>10. Evidências e rastreabilidade</h2>
+      <table><thead><tr><th>Validação</th><th>Status</th><th>Evidência/observação</th></tr></thead>
+      <tbody>
+        <tr><td>Teste de regressão</td><td>PASS</td><td>Falhava antes da correção (<code>'/painel'</code>) e passa depois (<code>http://localhost/fauvovet/painel</code>)</td></tr>
+        <tr><td>Gate completo</td><td>VER PROGRESS</td><td>Resultado de <code>pnpm verify --e2e</code> registrado em <code>docs/PROGRESS.md</code></td></tr>
+        <tr><td>Servidor real</td><td>DIAGNOSTICADO</td><td>Só pedidos públicos sem token: <code>/up</code> 200, <code>/login</code> 200, <code>/_deploy/diagnostico</code> 404 (recusa proposital), raiz → <code>/painel</code> (defeito corrigido aqui)</td></tr>
+        <tr><td>Publicação</td><td>NOT RUN</td><td>Cabe ao proprietário (seção 7)</td></tr>
+      </tbody></table>
+      <p class="note"><strong>Commit:</strong> registrado no PROGRESS depois do push. <strong>Próxima ação:</strong> destravar o diagnóstico (seção 7) e concluir a atualização dos fundos e exames estruturados.</p>
+    </section>
+  </main>
+</body>
+</html>

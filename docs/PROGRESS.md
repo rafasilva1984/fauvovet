@@ -96,7 +96,7 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
 - **Tutorial de deploy didático:** o proprietário achou o passo a passo de `DEPLOY_LOCAWEB.md` difícil de seguir (faltava
   configuração do banco e o que copiar para onde). Reescrito como guia completo, etapas A–H, com glossário, mapa de pastas,
   folha de anotações e troubleshooting; novo comando `pnpm deploy:copiar` (pacote → `C:\fauvovet-deploy`, fora do OneDrive).
-- **Último guia HTML:** [`docs/changes/2026-10-21-fundos-exames-estruturados.html`](changes/2026-10-21-fundos-exames-estruturados.html)
+- **Último guia HTML:** [`docs/changes/2026-10-21-correcao-raiz-subpasta.html`](changes/2026-10-21-correcao-raiz-subpasta.html) (anterior: [fundos e exames estruturados](changes/2026-10-21-fundos-exames-estruturados.html), commit `3a00a75`)
 
 ## Ambiente (verificado)
 
@@ -185,6 +185,11 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 
 ## Próxima ação exata
 
+0. **18/10/2026, durante a atualização:** `deploy:remote … diagnostico` respondeu `HTTP 404`. Conferido de fora, sem
+   token: `/up` e `/login` respondem 200, então o sistema está no ar e o 404 é a recusa proposital das ferramentas de
+   deploy (flag desligado, `bootstrap/cache/config.php` antigo ou token que não corresponde ao hash). Passo a passo na
+   seção 7 de `docs/changes/2026-10-21-correcao-raiz-subpasta.html`. Corrigido também: a raiz `/fauvovet/`
+   redirecionava para `/painel`, sem a subpasta.
 1. Proprietário: publicação única (`docs/changes/2026-10-21-fundos-exames-estruturados.html` › seção 7; `pnpm bootstrap`
    antes do pacote por causa do FPDI; 1 migração nova — mais se as entregas de 20/10 não subiram). Depois a seção 5
    "Confirmar o funcionamento com os dados de demonstração" (Atualizar demonstração → v5), enviar o timbre e o
@@ -218,4 +223,5 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 | 2026-10-19 | **Busca clínica em texto livre** + demonstração ampliada                                                        | [2026-10-19-busca-clinica.html](changes/2026-10-19-busca-clinica.html)                           | verify --e2e 9/9 (PHPUnit 175, isolamento 42, E2E 75)              | `510b47b`                          | push OK, CI, publicado | Correção + anexos                     |
 | 2026-10-19 | **Correção da busca (relato) + texto de anexos PDF/DOCX**                                                       | [2026-10-19-busca-anexos.html](changes/2026-10-19-busca-anexos.html)                             | verify --e2e 9/9 (PHPUnit 180, isolamento 43, E2E 75)              | `6702fc1`/`b0475c4`                | push OK, CI            | Fase 2 + exames                       |
 | 2026-10-20 | **Fim da Fase 2 (sinônimos, pesquisas salvas, importação de modelos) + Exames (Fase 3)**                        | [2026-10-20-fase2-fase3.html](changes/2026-10-20-fase2-fase3.html)                               | verify --e2e 9/9 (PHPUnit 193, isolamento 46, E2E 81)              | main — hash na próxima atualização | push nesta sessão      | Exames estruturados                   |
-| 2026-10-21 | **Fase 3 — Fundos de documento (timbrado/receituário) + exames estruturados**                                   | [2026-10-21-fundos-exames-estruturados.html](changes/2026-10-21-fundos-exames-estruturados.html) | ver guia, seção 10                                                 | main — hash na próxima atualização | push nesta sessão      | Prescrição estruturada                |
+| 2026-10-21 | **Fase 3 — Fundos de documento (timbrado/receituário) + exames estruturados**                                   | [2026-10-21-fundos-exames-estruturados.html](changes/2026-10-21-fundos-exames-estruturados.html) | ver guia, seção 10                                                 | main `3a00a75`                     | push nesta sessão      | Prescrição estruturada                |
+| 2026-10-18 | Correção: raiz `/fauvovet/` perdia a subpasta no redirecionamento; diagnóstico do 404 do deploy remoto          | [2026-10-21-correcao-raiz-subpasta.html](changes/2026-10-21-correcao-raiz-subpasta.html)         | verify --e2e (ver commit)                                          | main — hash na próxima atualização | push nesta sessão      | Destravar diagnóstico e publicar      |

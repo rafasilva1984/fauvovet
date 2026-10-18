@@ -31,7 +31,8 @@ use App\Http\Controllers\VaccinationController;
 use App\Http\Controllers\VaccineController;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/painel');
+// Redireciona pelo nome da rota: Route::redirect('/', '/painel') perde o caminho base (/fauvovet) em subpasta.
+Route::get('/', fn () => redirect()->route('dashboard'));
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'show'])->name('login');

@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use Database\Seeders\DatabaseSeeder as Seed;
+use Illuminate\Contracts\Http\Kernel as HttpKernel;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -94,5 +96,15 @@ final class DeployAndHeadersTest extends TestCase
     public function test_seed_tem_duas_clinicas(): void
     {
         $this->assertNotSame(Seed::TENANT_A, Seed::TENANT_B);
+    }
+
+    public function test_raiz_em_subpasta_redireciona_mantendo_o_caminho_base(): void
+    {
+        // Simula o Apache servindo public_html/fauvovet/index.php em /fauvovet/. Requisição montada à mão porque o
+        // auxiliar de testes remove a barra final, e sem ela o caminho base não é detectado.
+        $server = ['SCRIPT_NAME' => '/fauvovet/index.php', 'SCRIPT_FILENAME' => public_path('index.php'), 'PHP_SELF' => '/fauvovet/index.php'];
+        $response = $this->app->make(HttpKernel::class)->handle(Request::create('http://localhost/fauvovet/', 'GET', server: $server));
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame('http://localhost/fauvovet/painel', $response->headers->get('Location'));
     }
 }
