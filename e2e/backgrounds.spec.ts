@@ -6,7 +6,7 @@ test('fundos de documento: enviar papel timbrado, prévia, escolher fundo na emi
   const errors = trackConsoleErrors(page);
   await loginInto(page, USERS.ana);
   await page.goto('configuracoes/fundos-de-documento');
-  await expect(page.getByRole('heading', { level: 1, name: 'Fundos de documento' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Papel timbrado e receituário' })).toBeVisible();
   // PDF fictício com tabela comprimida (como o Word exporta).
   await page
     .getByLabel('Enviar papel timbrado')

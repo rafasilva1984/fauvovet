@@ -15,7 +15,7 @@
     @endphp
     <x-page-header :title="$exam->type->name" icon="flask" eyebrow="Exame"
         :description="$exam->patient->name.' · pedido por '.($exam->requester?->name ?? '—').' em '.$exam->requested_at->timezone($tz)->format('d/m/Y H:i')">
-        <a href="{{ route('patients.show', $exam->patient) }}" class="inline-flex min-h-11 items-center rounded-xl border border-line bg-surface px-4 text-sm font-semibold shadow-card hover:bg-tint">Ficha de {{ $exam->patient->name }}</a>
+        <a href="{{ route('patients.show', $exam->patient) }}#exames" class="inline-flex min-h-11 items-center rounded-xl border border-line bg-surface px-4 text-sm font-semibold shadow-card hover:bg-tint">Ficha de {{ $exam->patient->name }}</a>
     </x-page-header>
     @if ($errors->any())<x-alert class="mb-4">{{ $errors->first() }}</x-alert>@endif
 

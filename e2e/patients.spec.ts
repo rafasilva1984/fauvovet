@@ -30,7 +30,8 @@ test('recepção cadastra paciente exótico com responsável novo, busca e vincu
       .first(),
   ).toBeVisible(); // etiqueta do cabeçalho + ficha
 
-  // Vincula um co-responsável já cadastrado (seed fictício).
+  // Vincula um co-responsável já cadastrado (seed fictício); o formulário fica recolhido.
+  await page.getByText('Vincular outro responsável').click();
   await page.getByLabel('Buscar responsável já cadastrado').fill('Rafael');
   await page.getByRole('button', { name: 'Buscar' }).click();
   await page.getByRole('button', { name: 'Vincular Rafael Lima (fictício)' }).click();

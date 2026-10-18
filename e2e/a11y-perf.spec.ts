@@ -114,7 +114,7 @@ test('acessibilidade WCAG AA (axe): prontuário', async ({ page }) => {
   await axe(page);
   await page.goto('atendimentos/01K7FV0000000000000ENA0002'); // finalizado (leitura + adendos)
   await axe(page);
-  await page.goto('pacientes/01K7FV0000000000000PTA0003');
+  await page.goto('pacientes/01K7FV0000000000000PTA0003#prontuario');
   await page.getByRole('button', { name: 'Novo atendimento' }).click();
   await expect(page.getByLabel('Queixa principal')).toBeVisible(); // rascunho (formulário)
   await axe(page);
@@ -237,7 +237,7 @@ test('acessibilidade WCAG AA (axe): exames, sinônimos e importação de modelo'
     'configuracoes/sinonimos',
     'configuracoes/modelos-de-documento/importar',
     'configuracoes/fundos-de-documento',
-    'pacientes/01K7FV0000000000000PTA0003',
+    'pacientes/01K7FV0000000000000PTA0003#exames',
   ]) {
     await page.goto(path);
     await axe(page);

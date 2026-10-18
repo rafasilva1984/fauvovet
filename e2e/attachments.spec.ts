@@ -12,7 +12,7 @@ test('veterinário anexa imagem e PDF ao prontuário, vê a miniatura e remove',
   const errors = trackConsoleErrors(page);
   const tag = `${testInfo.project.name}-${Date.now() % 100000}`;
   await loginInto(page, USERS.bruno);
-  await page.goto('pacientes/01K7FV0000000000000PTA0002'); // Mia
+  await page.goto('pacientes/01K7FV0000000000000PTA0002#anexos'); // Mia
 
   await page.getByLabel('Arquivo').setInputFiles({ name: 'raio-x.png', mimeType: 'image/png', buffer: PNG });
   await page.getByRole('combobox', { name: 'Categoria' }).selectOption('image');

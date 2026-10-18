@@ -362,3 +362,22 @@ body {
   padding: 0 0.15em;
   box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--fv-warning, #b26b00) 55%, transparent);
 }
+
+/* Menu lateral: barra de rolagem fina e visível quando a tela é baixa (antes ficava escondida). */
+.fv-side-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.18) transparent;
+}
+
+/* Abas de página: com JavaScript ativo, cada seção começa logo abaixo das abas. */
+.fv-tabs-on [data-panel],
+.fv-tabs-on [data-panel] > section:first-child {
+  margin-top: 0;
+}
+.fv-tab[aria-selected='true'] {
+  border-color: var(--color-brand, currentColor);
+  color: var(--color-ink, inherit);
+}
+.fv-tabs {
+  scrollbar-width: none;
+}

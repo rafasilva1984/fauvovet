@@ -12,6 +12,68 @@ Alpine.data('disclosure', () => ({
   },
 }));
 
+/**
+ * Abas de página (ficha do paciente). Sem JavaScript, todas as seções aparecem em sequência (lista de abas oculta).
+ * Aba inicial: a que tem erro de validação → o endereço (#x) → a última usada, se voltamos à mesma página depois
+ * de enviar um formulário (redirecionamento) → a primeira. Setas ←/→, Home e End navegam entre as abas.
+ */
+Alpine.data('tabs', () => ({
+  init() {
+    const root = this.$el;
+    this.list = root.querySelector('[role=tablist]');
+    this.tabs = [...root.querySelectorAll('[role=tab]')];
+    this.panels = [...root.querySelectorAll('[data-panel]')];
+    if (this.tabs.length < 2) return;
+    this.key = `fv-aba:${root.dataset.tabsKey}`;
+    this.list.hidden = false;
+    root.classList.add('fv-tabs-on');
+    const ids = this.tabs.map((t) => t.dataset.tab);
+    const withError = this.panels.find((p) => p.querySelector('[aria-invalid=true]'));
+    const fromHash = location.hash.replace(/^#(aba-)?/, '');
+    let stored = null;
+    try {
+      const sameRef = document.referrer && new URL(document.referrer).pathname === location.pathname;
+      stored = sameRef ? sessionStorage.getItem(this.key) : null;
+    } catch {
+      stored = null;
+    }
+    const first = [withError?.dataset.panel, fromHash, stored].find((id) => id && ids.includes(id));
+    this.select(first ?? ids[0], false);
+  },
+  select(id, focus) {
+    this.tabs.forEach((t) => {
+      const on = t.dataset.tab === id;
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      t.tabIndex = on ? 0 : -1;
+      if (on && focus) t.focus();
+    });
+    this.panels.forEach((p) => {
+      p.hidden = p.dataset.panel !== id;
+    });
+    try {
+      sessionStorage.setItem(this.key, id);
+    } catch {
+      /* armazenamento bloqueado: a aba só não é lembrada */
+    }
+    history.replaceState(null, '', `#${id}`);
+  },
+  pick(event) {
+    const tab = event.target.closest('[role=tab]');
+    if (!tab) return;
+    event.preventDefault();
+    this.select(tab.dataset.tab, false);
+  },
+  keys(event) {
+    const i = this.tabs.indexOf(document.activeElement);
+    if (i < 0) return;
+    const n = this.tabs.length;
+    const next = { ArrowRight: (i + 1) % n, ArrowLeft: (i - 1 + n) % n, Home: 0, End: n - 1 }[event.key];
+    if (next === undefined) return;
+    event.preventDefault();
+    this.select(this.tabs[next].dataset.tab, true);
+  },
+}));
+
 Alpine.data('passwordField', () => ({
   visible: false,
   toggle() {

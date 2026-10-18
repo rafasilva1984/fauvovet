@@ -129,7 +129,8 @@
                                         $ev['source'] === 'document' => route('documents.show', $ev['source_id']),
                                         $ev['source'] === 'exam' => route('exams.show', $ev['source_id']),
                                         $ev['encounter_id'] !== null => route('encounters.show', $ev['encounter_id']),
-                                        default => route('patients.show', $pt->id),
+                                        // Sem atendimento: abre a ficha na aba de origem do trecho.
+                                        default => route('patients.show', $pt->id).(['alert' => '#resumo', 'vaccination' => '#vacinas', 'attachment' => '#anexos'][$ev['source']] ?? ''),
                                     };
                                 @endphp
                                 <li class="rounded-xl border border-line bg-surface-2/50 p-3">
@@ -143,7 +144,7 @@
                             @endforeach
                         </ul>
                         @if ($r['more'] > 0)
-                            <p class="text-sm text-muted">+ {{ $r['more'] }} {{ $r['more'] === 1 ? 'outro trecho' : 'outros trechos' }} — <a href="{{ route('patients.show', $pt->id) }}" class="font-semibold text-link underline underline-offset-4">abrir o histórico</a></p>
+                            <p class="text-sm text-muted">+ {{ $r['more'] }} {{ $r['more'] === 1 ? 'outro trecho' : 'outros trechos' }} — <a href="{{ route('patients.show', $pt->id) }}#prontuario" class="font-semibold text-link underline underline-offset-4">abrir o histórico</a></p>
                         @endif
                     </x-card>
                 </li>

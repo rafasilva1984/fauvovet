@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FauvoVet — Navegação reorganizada</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #1a2935; background: #f4f7f8; line-height: 1.65; }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 20px 80px; }
+    header { border-radius: 20px; padding: 32px; color: white; background: linear-gradient(120deg, #0b4652, #1a7375); }
+    header p { color: #e1f5f0; margin-bottom: 0; }
+    h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.2; margin: 0; }
+    h2 { font-size: 1.2rem; margin: 0 0 12px; }
+    section { margin-top: 20px; background: #fff; padding: 24px; border: 1px solid #dee7e8; border-radius: 14px; }
+    p, li { overflow-wrap: anywhere; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    pre { overflow-x: auto; border-radius: 8px; padding: 14px; color: #e9fbff; background: #172b32; }
+    .tag { display: inline-block; font-size: 0.8rem; font-weight: 700; border: 1px solid #f5cf83; background: #fff8e4; color: #7a4b12; border-radius: 30px; padding: 3px 10px; }
+    .note { border-left: 4px solid #338b96; padding-left: 12px; }
+    .todo { color: #9e3d26; font-weight: 650; }
+    table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+    th, td { padding: 10px; border-bottom: 1px solid #e0e7e8; text-align: left; }
+    small { color: #52646d; }
+    figure { margin: 16px 0; } figure img { width: 100%; height: auto; border: 1px solid #dee7e8; border-radius: 10px; }
+    figcaption { font-size: .85rem; color: #52646d; margin-top: 6px; }
+    .shots { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); align-items: start; }
+    .v-ok { color: #1d6b3a; font-weight: 700; } .v-mov { color: #8a5a00; font-weight: 700; } .v-fix { color: #9e3d26; font-weight: 700; }
+    td { vertical-align: top; font-size: .93rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="tag">IMPLEMENTADO · TESTADO LOCALMENTE · AINDA NÃO PUBLICADO</span>
+      <h1>FauvoVet — Análise de usabilidade e navegação reorganizada</h1>
+      <p>ID: <strong>2026-10-22-navegacao-reorganizada</strong> · Data: <strong>18/10/2026</strong> · Módulo: <strong>navegação, painel, ficha do paciente, configurações</strong> · Estado: <strong>IMPLEMENTADO E TESTADO LOCALMENTE</strong></p>
+    </header>
+
+    <section><h2>1. Objetivo e contexto</h2>
+      <p>O proprietário pediu uma revisão crítica de tudo o que já foi feito: menu a menu, feature a feature, avaliando se cada coisa está no melhor lugar e se a navegação ajuda ou atrapalha. A análise usou a clínica de demonstração (dados fictícios), com o titular (que também é veterinário), o veterinário e a recepção, no computador (1440×900) e no celular (390×844).</p>
+      <h3>Principais problemas encontrados</h3>
+      <ol>
+        <li><strong>Menu lateral cortado.</strong> O titular tinha 18 itens no menu. Numa tela de 900 px de altura, só 1 dos 8 itens de “Configurações” aparecia, sem nenhum sinal de que dava para rolar. Na prática, “Modelos de documento”, “Papel timbrado”, “Catálogo de exames” e outros ficavam invisíveis.</li>
+        <li><strong>A ficha do paciente era uma página só, enorme:</strong> 3.646 px no computador e 5.370 px no celular. O prontuário, o mais usado pelo veterinário, ficava abaixo da identificação, dos responsáveis e do formulário de vacina. Formulários de vacina, exame, anexo e alerta ficavam sempre abertos.</li>
+        <li><strong>Defeito no painel:</strong> quem estava aguardando na recepção sumia de “Hoje na agenda” assim que o horário marcado terminava. Às 21h, o painel dizia “Nenhum atendimento pendente hoje” enquanto a agenda mostrava o Tom aguardando.</li>
+        <li><strong>O painel mostrava estrutura em vez de trabalho.</strong> “2 unidades” e “5 membros ativos” ocupavam metade dos indicadores, sem relação com o dia. “Novo agendamento” e “Novo paciente” apareciam 3 vezes: na faixa de boas-vindas, no botão “Novo” e nos “Atalhos”, que ainda traziam “Nova unidade” e “Ver unidades”.</li>
+        <li><strong>A atividade recente mostrava códigos técnicos</strong> (<code>demo_data.loaded</code>, <code>document_background.uploaded</code>), além de “há 0 segundo” e cada “entrou no ambiente”.</li>
+        <li><strong>Textos prometiam o que não existe:</strong> “Seu painel mostrará recebimentos, caixa e pendências” para o financeiro, módulo que ainda não foi construído.</li>
+        <li><strong>Celular:</strong> a barra inferior pegava os 4 primeiros itens do menu (Painel, Agenda, Pacientes, Responsáveis). Para o veterinário, “Responsáveis” ocupava o lugar da Busca clínica. O resto ficava escondido atrás do avatar, sem indicação de menu.</li>
+        <li><strong>Nomes inconsistentes:</strong> você pediu “papel timbrado e receituário”, mas o menu e a página diziam “Fundos de documento”. “Exames” e “Casos científicos” usavam o mesmo ícone.</li>
+      </ol>
+    </section>
+
+    <section><h2>2. O que mudou</h2>
+      <h3>Análise menu a menu</h3>
+      <p><span class="v-ok">Manter</span> = está no lugar certo · <span class="v-mov">Mover</span> = mudou de lugar · <span class="v-fix">Corrigir</span> = defeito ou atrito resolvido.</p>
+      <table>
+        <thead><tr><th>Item</th><th>Antes</th><th>Veredito</th><th>Por quê / o que foi feito</th></tr></thead>
+        <tbody>
+          <tr><td>Painel</td><td>Atendimento</td><td><span class="v-fix">Corrigir</span></td><td>Indicadores agora são pendências do papel: agendamentos de hoje, rascunhos a assinar, exames em aberto (com “para revisar”) e vacinas atrasadas. Unidades e equipe só aparecem se o papel não tem pendências a mostrar. Quem aguarda ou está em atendimento sempre aparece primeiro. Atalhos duplicados foram removidos. Atividade em português, sem eventos de leitura. Texto do topo honesto por papel.</td></tr>
+          <tr><td>Agenda</td><td>Atendimento</td><td><span class="v-ok">Manter</span></td><td>É o fluxo principal da recepção e do veterinário. Atritos que ficaram para depois (em <code>docs/IDEAS.md</code>): os filtros exigem clicar em “Ver”, e o fuso aparece como “America/Sao_Paulo”.</td></tr>
+          <tr><td>Pacientes</td><td>Atendimento</td><td><span class="v-fix">Corrigir</span></td><td>A ficha ganhou <strong>abas</strong>: Resumo, Prontuário, Vacinas, Exames, Documentos e Anexos, com contadores, só as que o papel pode ver. O alerta clínico fica fixo acima das abas, para nunca passar despercebido. “Vincular outro responsável” passou a ficar recolhido. Abrir a ficha a partir de um exame, atendimento, documento, vacina a vencer ou trecho da busca já leva à aba certa.</td></tr>
+          <tr><td>Responsáveis</td><td>Atendimento</td><td><span class="v-ok">Manter</span></td><td>A recepção usa bastante, e um tutor tem vários pets. Saiu da barra do celular para quem tem acesso clínico, onde a Busca clínica é mais útil.</td></tr>
+          <tr><td>Busca clínica</td><td>Atendimento (6º item)</td><td><span class="v-mov">Mover</span></td><td>Logo depois de Pacientes, onde faz sentido, e na barra do celular de quem tem acesso clínico. Sobreposição conhecida: a busca de Pacientes também procura no prontuário. A unificação está proposta em IDEAS.</td></tr>
+          <tr><td>Vacinas a vencer</td><td>Atendimento</td><td><span class="v-mov">Mover</span></td><td>Grupo “Acompanhamento”: é lista de trabalho periódica, como Exames. Para a recepção, ocupa o 4º espaço da barra do celular.</td></tr>
+          <tr><td>Exames</td><td>Clínica</td><td><span class="v-mov">Mover</span></td><td>Grupo “Acompanhamento”. O catálogo de exames foi para Configurações.</td></tr>
+          <tr><td>Casos científicos</td><td>Clínica</td><td><span class="v-mov">Mover</span></td><td>Grupo “Acompanhamento”, com ícone próprio (antes era igual ao de Exames). Só aparece para quem tem <code>research:manage</code>.</td></tr>
+          <tr><td>Unidades</td><td>Clínica (todos viam)</td><td><span class="v-mov">Mover</span></td><td>É estrutura e quase nunca muda. Foi para Configurações › Clínica, visível para quem pode criar unidades. Os demais continuam vendo a unidade ativa no cartão da clínica, e o endereço <code>/unidades</code> continua funcionando.</td></tr>
+          <tr><td>Equipe</td><td>Clínica</td><td><span class="v-mov">Mover</span></td><td>Grupo “Gestão”, ao lado de Configurações.</td></tr>
+          <tr><td>8 telas de configuração</td><td>8 itens soltos no menu</td><td><span class="v-mov">Mover</span></td><td>Uma entrada <strong>“Configurações”</strong> com página própria, agrupada em Agenda, Catálogos clínicos, Documentos e Clínica, e com uma frase explicando cada tela. Cada tela tem link “‹ Configurações” de volta.</td></tr>
+          <tr><td>Fundos de documento</td><td>Configurações</td><td><span class="v-fix">Corrigir</span></td><td>Renomeado para <strong>“Papel timbrado e receituário”</strong> no menu, no título e nos textos de ajuda. O campo “Fundo” do modelo e da emissão continua igual.</td></tr>
+          <tr><td>Dados de demonstração</td><td>Configurações (menu)</td><td><span class="v-mov">Mover</span></td><td>Dentro de Configurações › Clínica. Só existe com <code>FAUVOVET_DEMO_DATA=true</code>.</td></tr>
+          <tr><td>Cartão da clínica</td><td>Topo do menu (2 linhas)</td><td><span class="v-fix">Corrigir</span></td><td>Uma linha só; “Trocar clínica/unidade” virou ícone com rótulo para leitores de tela. Libera espaço para o menu.</td></tr>
+          <tr><td>Celular</td><td>4 primeiros itens + menu escondido no avatar</td><td><span class="v-fix">Corrigir</span></td><td>4 atalhos escolhidos pelo papel (veterinário: Painel, Agenda, Pacientes, Busca clínica; recepção: Painel, Agenda, Pacientes, Vacinas a vencer) e um botão <strong>“Menu”</strong> visível, que abre o menu completo agrupado.</td></tr>
+          <tr><td>Botão “Novo” e busca do topo</td><td>Barra superior</td><td><span class="v-ok">Manter</span></td><td>É o único lugar para criar coisas rapidamente; as cópias no painel foram removidas.</td></tr>
+          <tr><td>Tela do atendimento</td><td>—</td><td><span class="v-ok">Manter</span></td><td>Estrutura boa: sinais vitais, SOAP, diagnósticos e adendos à esquerda; documentos, histórico e anexos à direita. Atritos para depois: o formulário de anexo fica sempre aberto, e “Criar relato de caso” compete com “Ficha do paciente”.</td></tr>
+          <tr><td>Tela do exame (celular)</td><td>—</td><td><span class="v-ok">Manter</span></td><td>Funciona, mas as 5 etapas ocupam uma tela inteira antes dos valores. Uma linha de etapas compacta ficou proposta em IDEAS.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Arquivos</h3>
+      <ul>
+        <li><code>app/Support/Navigation.php</code> (novo): mapa único de navegação usado pelo menu lateral, pela barra do celular, pelo menu completo e pela página Configurações. Mudar um item de lugar passa a ser uma linha.</li>
+        <li><code>app/Http/Controllers/SettingsController.php</code> + <code>resources/views/settings/index.blade.php</code> (novos): página <code>/configuracoes</code>, com 403 para quem não tem nenhuma configuração.</li>
+        <li><code>app/Support/AuditLabels.php</code> (novo): frases para todos os códigos de auditoria atuais (conferido código a código) e a lista de eventos de leitura que ficam fora do feed.</li>
+        <li><code>resources/views/layouts/app.blade.php</code>: menu agrupado e compacto, barra do celular com “Menu”, link de volta às Configurações.</li>
+        <li><code>resources/views/patients/show.blade.php</code> (abas) + <code>_timeline</code>, <code>_alerts-card</code>, <code>_weight-card</code>, <code>_documents-card</code> (extraídos de <code>_clinical</code>, que foi removido).</li>
+        <li><code>resources/js/app.js</code>: componente <code>tabs</code> (teclado, endereço <code>#aba</code>, volta à mesma aba depois de enviar um formulário, aba com erro de validação primeiro). Sem JavaScript, todas as seções aparecem em sequência.</li>
+        <li><code>app/Http/Controllers/DashboardController.php</code> + <code>resources/views/dashboard.blade.php</code>: indicadores, agenda do dia e atividade.</li>
+        <li><code>app/Services/DemoDataService.php</code>: versão 6, com um prontuário em rascunho (Bidu).</li>
+        <li>Testes: <code>tests/Feature/NavigationTest.php</code> (novo, 6 testes) e ajustes em <code>DemoDataTest</code>, <code>PatientRegistryTest</code> e 10 specs E2E.</li>
+      </ul>
+      <p>Sem migração, sem dependência nova e sem variável de ambiente nova.</p>
+      <div class="shots">
+        <figure><img src="img/2026-10-22-painel.jpg" alt="Painel com pendências do dia e menu agrupado"><figcaption>Painel: pendências do dia, Tom aguardando no topo, menu inteiro visível.</figcaption></figure>
+        <figure><img src="img/2026-10-22-ficha-resumo.jpg" alt="Ficha do paciente com abas"><figcaption>Ficha em abas, com o alerta clínico fixo acima delas.</figcaption></figure>
+        <figure><img src="img/2026-10-22-ficha-exames.jpg" alt="Aba Exames da ficha"><figcaption>Aba Exames, aberta direto pelo endereço <code>#exames</code>.</figcaption></figure>
+        <figure><img src="img/2026-10-22-configuracoes.jpg" alt="Página Configurações agrupada"><figcaption>Configurações agrupadas, com uma frase por tela.</figcaption></figure>
+        <figure><img src="img/2026-10-22-painel-celular.jpg" alt="Painel no celular"><figcaption>Celular: barra com 4 atalhos do papel + Menu.</figcaption></figure>
+        <figure><img src="img/2026-10-22-ficha-celular.jpg" alt="Ficha no celular"><figcaption>Celular: abas em grade de 3, todas visíveis.</figcaption></figure>
+        <figure><img src="img/2026-10-22-menu-celular.jpg" alt="Menu completo no celular"><figcaption>Celular: menu completo agrupado.</figcaption></figure>
+      </div>
+    </section>
+
+    <section><h2>3. Pré-requisitos (WSL2 e Git Bash)</h2><p>Os mesmos das entregas anteriores: PHP 8.3+, Node e pnpm do projeto, MySQL local via <code>pnpm db:start</code>. Para quem vai publicar: as entregas de <a href="2026-10-21-fundos-exames-estruturados.html">fundos e exames estruturados</a> e a <a href="2026-10-21-correcao-raiz-subpasta.html">correção da raiz</a> sobem juntas com esta.</p></section>
+
+    <section><h2>4. Passo a passo para aplicar a mudança</h2>
+<pre><code>git pull --ff-only
+pnpm bootstrap
+pnpm db:start
+pnpm run build
+pnpm dev</code></pre>
+      <p>Abra <code>http://127.0.0.1:8000/fauvovet/</code>. Não há migração nesta entrega.</p></section>
+
+    <section><h2>5. Como testar</h2>
+<pre><code>node scripts/php.mjs vendor/bin/phpunit tests/Feature/NavigationTest.php
+pnpm verify --e2e</code></pre>
+      <ol>
+        <li><strong>Menu (computador):</strong> entre como titular. O menu tem 3 grupos (Atendimento, Acompanhamento, Gestão) e cabe inteiro numa tela de 900 px. “Configurações” abre a página agrupada, e cada tela tem “‹ Configurações” no topo.</li>
+        <li><strong>Celular:</strong> a barra mostra Painel, Agenda, Pacientes, Busca clínica e Menu. Com a recepção, mostra Vacinas a vencer no lugar da Busca clínica, e o Menu não tem Configurações.</li>
+        <li><strong>Ficha:</strong> abra um paciente. Teste as abas com o mouse e com as setas ←/→. Registre uma vacina na aba Vacinas: depois de salvar, a ficha volta na mesma aba. Envie um anexo inválido: a aba Anexos abre com o erro.</li>
+        <li><strong>Falha esperada:</strong> a recepção vê só Resumo e Vacinas, e <code>/configuracoes</code> responde 403.</li>
+      </ol>
+      <h3>Confirmar o funcionamento com os dados de demonstração</h3>
+      <ol>
+        <li>Configurações › Dados de demonstração. O aviso de demonstração desatualizada deve aparecer (versão 6). Use <strong>Atualizar demonstração</strong> ou, numa clínica nova, <strong>Carregar demonstração</strong>. A mensagem deve dizer “34 atendimentos”.</li>
+        <li><strong>Painel:</strong> o indicador deve mostrar <strong>1 atendimento em rascunho</strong> (“aguardando assinatura”). Clicar nele leva a “Prontuários em rascunho”, que lista o <strong>Bidu</strong>. “Exames em aberto” mostra quantos estão para revisar, e “vacinas atrasadas” deve bater com Vacinas a vencer.</li>
+        <li><strong>Hoje na agenda:</strong> o Tom (aguardando) aparece primeiro, mesmo à noite, depois do horário marcado.</li>
+        <li><strong>Atividade recente:</strong> frases como “carregou os dados de demonstração” e “enviou um papel timbrado ou receituário”, sem códigos técnicos e sem “entrou no ambiente”.</li>
+        <li><strong>Pacientes › Simba:</strong> as abas mostram Prontuário 3 e Exames 3. Na aba Exames, abra um exame e use “Ficha de Simba”: a ficha deve voltar direto na aba Exames.</li>
+        <li><strong>Pacientes › Bidu › Prontuário:</strong> o rascunho “Coceira nas orelhas…” aparece com a etiqueta Rascunho.</li>
+        <li>Na produção, depois de publicar, repita os passos 1 a 6 em <code>/fauvovet</code>.</li>
+      </ol></section>
+
+    <section><h2>6. Performance e usabilidade</h2>
+      <table><thead><tr><th>Medida</th><th>Antes</th><th>Depois</th></tr></thead><tbody>
+        <tr><td>Altura da ficha do Simba (computador)</td><td>3.646 px</td><td>1.435 px (aba Resumo)</td></tr>
+        <tr><td>Altura da ficha do Simba (celular)</td><td>5.370 px</td><td>2.417 px (aba Resumo)</td></tr>
+        <tr><td>Altura do painel (computador / celular)</td><td>1.767 / 2.764 px</td><td>1.344 / 2.340 px</td></tr>
+        <tr><td>Itens no menu lateral do titular</td><td>18 (só 11 visíveis em 900 px)</td><td>11, todos visíveis em 900 px</td></tr>
+        <tr><td>Cliques até “Modelos de documento”</td><td>1 (se o item estivesse visível; antes exigia rolar o menu)</td><td>2 (Configurações › Modelos)</td></tr>
+      </tbody></table>
+      <p>As alturas foram medidas com o Playwright, na clínica de demonstração, a 1440×900 e 390×844. Troca consciente: telas de configuração, abertas raramente, ganharam 1 clique para que o menu do dia a dia caiba inteiro. A troca de aba não faz nova requisição, porque o conteúdo já vem na página. O painel faz 3 contagens a mais (rascunhos, exames e vacinas atrasadas), todas filtradas pela clínica e por colunas indexadas. A latência não foi medida separadamente e está registrada como NOT RUN na seção 10.</p></section>
+
+    <section><h2>7. Publicação na Locaweb / FileZilla (se aplicável)</h2><p>Siga a seção 7 do <a href="2026-10-21-fundos-exames-estruturados.html">guia de fundos e exames estruturados</a>, gerando o pacote a partir do commit desta entrega. Tudo sobe junto: a migração dos fundos, a correção da raiz e esta reorganização. Se o <code>diagnostico</code> responder 404, veja a seção 7 do <a href="2026-10-21-correcao-raiz-subpasta.html">guia da correção da raiz</a>. Depois de publicar, apague <code>bootstrap/cache/config.php</code> e <code>routes-v7.php</code>: a rota <code>/configuracoes</code> é nova e o cache de rotas antigo não a conhece.</p></section>
+
+    <section><h2>8. Backup e rollback</h2><p>Esta entrega não muda o banco. Para voltar, reenvie o pacote anterior e apague os caches de rota e configuração. A demonstração v6 só acrescenta um rascunho fictício, que sai junto quando a demonstração é removida.</p></section>
+
+    <section><h2>9. Troubleshooting</h2>
+      <table><thead><tr><th>Sintoma</th><th>Causa e solução</th></tr></thead><tbody>
+        <tr><td>“Configurações” dá 404 depois de publicar</td><td>Cache de rotas da versão anterior. Apague <code>/app-fauvovet/bootstrap/cache/routes-v7.php</code>.</td></tr>
+        <tr><td>As abas não aparecem e a ficha mostra tudo em sequência</td><td>O JavaScript não carregou, porque <code>public_html/fauvovet/build/</code> não foi enviado ou está desatualizado. A página continua utilizável, só sem abas.</td></tr>
+        <tr><td>Não encontro “Catálogo de exames”, “Modelos” ou “Unidades” no menu</td><td>Estão em Configurações. Quem não vê Configurações não tem permissão para alterar essas telas.</td></tr>
+        <tr><td>A ficha abre sempre na mesma aba</td><td>A aba só é lembrada quando você volta para a mesma ficha depois de enviar um formulário. Links com <code>#exames</code>, <code>#vacinas</code> etc. abrem a aba indicada.</td></tr>
+      </tbody></table></section>
+
+    <section>
+      <h2>10. Evidências e rastreabilidade</h2>
+      <table><thead><tr><th>Validação</th><th>Status</th><th>Evidência/observação</th></tr></thead>
+      <tbody>
+        <tr><td>Testes PHP</td><td>PASS</td><td>PHPUnit completo dentro de <code>pnpm verify --e2e</code> (resultado em <code>docs/PROGRESS.md</code>); <code>NavigationTest</code> 6/6. O teste “quem aguarda continua no painel” falha com o filtro antigo e passa com a correção.</td></tr>
+        <tr><td>Integração / multi-tenant</td><td>PASS</td><td>Contagem de pacientes do painel conferida contra a clínica A, com pacientes ativos na B; Configurações com 403 para a recepção.</td></tr>
+        <tr><td>E2E desktop/celular</td><td>PASS</td><td>Specs ajustados para as abas e o menu novo. O axe passa no celular depois de as abas virarem grade de 3: a primeira versão rolava para o lado e escondia 2 abas, e o teste de “conteúdo além da borda” pegou isso.</td></tr>
+        <tr><td>Performance</td><td>PARCIAL</td><td>Alturas de página medidas (seção 6); latência não medida separadamente (NOT RUN).</td></tr>
+        <tr><td>Publicação</td><td>NOT RUN</td><td>Cabe ao proprietário.</td></tr>
+      </tbody></table>
+      <h3>Propostas que ficaram para depois (registradas em <code>docs/IDEAS.md</code>)</h3>
+      <ul>
+        <li>Busca única no topo: pacientes e trechos do prontuário na mesma tela, acabando com a sobreposição entre Pacientes e Busca clínica.</li>
+        <li>“Recentes”: últimos pacientes abertos, no painel e na busca.</li>
+        <li>Agenda: filtros que aplicam sozinhos (sem “Ver”) e nome do fuso legível.</li>
+        <li>Formulários de alerta e anexo atrás de um botão “+ Adicionar”.</li>
+        <li>Tela do exame no celular: etapas em uma linha compacta.</li>
+        <li>Atendimento: “Criar relato de caso” num menu “Mais ações”.</li>
+        <li>Atalho de teclado <kbd>/</kbd> para focar a busca.</li>
+      </ul>
+      <p class="note"><strong>Commit:</strong> registrado no PROGRESS depois do push. <strong>Próxima ação:</strong> publicar o pacote acumulado e seguir a seção 5 com os dados de demonstração.</p>
+    </section>
+  </main>
+</body>
+</html>

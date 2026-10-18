@@ -38,9 +38,12 @@ final class DemoDataService
      * para a tela avisar "demonstração desatualizada" e oferecer "Atualizar" (remover + carregar).
      * 1 = 18/10 (base) · 2 = 19/10 (busca em texto livre) · 3 = 19/10 (anexos com texto + correções da busca) ·
      * 4 = 20/10 (sinônimos, pesquisa salva, modelo importado e exames) · 5 = 21/10 (fundos de documento e exames
-     * estruturados com série histórica).
+     * estruturados com série histórica) · 6 = 18/10 (navegação: um prontuário em rascunho para o painel).
      */
-    public const VERSION = 5;
+    public const VERSION = 6;
+
+    /** v6: rascunho aberto hoje e ainda não assinado — [paciente, queixa]. Aparece no painel em "rascunho". */
+    private const DRAFT = [9, 'Coceira nas orelhas há 3 dias (rascunho de demonstração, ainda não assinado).'];
 
     /** Responsáveis: [nome, celular, cidade/UF]. */
     private const GUARDIANS = [
@@ -340,6 +343,13 @@ final class DemoDataService
                     ]);
                 }
 
+                [$dp, $dComplaint] = self::DRAFT;
+                $dWhen = Carbon::now($tz)->setTime(8, 40)->utc();
+                DB::table('encounters')->insert($base + [
+                    'id' => $this->id('EN', 90), 'unit_id' => $unit->id, 'patient_id' => $this->id('PT', $dp + 1), 'status' => 'draft', 'started_at' => $dWhen,
+                    'chief_complaint' => $dComplaint, 'created_by' => $userId, 'created_at' => $dWhen, 'updated_at' => $dWhen,
+                ]);
+
                 foreach (self::ALERTS as $i => [$p, $kind, $severity, $desc]) {
                     DB::table('patient_alerts')->insert($base + $stamp + [
                         'id' => $this->id('PA', $i + 1), 'patient_id' => $this->id('PT', $p + 1), 'kind' => $kind, 'severity' => $severity,
@@ -393,7 +403,7 @@ final class DemoDataService
         }
 
         return [
-            'patients' => count(self::PATIENTS), 'encounters' => count(self::ENCOUNTERS), 'vaccinations' => count(self::VACCINES),
+            'patients' => count(self::PATIENTS), 'encounters' => count(self::ENCOUNTERS) + 1, 'vaccinations' => count(self::VACCINES),
             'appointments' => count(self::APPOINTMENTS), 'cases' => 3, 'addenda' => count(self::ADDENDA), 'attachments' => count(self::ATTACHMENTS), 'exams' => count(self::EXAMS),
         ];
     }

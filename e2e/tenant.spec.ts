@@ -19,7 +19,7 @@ test('usuária com dois vínculos troca de clínica explicitamente', async ({ pa
   await loginInto(page, USERS.eva, 'Clínica Veterinária Aurora (fictícia)');
   await page.goto('unidades');
   await expect(page.getByRole('main').getByText('Aurora — Centro')).toBeVisible();
-  if (isMobile) await page.getByRole('button', { name: 'Abrir menu da conta' }).click();
+  if (isMobile) await page.getByRole('button', { name: 'Abrir menu' }).click();
   await page.getByRole('link', { name: 'Trocar clínica/unidade' }).locator('visible=true').click();
   await page.getByRole('button', { name: 'Entrar em Vet Horizonte Domiciliar (fictício)' }).click();
   await page.waitForURL(/\/painel$/);

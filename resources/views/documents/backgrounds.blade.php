@@ -1,8 +1,8 @@
 @extends('layouts.app')
-@section('title', 'Fundos de documento')
+@section('title', 'Papel timbrado e receituário')
 
 @section('content')
-    <x-page-header title="Fundos de documento" icon="palette" eyebrow="Configurações"
+    <x-page-header title="Papel timbrado e receituário" icon="palette" eyebrow="Configurações"
         description="Envie o papel timbrado e o receituário que a clínica já usa (PDF, Word, JPG ou PNG). Assim que enviados, viram o fundo padrão: receituário nas receitas, papel timbrado nos demais documentos." />
     @if ($errors->any())<x-alert class="mb-4">{{ $errors->first() }}</x-alert>@endif
 

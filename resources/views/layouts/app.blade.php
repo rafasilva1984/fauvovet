@@ -1,45 +1,16 @@
 @extends('layouts.base')
 
 @php
-    $groups = [
-        'Atendimento' => [
-            ['route' => 'dashboard', 'label' => 'Painel', 'icon' => 'home', 'perm' => 'tenant:read'],
-            ['route' => 'agenda.index', 'label' => 'Agenda', 'icon' => 'calendar', 'perm' => 'schedule:read'],
-            ['route' => 'patients.index', 'label' => 'Pacientes', 'icon' => 'paw', 'perm' => 'patients:read'],
-            ['route' => 'guardians.index', 'label' => 'Responsáveis', 'icon' => 'users', 'perm' => 'patients:read'],
-            ['route' => 'vaccinations.index', 'label' => 'Vacinas a vencer', 'icon' => 'syringe', 'perm' => 'vaccines:read'],
-            ['route' => 'search.index', 'label' => 'Busca clínica', 'icon' => 'search', 'perm' => 'clinical:read'],
-        ],
-        'Clínica' => [
-            ['route' => 'exams.index', 'label' => 'Exames', 'icon' => 'flask', 'perm' => 'clinical:read'],
-            ['route' => 'cases.index', 'label' => 'Casos científicos', 'icon' => 'flask', 'perm' => 'research:manage'],
-            ['route' => 'units.index', 'label' => 'Unidades', 'icon' => 'building', 'perm' => 'units:read'],
-            ['route' => 'team.index', 'label' => 'Equipe', 'icon' => 'shield', 'perm' => 'members:read'],
-        ],
-        'Configurações' => [
-            ['route' => 'settings.appointment-types', 'label' => 'Tipos de atendimento', 'icon' => 'list', 'perm' => 'schedule:configure'],
-            ['route' => 'exam-types.index', 'label' => 'Catálogo de exames', 'icon' => 'list', 'perm' => 'exams:configure'],
-            ['route' => 'vaccines.index', 'label' => 'Catálogo de vacinas', 'icon' => 'syringe', 'perm' => 'vaccines:configure'],
-            ['route' => 'document-templates.index', 'label' => 'Modelos de documento', 'icon' => 'copy', 'perm' => 'documents:templates'],
-            ['route' => 'document-backgrounds.index', 'label' => 'Fundos de documento', 'icon' => 'palette', 'perm' => 'documents:templates'],
-            ['route' => 'search.synonyms', 'label' => 'Sinônimos da busca', 'icon' => 'search', 'perm' => 'search:configure'],
-            ['route' => 'settings.appearance', 'label' => 'Aparência', 'icon' => 'palette', 'perm' => 'theme:update'],
-            ...(config('fauvovet.demo_data') ? [['route' => 'settings.demo-data', 'label' => 'Dados de demonstração', 'icon' => 'sparkles', 'perm' => 'tenant:update']] : []),
-        ],
-    ];
-    foreach ($groups as $g => $items) {
-        $groups[$g] = array_values(array_filter($items, fn ($n) => $fvCan($n['perm'])));
-    }
-    $groups = array_filter($groups);
-    $nav = $groups ? array_merge(...array_values($groups)) : [];
-    $isActive = fn (array $item) => request()->routeIs($item['route'], preg_replace('/\.index$/', '', $item['route']).'.*');
+    // Mapa único de navegação (App\Support\Navigation): menu lateral, barra do celular, menu "Mais" e Configurações.
+    $groups = \App\Support\Navigation::main($fvCan);
+    $isActive = fn (array $item) => \App\Support\Navigation::isActive($item);
     $tenantName = $fvTenant?->trade_name ?? '';
     $unitLabel = $fvUnitName ?? 'Todas as unidades';
     $user = auth()->user();
-    // Celular: até 4 itens na barra; os demais ficam no menu da conta ("Mais opções").
-    $navMobile = array_slice($nav, 0, 4);
-    $navMore = array_slice($nav, 4);
-    $navCols = ['', 'grid-cols-1', 'grid-cols-2', 'grid-cols-3', 'grid-cols-4'][count($navMobile)];
+    // Celular: até 4 atalhos por prioridade do papel + botão "Menu" com todo o resto.
+    $navMobile = \App\Support\Navigation::mobile($fvCan);
+    $navCols = ['grid-cols-1', 'grid-cols-2', 'grid-cols-3', 'grid-cols-4', 'grid-cols-5'][count($navMobile)];
+    $backToSettings = \App\Support\Navigation::inSettings($fvCan);
     $quick = array_values(array_filter([
         $fvCan('schedule:write') ? ['agenda.create', 'Novo agendamento', 'calendar'] : null,
         $fvCan('patients:write') ? ['patients.create', 'Novo paciente', 'paw'] : null,
@@ -50,7 +21,7 @@
 @section('body')
     <div class="fv-mesh min-h-dvh lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]" x-data="disclosure">
         {{-- Navegação lateral (desktop): painel escuro fixo, destaque na cor da clínica --}}
-        <aside class="sticky top-0 hidden h-dvh flex-col gap-5 bg-side px-4 py-5 text-side-text lg:flex">
+        <aside class="sticky top-0 hidden h-dvh flex-col gap-4 bg-side px-4 py-4 text-side-text lg:flex">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-2">
                 <x-logo :size="38" />
                 <span>
@@ -59,20 +30,18 @@
                 </span>
             </a>
 
-            <div class="rounded-2xl bg-side-2 p-3 ring-1 ring-white/5">
-                <div class="flex items-center gap-3">
-                    <x-avatar :name="$tenantName" size="sm" />
-                    <div class="min-w-0">
-                        <p class="truncate text-sm font-semibold" title="{{ $tenantName }}">{{ $tenantName }}</p>
-                        <p class="truncate text-xs text-side-muted">{{ $unitLabel }}</p>
-                    </div>
+            <div class="flex items-center gap-3 rounded-2xl bg-side-2 p-2.5 ring-1 ring-white/5">
+                <x-avatar :name="$tenantName" size="sm" />
+                <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-semibold" title="{{ $tenantName }}">{{ $tenantName }}</p>
+                    <p class="truncate text-xs text-side-muted">{{ $unitLabel }}</p>
                 </div>
-                <a href="{{ route('context.show') }}" class="mt-2.5 inline-flex min-h-8 items-center gap-1.5 rounded-lg px-1 text-xs font-semibold text-side-text hover:text-white">
-                    <x-icon name="swap" :size="16" /> Trocar clínica/unidade
+                <a href="{{ route('context.show') }}" title="Trocar clínica/unidade" class="flex size-10 shrink-0 items-center justify-center rounded-xl text-side-muted transition hover:bg-white/10 hover:text-white">
+                    <x-icon name="swap" :size="18" /><span class="sr-only">Trocar clínica/unidade</span>
                 </a>
             </div>
 
-            <nav aria-label="Principal" class="-mx-1 flex flex-1 flex-col gap-5 overflow-y-auto px-1">
+            <nav aria-label="Principal" class="fv-side-scroll -mx-1 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-1">
                 @foreach ($groups as $groupLabel => $items)
                     <div>
                         <p class="mb-1.5 px-3 text-[0.68rem] font-bold uppercase tracking-[0.16em] text-side-muted">{{ $groupLabel }}</p>
@@ -80,7 +49,7 @@
                             @foreach ($items as $item)
                                 @php($active = $isActive($item))
                                 <a href="{{ route($item['route']) }}" @if ($active) aria-current="page" @endif
-                                    class="group flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition {{ $active ? 'bg-brand fv-gradient text-on-brand shadow-glow' : 'text-side-muted hover:bg-white/5 hover:text-side-text' }}">
+                                    class="group flex min-h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium transition {{ $active ? 'bg-brand fv-gradient text-on-brand shadow-glow' : 'text-side-muted hover:bg-white/5 hover:text-side-text' }}">
                                     <x-icon :name="$item['icon']" class="{{ $active ? '' : 'transition group-hover:scale-110' }}" /> {{ $item['label'] }}
                                 </a>
                             @endforeach
@@ -148,14 +117,14 @@
                     @if ($fvCan('patients:read'))
                         <a href="{{ route('patients.index') }}" aria-label="Buscar pacientes" class="flex size-11 items-center justify-center rounded-xl text-ink hover:bg-surface-2"><x-icon name="search" /></a>
                     @endif
-                    <button type="button" x-on:click="toggle" aria-label="Abrir menu da conta" aria-controls="menu-conta" x-bind:aria-expanded="open"
+                    <button type="button" x-on:click="toggle" aria-label="Abrir menu" aria-controls="menu-conta" x-bind:aria-expanded="open"
                         class="flex size-11 items-center justify-center rounded-xl hover:bg-surface-2">
                         <x-avatar :name="$user->name" size="sm" />
                     </button>
                 </div>
             </header>
 
-            <div x-show="open" x-cloak class="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label="Conta" id="menu-conta" x-on:keydown.escape.window="close">
+            <div x-show="open" x-cloak class="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label="Menu" id="menu-conta" x-on:keydown.escape.window="close">
                 <button type="button" aria-label="Fechar menu" class="absolute inset-0 bg-black/45 backdrop-blur-[2px]" x-on:click="close"></button>
                 <div class="absolute inset-x-0 bottom-0 max-h-[85dvh] animate-fade-up overflow-y-auto rounded-t-[1.75rem] border-t border-line bg-surface p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-lift">
                     <div aria-hidden="true" class="mx-auto mb-4 h-1.5 w-12 rounded-full bg-surface-3"></div>
@@ -177,9 +146,18 @@
                             @endforeach
                         </div>
                     @endif
-                    <nav aria-label="Mais opções" class="mt-4 grid grid-cols-2 gap-2">
-                        @foreach ($navMore as $item)
-                            <a href="{{ route($item['route']) }}" class="flex min-h-12 items-center gap-2 rounded-2xl border border-line px-3 text-sm font-medium hover:bg-surface-2"><x-icon :name="$item['icon']" :size="18" /> {{ $item['label'] }}</a>
+                    <nav aria-label="Menu completo" class="mt-5 flex flex-col gap-4">
+                        @foreach ($groups as $groupLabel => $items)
+                            <div>
+                                <p class="mb-2 px-1 text-[0.68rem] font-bold uppercase tracking-[0.16em] text-muted">{{ $groupLabel }}</p>
+                                <div class="grid grid-cols-2 gap-2">
+                                    @foreach ($items as $item)
+                                        @php($active = $isActive($item))
+                                        <a href="{{ route($item['route']) }}" @if ($active) aria-current="page" @endif
+                                            class="flex min-h-12 items-center gap-2 rounded-2xl border px-3 text-sm font-medium {{ $active ? 'border-brand bg-tint text-link' : 'border-line hover:bg-surface-2' }}"><x-icon :name="$item['icon']" :size="18" /> {{ $item['label'] }}</a>
+                                    @endforeach
+                                </div>
+                            </div>
                         @endforeach
                         <a href="{{ route('profile.edit') }}" class="flex min-h-12 items-center gap-2 rounded-2xl border border-line px-3 text-sm font-medium hover:bg-surface-2"><x-icon name="user" :size="18" /> Meu perfil</a>
                     </nav>
@@ -194,19 +172,26 @@
                 @if (session('status'))
                     <x-alert tone="success" class="mb-6">{{ session('status') }}</x-alert>
                 @endif
+                @if ($backToSettings)
+                    <a href="{{ route('settings.index') }}" class="mb-4 inline-flex min-h-9 items-center gap-1 rounded-lg text-sm font-semibold text-link hover:underline"><x-icon name="chevron-left" :size="16" /> Configurações</a>
+                @endif
                 @yield('content')
             </main>
         </div>
 
-        {{-- Navegação inferior (celular): barra flutuante --}}
+        {{-- Navegação inferior (celular): até 4 atalhos do papel + "Menu" (todo o resto) --}}
         <nav aria-label="Principal" class="fv-glass-strong fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-30 grid {{ $navCols }} gap-1 rounded-[1.4rem] border border-line/80 p-1.5 shadow-lift lg:hidden">
             @foreach ($navMobile as $item)
                 @php($active = $isActive($item))
                 <a href="{{ route($item['route']) }}" @if ($active) aria-current="page" @endif
-                    class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-2xl text-[0.7rem] font-semibold transition {{ $active ? 'bg-brand fv-gradient text-on-brand shadow-glow' : 'text-muted hover:text-ink' }}">
+                    class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-2xl text-center text-[0.68rem] font-semibold leading-tight transition {{ $active ? 'bg-brand fv-gradient text-on-brand shadow-glow' : 'text-muted hover:text-ink' }}">
                     <x-icon :name="$item['icon']" /> {{ $item['label'] }}
                 </a>
             @endforeach
+            <button type="button" x-on:click="toggle" aria-controls="menu-conta" x-bind:aria-expanded="open"
+                class="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-2xl text-[0.68rem] font-semibold text-muted transition hover:text-ink">
+                <x-icon name="menu" /> Menu
+            </button>
         </nav>
     </div>
 @endsection

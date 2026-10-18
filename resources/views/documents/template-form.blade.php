@@ -24,7 +24,7 @@
                 </div>
                 <x-field name="title" label="Título no documento" :value="$template->title" required />
                 <x-select name="background" id="modelo-fundo" label="Fundo do documento" :options="\App\Models\DocumentBackground::options($backgrounds)" :value="$template->background ?? 'auto'"
-                    hint="Papel timbrado e receituário são enviados em Configurações › Fundos de documento. Na emissão ainda dá para trocar." />
+                    hint="Papel timbrado e receituário são enviados em Configurações › Papel timbrado e receituário. Na emissão ainda dá para trocar." />
                 <x-textarea name="body" label="Texto" :value="$template->body" rows="16" hint="Use as variáveis da lista ao lado, exatamente como aparecem. Trechos entre [colchetes] servem de lembrete para completar na hora de emitir." />
                 @if ($template->exists)
                     <label class="flex min-h-11 items-center gap-2 text-sm">

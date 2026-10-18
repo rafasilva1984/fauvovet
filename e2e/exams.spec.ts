@@ -5,7 +5,7 @@ test('exames: pedir na ficha, registrar resultado e revisar', async ({ page }, t
   const errors = trackConsoleErrors(page);
   const marker = `MARCADOR${testInfo.project.name.toUpperCase()}${Date.now() % 100000}`;
   await loginInto(page, USERS.bruno);
-  await page.goto('pacientes/01K7FV0000000000000PTA0002'); // Mia
+  await page.goto('pacientes/01K7FV0000000000000PTA0002#exames'); // Mia
   await page.getByRole('combobox', { name: 'Pedir exame' }).selectOption({ label: 'Urinálise' });
   await page.getByRole('button', { name: 'Solicitar exame' }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Urinálise' })).toBeVisible();
@@ -62,7 +62,7 @@ test('exames estruturados: faixa no catálogo, valores com situação e gráfico
   await card.getByRole('button', { name: 'Salvar faixa de Creatinina' }).click();
   await expect(page.getByText('Faixa de “Creatinina” salva.')).toBeVisible();
 
-  await page.goto('pacientes/01K7FV0000000000000PTA0002'); // Mia (gata)
+  await page.goto('pacientes/01K7FV0000000000000PTA0002#exames'); // Mia (gata)
   await page
     .getByRole('combobox', { name: 'Pedir exame' })
     .selectOption({ label: 'Bioquímica renal (ureia e creatinina)' });

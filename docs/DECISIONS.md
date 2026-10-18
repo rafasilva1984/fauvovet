@@ -339,3 +339,33 @@ modelo de outro projeto dele já operado na Locaweb (Laravel + Vite, Node só pa
   recomendação de enviar o mesmo timbre em PDF. PDF com recursos raros pode falhar na leitura (mensagem orienta
   "Imprimir → Salvar como PDF"). Sem GD na hospedagem, PNG com transparência pode falhar no dompdf (o diagnóstico de
   deploy passa a mostrar `gd`).
+
+## ADR-021 — Navegação reorganizada: mapa único, Configurações agrupadas e ficha do paciente em abas (2026-10-22)
+
+- **Contexto:** pedido do proprietário: revisão crítica de cada menu e feature, e otimização da navegação. A análise
+  na clínica de demonstração encontrou: menu lateral com 18 itens (8 de configuração invisíveis numa tela de 900 px,
+  sem indicação de rolagem); ficha do paciente com 3.646 px no computador e 5.370 px no celular, com o prontuário
+  abaixo de cadastro e formulários; painel com indicadores de estrutura, atalhos triplicados, códigos técnicos na
+  atividade e um defeito (quem aguardava sumia de "Hoje na agenda" depois do horário); barra do celular formada pelos
+  4 primeiros itens do menu, sem botão de menu visível.
+- **Decisão:**
+  - `App\Support\Navigation` é a **fonte única** do menu lateral, da barra do celular, do menu completo e da página
+    Configurações, filtrada por permissão. Grupos: Atendimento (Painel, Agenda, Pacientes, Responsáveis, Busca
+    clínica), Acompanhamento (Exames, Vacinas a vencer, Casos científicos) e Gestão (Equipe, Configurações).
+  - **Configurações** viram uma página (`/configuracoes`, 403 sem nenhuma permissão de configuração) agrupada em
+    Agenda, Catálogos clínicos, Documentos e Clínica (Unidades, Aparência, Demonstração), com uma frase por tela e
+    link de volta em cada uma. Troca consciente: +1 clique em telas raras para o menu diário caber inteiro.
+  - "Fundos de documento" passa a se chamar **"Papel timbrado e receituário"**, como o proprietário fala.
+  - **Celular:** 4 atalhos por prioridade do papel (Painel, Agenda, Pacientes e Busca clínica, ou Vacinas a vencer /
+    Responsáveis conforme a permissão) + botão "Menu" visível com o menu completo agrupado.
+  - **Ficha do paciente em abas** (Resumo, Prontuário, Vacinas, Exames, Documentos, Anexos), só as permitidas ao
+    papel, com contadores. O alerta clínico fica **fora** das abas, sempre visível. Melhoria progressiva: sem JS tudo
+    aparece em sequência. Aba inicial: erro de validação → `#aba` do endereço → última aba ao voltar à mesma ficha
+    depois de um formulário → Resumo. Links de exame, atendimento, documento, vacina e busca abrem a aba de origem.
+    No celular, grade de 3 colunas (todas as abas visíveis; a primeira versão rolava e escondia 2).
+  - **Painel:** indicadores = pendências do papel (agenda de hoje, rascunhos, exames em aberto/para revisar, vacinas
+    atrasadas), estrutura só como último recurso; em atendimento/aguardando sempre primeiro, sem filtro de horário;
+    atalhos duplicados removidos; textos sem prometer módulos inexistentes; `App\Support\AuditLabels` traduz todos os
+    códigos e tira leituras/downloads/buscas do feed (continuam na auditoria).
+- **Consequências:** mover um item de menu é uma linha em `Navigation`. As rotas não mudaram (`/unidades` etc. seguem
+  válidas). Novo cache de rotas no servidor: apagar `routes-v7.php` ao publicar. Pendências de UX em `docs/IDEAS.md`.

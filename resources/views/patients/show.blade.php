@@ -2,6 +2,19 @@
 @section('title', $patient->name)
 
 @php
+    // Abas: só as que o papel pode ver. Contadores ajudam a saber onde há conteúdo sem abrir a aba.
+    $tabs = ['resumo' => ['Resumo', null]];
+    if ($clinical !== null) {
+        $tabs['prontuario'] = ['Prontuário', $clinical['encounters']->count()];
+    }
+    if ($vaccination !== null) {
+        $tabs['vacinas'] = ['Vacinas', null];
+    }
+    if ($clinical !== null) {
+        $tabs['exames'] = ['Exames', $clinical['exams']->count()];
+        $tabs['documentos'] = ['Documentos', $clinical['documents']->count()];
+        $tabs['anexos'] = ['Anexos', $clinical['attachments']->count()];
+    }
     $canWrite = $fvCan('patients:write');
     $speciesText = \App\Support\Species::label($patient->species).($patient->species_detail ? ' — '.$patient->species_detail : '');
 @endphp
@@ -33,7 +46,21 @@
         <x-alert tone="info" class="mb-6">Paciente arquivado: não aparece na busca padrão.</x-alert>
     @endif
 
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+    <div x-data="tabs" data-tabs-key="paciente-{{ $patient->id }}">
+        {{-- Sem JavaScript a lista de abas fica oculta e todas as seções aparecem em sequência. No celular, grade de 3 colunas:
+             todas as abas visíveis, sem rolagem lateral escondendo opções. --}}
+        <div role="tablist" aria-label="Seções da ficha" hidden x-on:click="pick" x-on:keydown="keys"
+            class="fv-tabs mb-6 grid grid-cols-3 gap-x-1 border-b border-line sm:flex sm:overflow-x-auto lg:sticky lg:top-[4.3rem] lg:z-20 lg:bg-bg/90 lg:backdrop-blur">
+            @foreach ($tabs as $key => [$label, $count])
+                <a role="tab" id="tab-{{ $key }}" href="#{{ $key }}" aria-controls="aba-{{ $key }}" data-tab="{{ $key }}"
+                    class="fv-tab inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 border-b-2 border-transparent px-3 text-sm font-semibold text-muted transition hover:text-ink">
+                    {{ $label }}@if ($count)<span class="rounded-full bg-surface-2 px-1.5 text-xs tabular-nums">{{ $count }}</span>@endif
+                </a>
+            @endforeach
+        </div>
+
+        <section role="tabpanel" id="aba-resumo" aria-labelledby="tab-resumo" tabindex="-1" data-panel="resumo">
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
         <x-card>
             <h2 class="mb-4 text-lg font-bold tracking-tight">Identificação</h2>
             <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -99,8 +126,9 @@
             </ul>
 
             @if ($canWrite)
-                <x-card>
-                    <h3 class="mb-3 font-semibold">Vincular outro responsável</h3>
+                <details class="group rounded-[1.25rem] border border-line bg-surface p-5 shadow-card" @if ($term !== '' || $errors->has('guardian_id')) open @endif>
+                    <summary class="flex min-h-9 cursor-pointer list-none items-center gap-2 font-semibold text-link"><x-icon name="plus" :size="18" /> Vincular outro responsável</summary>
+                    <div class="mt-3">
                     <form method="GET" action="{{ route('patients.show', $patient) }}" class="flex flex-col gap-2 sm:flex-row sm:items-end" role="search">
                         <x-field name="vincular" label="Buscar responsável já cadastrado" type="search" :value="$term" class="flex-1" autocomplete="off" />
                         <x-button variant="secondary"><x-icon name="search" /> Buscar</x-button>
@@ -129,15 +157,42 @@
                             </ul>
                         @endif
                     @endif
-                </x-card>
+                    </div>
+                </details>
             @endif
         </section>
+            </div>
+            @if ($clinical !== null)
+                <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    @include('patients._alerts-card')
+                    @include('patients._weight-card')
+                </div>
+            @endif
+        </section>
+
+        @if ($clinical !== null)
+            <section role="tabpanel" id="aba-prontuario" aria-labelledby="tab-prontuario" tabindex="-1" data-panel="prontuario" class="mt-8">
+                @include('patients._timeline')
+            </section>
+        @endif
+
+        @if ($vaccination !== null)
+            <div role="tabpanel" id="aba-vacinas" aria-labelledby="tab-vacinas" tabindex="-1" data-panel="vacinas">
+                @include('vaccinations._card')
+            </div>
+        @endif
+
+        @if ($clinical !== null)
+            <section role="tabpanel" id="aba-exames" aria-labelledby="tab-exames" tabindex="-1" data-panel="exames" class="mt-8 max-w-3xl">
+                @include('exams._patient', ['exams' => $clinical['exams'], 'examTypes' => $clinical['examTypes']])
+            </section>
+            <section role="tabpanel" id="aba-documentos" aria-labelledby="tab-documentos" tabindex="-1" data-panel="documentos" class="mt-8 max-w-3xl">
+                @include('patients._documents-card')
+            </section>
+            <section role="tabpanel" id="aba-anexos" aria-labelledby="tab-anexos" tabindex="-1" data-panel="anexos" class="mt-8 max-w-3xl">
+                @include('attachments._panel', ['attachments' => $clinical['attachments'], 'encounter' => null])
+            </section>
+        @endif
     </div>
-    @if ($vaccination !== null)
-        @include('vaccinations._card')
-    @endif
-    @if ($clinical !== null)
-        @include('patients._clinical')
-    @endif
     <p class="mt-6"><a href="{{ route('patients.index') }}" class="font-semibold text-link underline underline-offset-4">Voltar aos pacientes</a></p>
 @endsection

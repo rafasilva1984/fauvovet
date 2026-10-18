@@ -5,7 +5,7 @@ test('veterinário registra vacina e a recepção vê os vencimentos', async ({ 
   const errors = trackConsoleErrors(page);
   const lot = `LOTE-${testInfo.project.name}-${Date.now() % 100000}`;
   await loginInto(page, USERS.bruno);
-  await page.goto('pacientes/01K7FV0000000000000PTA0002'); // Mia (gata)
+  await page.goto('pacientes/01K7FV0000000000000PTA0002#vacinas'); // Mia (gata)
   await expect(page.getByRole('heading', { name: 'Vacinação' })).toBeVisible();
   await page.getByRole('combobox', { name: 'Vacina' }).selectOption({ label: 'Polivalente felina (V4/V5)' });
   await page.getByRole('textbox', { name: 'Lote', exact: true }).fill(lot);
@@ -16,7 +16,7 @@ test('veterinário registra vacina e a recepção vê os vencimentos', async ({ 
   );
   await expect(page.getByText(/Dose \d em .* próxima/).first()).toBeVisible();
 
-  const res = await page.request.get(`${page.url()}/vacinas/carteira`);
+  const res = await page.request.get(`${page.url().split('#')[0]}/vacinas/carteira`);
   expect(res.headers()['content-type']).toBe('application/pdf');
   expect(errors).toEqual([]);
   await logout(page, isMobile);

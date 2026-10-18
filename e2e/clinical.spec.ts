@@ -5,7 +5,7 @@ test('veterinário registra atendimento com diagnóstico, finaliza e adiciona ad
   const errors = trackConsoleErrors(page);
   const complaint = `Tosse seca há uma semana (fictício ${testInfo.project.name}).`;
   await loginInto(page, USERS.bruno);
-  await page.goto('pacientes/01K7FV0000000000000PTA0002'); // Mia
+  await page.goto('pacientes/01K7FV0000000000000PTA0002#prontuario'); // Mia
   await expect(page.getByRole('heading', { name: 'Prontuário' })).toBeVisible();
   await page.getByRole('button', { name: 'Novo atendimento' }).click();
   await expect(page.getByText('Rascunho', { exact: true }).first()).toBeVisible();

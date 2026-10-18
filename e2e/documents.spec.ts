@@ -4,7 +4,7 @@ import { USERS, loginInto, trackConsoleErrors } from './helpers';
 test('veterinário emite atestado em PDF a partir do prontuário e anula', async ({ page, request }) => {
   const errors = trackConsoleErrors(page);
   await loginInto(page, USERS.bruno);
-  await page.goto('pacientes/01K7FV0000000000000PTA0001'); // Thor
+  await page.goto('pacientes/01K7FV0000000000000PTA0001#documentos'); // Thor
   await page.getByRole('link', { name: 'Emitir' }).first().click();
   await page.getByRole('link', { name: /Atestado de saúde/ }).click();
   const body = page.getByLabel('Texto do documento');

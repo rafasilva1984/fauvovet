@@ -43,14 +43,15 @@ test('veterinário escolhe unidade e vê navegação conforme o papel, sem erros
   await expect(nav.getByRole('link', { name: 'Painel' })).toBeVisible();
   await expect(nav.getByRole('link', { name: 'Agenda' })).toBeVisible();
   if (isMobile) {
-    // Celular: até 4 itens na barra; Unidades fica em "Mais opções" no menu da conta.
-    await page.getByRole('button', { name: 'Abrir menu da conta' }).click();
+    // Celular: 4 atalhos do papel + botão "Menu" com o menu completo.
+    await expect(nav.getByRole('link', { name: 'Busca clínica' })).toBeVisible();
+    await nav.getByRole('button', { name: 'Menu' }).click();
     await expect(
-      page.getByRole('navigation', { name: 'Mais opções' }).getByRole('link', { name: 'Unidades' }),
+      page.getByRole('navigation', { name: 'Menu completo' }).getByRole('link', { name: 'Configurações' }),
     ).toBeVisible();
     await page.getByRole('button', { name: 'Fechar', exact: true }).click();
   } else {
-    await expect(nav.getByRole('link', { name: 'Unidades' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'Configurações' })).toBeVisible();
   }
   await expect(nav.getByRole('link', { name: 'Equipe' })).toHaveCount(0);
   await expect(nav.getByRole('link', { name: 'Aparência' })).toHaveCount(0);

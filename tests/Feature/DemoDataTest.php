@@ -47,7 +47,7 @@ final class DemoDataTest extends TestCase
     {
         config(['fauvovet.demo_data' => true]);
         $this->loginInto('ana', Seed::TENANT_A);
-        $this->get('/painel')->assertSee('Dados de demonstração');
+        $this->get('/configuracoes')->assertOk()->assertSee('Dados de demonstração');
         $this->get(self::URL)->assertOk()->assertSee('Carregar demonstração');
         $this->post(self::URL)->assertRedirect(self::URL)->assertSessionHasNoErrors();
         $this->assertSame(22, $this->demoRows('patients', Seed::TENANT_A));
@@ -182,6 +182,18 @@ final class DemoDataTest extends TestCase
         $this->get('/busca?q=coceira')->assertDontSee('Sinônimos da clínica usados');
     }
 
+    /** Demonstração v6: rascunho no painel (guia 2026-10-22-navegacao-reorganizada.html, seção 5). */
+    public function test_demo_v6_rascunho_aparece_no_painel_e_na_ficha(): void
+    {
+        config(['fauvovet.demo_data' => true]);
+        $this->loginInto('ana', Seed::TENANT_A);
+        $this->post(self::URL)->assertSessionHasNoErrors();
+        $this->get('/painel')->assertOk()->assertSeeInOrder(['>1<', 'atendimento em rascunho'], false)
+            ->assertSee('Prontuários em rascunho')->assertSee('Bidu');
+        $bidu = DemoDataService::idFor(Seed::TENANT_A, 'PT', 10);
+        $this->get('/pacientes/'.$bidu)->assertOk()->assertSee('Coceira nas orelhas')->assertSee('Rascunho');
+    }
+
     /** Demonstração v5: fundos de documento + exames estruturados (guia 2026-10-21-fundos-exames-estruturados.html, seção 5). */
     public function test_demo_v5_fundos_de_documento_e_exames_estruturados(): void
     {
@@ -193,7 +205,7 @@ final class DemoDataTest extends TestCase
         // Fundos: timbrado PDF e receituário Word fictícios, já em uso.
         $this->get('/configuracoes/fundos-de-documento')->assertSee('papel-timbrado-demonstracao.pdf')->assertSee('receituario-demonstracao.docx')->assertSee('Em uso');
         $this->get('/configuracoes/fundos-de-documento/'.$id('BG', 1).'/previa')->assertOk()->assertHeader('Content-Type', 'application/pdf');
-        $this->get(self::URL)->assertSee('Fundos de documento: papel timbrado');
+        $this->get(self::URL)->assertSee('Papel timbrado (PDF) e receituário (Word) fictícios');
         // Receita para o Bento sai sobre o receituário.
         $bento = $id('PT', 1);
         $this->get("/pacientes/{$bento}/documentos/novo")->assertOk(); // cria os modelos padrão

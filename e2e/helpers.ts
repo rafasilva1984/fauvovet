@@ -48,7 +48,7 @@ export async function loginInto(page: Page, email: string, tenantName?: string) 
 }
 
 export async function logout(page: Page, isMobile: boolean) {
-  if (isMobile) await page.getByRole('button', { name: 'Abrir menu da conta' }).click();
+  if (isMobile) await page.getByRole('button', { name: 'Abrir menu' }).click();
   await page.getByRole('button', { name: 'Sair' }).locator('visible=true').click();
   await page.waitForURL(/\/login$/);
 }

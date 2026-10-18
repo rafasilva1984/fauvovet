@@ -3,49 +3,16 @@
 
 @php
     $copy = [
-        'management' => ['Gestão da clínica', 'Acompanhe a estrutura da clínica, equipe e atividade recente.'],
-        'clinical' => ['Área clínica', 'Seu painel clínico mostrará agenda do dia, pacientes em atendimento e retornos.'],
-        'reception' => ['Recepção', 'Seu painel mostrará agenda do dia, chegadas e fila de espera.'],
-        'finance' => ['Financeiro', 'Seu painel mostrará recebimentos, caixa e pendências.'],
-        'operations' => ['Operação', 'Seu painel mostrará as tarefas do seu setor.'],
+        'management' => ['Gestão da clínica', 'Agenda de hoje, pendências clínicas e o que a equipe fez por último.'],
+        'clinical' => ['Área clínica', 'Agenda de hoje, prontuários a assinar, exames em aberto e vacinas a vencer.'],
+        'reception' => ['Recepção', 'Agenda de hoje, quem está aguardando e vacinas a vencer para avisar os tutores.'],
+        'finance' => ['Financeiro', 'Agenda de hoje e cadastro de pacientes. O módulo financeiro ainda não foi construído.'],
+        'operations' => ['Operação', 'Agenda de hoje do seu setor.'],
     ][$kind];
     $hour = (int) now('America/Sao_Paulo')->format('G');
     $greeting = $hour < 12 ? 'Bom dia' : ($hour < 18 ? 'Boa tarde' : 'Boa noite');
-    $actions = [
-        'auth.context_selected' => 'entrou no ambiente',
-        'unit.created' => 'criou uma unidade',
-        'tenant.theme_updated' => 'alterou a aparência',
-        'tenant.created' => 'criou a clínica',
-        'patient.created' => 'cadastrou um paciente',
-        'patient.updated' => 'atualizou um paciente',
-        'patient.deceased' => 'registrou um óbito',
-        'patient.guardian_linked' => 'vinculou um responsável',
-        'patient.guardian_unlinked' => 'desvinculou um responsável',
-        'guardian.created' => 'cadastrou um responsável',
-        'guardian.updated' => 'atualizou um responsável',
-        'member.invited' => 'convidou uma pessoa',
-        'invitation.accepted' => 'aceitou um convite',
-        'invitation.revoked' => 'cancelou um convite',
-        'member.updated' => 'alterou um acesso',
-        'appointment.created' => 'agendou um atendimento',
-        'appointment.updated' => 'reagendou um atendimento',
-        'appointment.status_changed' => 'mudou o status de um agendamento',
-        'appointment_type.created' => 'criou um tipo de atendimento',
-        'appointment_type.updated' => 'alterou um tipo de atendimento',
-        'encounter.created' => 'abriu um atendimento',
-        'encounter.updated' => 'editou um rascunho de prontuário',
-        'encounter.finalized' => 'finalizou e assinou um atendimento',
-        'encounter.addendum_added' => 'registrou um adendo',
-        'encounter.viewed' => 'consultou um prontuário',
-        'patient.clinical_viewed' => 'consultou um prontuário',
-        'patient.alert_added' => 'registrou um alerta clínico',
-        'patient.alert_resolved' => 'resolveu um alerta clínico',
-        'vaccination.registered' => 'registrou uma vacina',
-        'vaccination.voided' => 'anulou uma aplicação de vacina',
-    ];
     $firstName = strtok(auth()->user()->name, ' ');
     $todayLabel = ucfirst(now('America/Sao_Paulo')->locale('pt_BR')->translatedFormat('l, d \\d\\e F'));
-    $activityIcons = ['vaccination' => 'syringe', 'encounter' => 'stethoscope', 'appointment' => 'calendar', 'patient' => 'paw', 'guardian' => 'user', 'member' => 'users', 'invitation' => 'mail', 'unit' => 'building', 'tenant' => 'sparkles', 'auth' => 'shield'];
 @endphp
 
 @section('content')
@@ -76,16 +43,9 @@
     </section>
 
     <div class="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-        @if ($today !== null)
-            <x-stat :href="route('agenda.index')" icon="calendar" :value="$today['total']" :label="$today['total'] === 1 ? 'agendamento hoje' : 'agendamentos hoje'" :hint="$today['waiting'] ? $today['waiting'].' aguardando agora' : null" />
-        @endif
-        @if ($patientCount !== null)
-            <x-stat :href="route('patients.index')" icon="paw" :value="$patientCount" :label="$patientCount === 1 ? 'paciente ativo' : 'pacientes ativos'" />
-        @endif
-        <x-stat :href="route('units.index')" icon="building" :value="$unitCount" :label="$unitCount === 1 ? 'unidade' : 'unidades'" />
-        @if ($memberCount !== null)
-            <x-stat :href="route('team.index')" icon="users" :value="$memberCount" :label="$memberCount === 1 ? 'membro ativo' : 'membros ativos'" />
-        @endif
+        @foreach ($stats as $st)
+            <x-stat :href="$st['href']" :icon="$st['icon']" :value="$st['value']" :label="$st['label']" :hint="$st['hint']" />
+        @endforeach
     </div>
 
     <div class="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
@@ -128,9 +88,9 @@
             @endif
         </section>
 
-        <section aria-labelledby="atalhos">
+        <section aria-label="Pendências">
             @if ($drafts !== null && $drafts->isNotEmpty())
-                <h2 class="mb-3 flex items-center gap-2 text-lg font-bold tracking-tight"><span class="flex size-8 items-center justify-center rounded-xl bg-warning-bg text-warning"><x-icon name="stethoscope" :size="16" /></span> Prontuários em rascunho</h2>
+                <h2 id="rascunhos" class="mb-3 flex scroll-mt-24 items-center gap-2 text-lg font-bold tracking-tight"><span class="flex size-8 items-center justify-center rounded-xl bg-warning-bg text-warning"><x-icon name="stethoscope" :size="16" /></span> Prontuários em rascunho</h2>
                 <x-card class="mb-6 p-2">
                     <ul>
                         @foreach ($drafts as $dr)
@@ -160,7 +120,7 @@
                                 $dl = (int) \Illuminate\Support\Carbon::today()->diffInDays($vd->next_due_on, false);
                             @endphp
                             <li>
-                                <a href="{{ route('patients.show', $vd->patient) }}" class="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl px-3 py-2.5 transition hover:bg-tint">
+                                <a href="{{ route('patients.show', $vd->patient) }}#vacinas" class="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl px-3 py-2.5 transition hover:bg-tint">
                                     <span class="min-w-0 flex-1 basis-32"><span class="block truncate font-semibold">{{ $vd->patient->name }}</span><span class="block truncate text-xs text-muted">{{ $vd->vaccine->name }}</span></span>
                                     @include('vaccinations._status', ['status' => $dl < 0 ? 'overdue' : 'soon', 'days' => $dl])
                                 </a>
@@ -169,29 +129,7 @@
                     </ul>
                 </x-card>
             @endif
-            <h2 id="atalhos" class="mb-3 text-lg font-bold tracking-tight">Atalhos</h2>
-            @php
-                $shortcuts = array_values(array_filter([
-                    $fvCan('schedule:write') ? [route('agenda.create'), 'Novo agendamento', 'calendar', 'Marcar horário'] : null,
-                    $fvCan('patients:write') ? [route('patients.create'), 'Novo paciente', 'plus', 'Cadastro rápido'] : null,
-                    $fvCan('patients:read') ? [route('patients.index'), 'Buscar paciente ou responsável', 'search', 'Nome, telefone ou microchip'] : null,
-                    $fvCan('units:create') ? [route('units.index').'#nova', 'Nova unidade', 'building', 'Filial ou local'] : null,
-                    $fvCan('theme:update') ? [route('settings.appearance'), 'Personalizar aparência', 'palette', 'Cores da clínica'] : null,
-                    [route('units.index'), 'Ver unidades', 'building', 'Fusos e endereços'],
-                ]));
-            @endphp
-            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                @foreach ($shortcuts as [$href, $label, $icon, $hint])
-                    <a href="{{ $href }}" class="fv-lift flex min-h-16 items-center gap-3 rounded-2xl border border-line bg-surface p-3 shadow-card">
-                        <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-tint text-link"><x-icon :name="$icon" :size="20" /></span>
-                        <span class="min-w-0">
-                            <span class="block text-sm font-semibold leading-snug text-ink">{{ $label }}</span>
-                            <span class="block truncate text-xs text-muted">{{ $hint }}</span>
-                        </span>
-                    </a>
-                @endforeach
-            </div>
-            <div class="mt-4 flex items-start gap-3 rounded-2xl border border-line bg-surface p-4 text-sm text-muted shadow-card">
+            <div class="flex items-start gap-3 rounded-2xl border border-line bg-surface p-4 text-sm text-muted shadow-card">
                 <span class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-success-bg text-success"><x-icon name="shield" :size="18" /></span>
                 <span>Ambiente isolado: você vê somente dados de <strong class="text-ink">{{ $fvTenant?->trade_name }}</strong>.</span>
             </div>
@@ -208,9 +146,9 @@
                     <ul>
                         @foreach ($activity as $event)
                             <li class="flex items-center gap-3 rounded-2xl px-3 py-2.5">
-                                <span class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-muted"><x-icon :name="$activityIcons[strtok($event->action, '.')] ?? 'sparkles'" :size="18" /></span>
-                                <span class="min-w-0 flex-1 text-sm"><strong class="font-semibold">{{ $event->actor?->name ?? 'Sistema' }}</strong> <span class="text-muted">{{ $actions[$event->action] ?? $event->action }}</span></span>
-                                <time class="shrink-0 text-xs tabular-nums text-muted" datetime="{{ $event->created_at->toIso8601String() }}" title="{{ $event->created_at->timezone('America/Sao_Paulo')->format('d/m/Y H:i') }}">{{ $event->created_at->locale('pt_BR')->diffForHumans() }}</time>
+                                <span class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-muted"><x-icon :name="\App\Support\AuditLabels::icon($event->action)" :size="18" /></span>
+                                <span class="min-w-0 flex-1 text-sm"><strong class="font-semibold">{{ $event->actor?->name ?? 'Sistema' }}</strong> <span class="text-muted">{{ \App\Support\AuditLabels::label($event->action) }}</span></span>
+                                <time class="shrink-0 text-xs tabular-nums text-muted" datetime="{{ $event->created_at->toIso8601String() }}" title="{{ $event->created_at->timezone('America/Sao_Paulo')->format('d/m/Y H:i') }}">{{ $event->created_at->diffInSeconds(now()) < 60 ? 'agora' : $event->created_at->locale('pt_BR')->diffForHumans() }}</time>
                             </li>
                         @endforeach
                     </ul>

@@ -20,7 +20,7 @@
                         $g = $v->patient->guardians->first();
                     @endphp
                     <li>
-                        <a href="{{ route('patients.show', $v->patient) }}" class="group flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl px-3.5 py-3 transition hover:bg-tint">
+                        <a href="{{ route('patients.show', $v->patient) }}#vacinas" class="group flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl px-3.5 py-3 transition hover:bg-tint">
                             <x-avatar :name="$v->patient->name" icon="paw" :tone="\App\Support\Species::tone($v->patient->species)" />
                             <span class="min-w-0 flex-1 basis-48">
                                 <span class="block font-semibold">{{ $v->patient->name }} · {{ $v->vaccine->name }}</span>

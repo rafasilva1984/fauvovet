@@ -225,9 +225,12 @@ final class PatientRegistryTest extends TestCase
     #[Group('tenant-isolation')]
     public function test_isolamento_painel_conta_so_pacientes_da_clinica(): void
     {
-        $this->loginInto('diana', Seed::TENANT_B);
-        $this->get('/painel')->assertOk()->assertSee('pacientes ativos');
-        $count = $this->ctx()->runForTenant(Seed::TENANT_B, fn () => Patient::query()->where('status', 'active')->count());
-        $this->assertSame(2, $count);
+        // A recepção vê "pacientes ativos" no painel (o titular vê pendências clínicas no lugar).
+        $this->loginInto('carla', Seed::TENANT_A);
+        $html = $this->get('/painel')->assertOk()->getContent();
+        $count = $this->ctx()->runForTenant(Seed::TENANT_A, fn () => Patient::query()->where('status', 'active')->count());
+        $total = $this->ctx()->runAsSystem(fn () => Patient::query()->where('status', 'active')->count());
+        $this->assertGreaterThan($count, $total, 'o seed precisa de pacientes ativos nas duas clínicas');
+        $this->assertMatchesRegularExpression('#>'.$count.'</span>\s*<span[^>]*>pacientes? ativos?</span>#', (string) $html);
     }
 }

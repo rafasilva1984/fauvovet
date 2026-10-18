@@ -25,6 +25,7 @@ use App\Http\Controllers\PostalCodeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SavedSearchController;
 use App\Http\Controllers\SearchSynonymController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\VaccinationController;
@@ -212,6 +213,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/equipe/convites/{invitation}', [TeamController::class, 'revoke'])->middleware('permission:members:manage')->name('team.invite.revoke');
         Route::get('/equipe/{membership}', [TeamController::class, 'edit'])->middleware('permission:members:manage')->name('team.edit');
         Route::put('/equipe/{membership}', [TeamController::class, 'update'])->middleware('permission:members:manage')->name('team.update');
+        Route::get('/configuracoes', [SettingsController::class, 'index'])->name('settings.index');
         Route::get('/configuracoes/aparencia', [AppearanceController::class, 'edit'])->middleware('permission:theme:update')->name('settings.appearance');
         Route::put('/configuracoes/aparencia', [AppearanceController::class, 'update'])->middleware('permission:theme:update')->name('settings.appearance.update');
 

@@ -27,7 +27,7 @@
         <aside class="flex flex-col gap-4">
             <x-card>
                 <dl class="grid gap-3 text-sm">
-                    <div><dt class="text-muted">Paciente</dt><dd class="font-semibold"><a class="text-link underline underline-offset-4" href="{{ route('patients.show', $document->patient) }}">{{ $document->patient->name }}</a></dd></div>
+                    <div><dt class="text-muted">Paciente</dt><dd class="font-semibold"><a class="text-link underline underline-offset-4" href="{{ route('patients.show', $document->patient) }}#documentos">{{ $document->patient->name }}</a></dd></div>
                     @if ($document->encounter)
                         <div><dt class="text-muted">Atendimento</dt><dd class="font-semibold"><a class="text-link underline underline-offset-4" href="{{ route('encounters.show', $document->encounter) }}">{{ $document->encounter->started_at->timezone('America/Sao_Paulo')->format('d/m/Y') }}</a></dd></div>
                     @endif
