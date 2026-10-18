@@ -36,6 +36,7 @@
                                 <span class="block font-semibold">{{ $e->patient->name }} · {{ $e->type->name }}</span>
                                 <span class="block truncate text-sm text-muted">Pedido em {{ $e->requested_at->timezone('America/Sao_Paulo')->format('d/m/Y') }}{{ $e->isOpen() ? ' · há '.$days.' '.($days === 1 ? 'dia' : 'dias') : '' }}{{ $e->lab_name ? ' · '.$e->lab_name : '' }}</span>
                             </span>
+                            @if ($e->out_of_range_count)<x-badge tone="danger">{{ $e->out_of_range_count }} fora da faixa</x-badge>@endif
                             <x-badge :tone="\App\Models\ExamRequest::TONE[$e->status]" :dot="true">{{ \App\Models\ExamRequest::STATUS[$e->status] }}</x-badge>
                         </a>
                     </li>

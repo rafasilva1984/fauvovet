@@ -2,13 +2,16 @@
 
 namespace App\Services;
 
+use App\Documents\PdfRenderer;
 use App\Documents\TemplateImporter;
 use App\Models\AppointmentType;
 use App\Models\Attachment;
 use App\Models\ExamRequest;
+use App\Models\ExamResultValue;
 use App\Models\ExamType;
 use App\Models\Membership;
 use App\Models\Unit;
+use App\Models\User;
 use App\Models\Vaccine;
 use App\Tenancy\TenantContext;
 use Illuminate\Support\Carbon;
@@ -34,9 +37,10 @@ final class DemoDataService
      * Versão do conjunto de demonstração; SUBIR a cada entrega que amplia os dados. Fica gravada no 1º responsável demo
      * para a tela avisar "demonstração desatualizada" e oferecer "Atualizar" (remover + carregar).
      * 1 = 18/10 (base) · 2 = 19/10 (busca em texto livre) · 3 = 19/10 (anexos com texto + correções da busca) ·
-     * 4 = 20/10 (sinônimos, pesquisa salva, modelo importado e exames).
+     * 4 = 20/10 (sinônimos, pesquisa salva, modelo importado e exames) · 5 = 21/10 (fundos de documento e exames
+     * estruturados com série histórica).
      */
-    public const VERSION = 4;
+    public const VERSION = 5;
 
     /** Responsáveis: [nome, celular, cidade/UF]. */
     private const GUARDIANS = [
@@ -178,6 +182,21 @@ final class DemoDataService
         [17, 'Hemograma completo', 'collected', 1, null, null, null, null],
         [7, 'Ecocardiograma', 'requested', 0, null, null, null, null],
         [2, 'Urinálise', 'cancelled', 12, null, null, null, 'Tutor optou por não realizar (demonstração).'],
+        [10, 'Bioquímica renal (ureia e creatinina)', 'reviewed', 300, 'Laboratório Fictício Vet', 'Valores no quadro estruturado (fictícios).', 'Creatinina discretamente acima da faixa; repetir em 4–6 meses (demonstração).', null],
+        [10, 'Bioquímica renal (ureia e creatinina)', 'reviewed', 150, 'Laboratório Fictício Vet', 'Valores no quadro estruturado (fictícios).', 'Progressão da azotemia; dieta renal iniciada (demonstração).', null],
+        [0, 'Hemograma completo', 'received', 2, 'Na própria clínica', 'Valores no quadro estruturado (fictícios).', null, null],
+    ];
+
+    /**
+     * Valores estruturados FICTÍCIOS: [exame (índice em EXAMS), parâmetro, valor, ref. mín., ref. máx.]. As faixas são
+     * inventadas para a demonstração — não use como referência clínica.
+     */
+    private const EXAM_VALUES = [
+        [7, 'Creatinina', 1.9, 0.8, 1.8], [7, 'Ureia', 58, 42, 64],
+        [8, 'Creatinina', 2.6, 0.8, 1.8], [8, 'Ureia', 85, 42, 64],
+        [0, 'Creatinina', 3.8, 0.8, 1.8], [0, 'Ureia', 120, 42, 64],
+        [9, 'Hemácias', 6.8, 5.5, 8.5], [9, 'Hemoglobina', 15.2, 12, 18], [9, 'Hematócrito', 45, 37, 55],
+        [9, 'Leucócitos', 19800, 6000, 17000], [9, 'Plaquetas', 310000, 200000, 500000],
     ];
 
     /** Alertas: [paciente, tipo, gravidade, descrição]. */
@@ -358,6 +377,8 @@ final class DemoDataService
                 $written = $this->attachmentFiles($base, $userId, $now);
                 $written = [...$written, ...$this->searchAndTemplates($userId, $now)];
                 $this->exams($userId, $tz);
+                $this->examValues($userId);
+                $written = [...$written, ...$this->backgrounds($userId)];
                 // Busca clínica: os pacientes demo já entram no índice.
                 foreach (array_keys(self::PATIENTS) as $i) {
                     $this->search->reindexPatient($this->id('PT', $i + 1));
@@ -462,6 +483,117 @@ final class DemoDataService
                 'cancelled_at' => $cancel ? $at->copy()->addDay() : null, 'cancel_reason' => $cancel, 'created_at' => $at, 'updated_at' => $at,
             ]);
         }
+    }
+
+    /**
+     * Valores estruturados dos exames demo e faixas FICTÍCIAS no catálogo (só onde a clínica ainda não tem faixa
+     * para a espécie — as faixas demo têm ID com o prefixo e saem na remoção).
+     */
+    private function examValues(string $userId): void
+    {
+        $tenant = $this->context->requireId();
+        $analytes = DB::table('exam_analytes')->where('tenant_id', $tenant)->get(['id', 'exam_type_id', 'name', 'unit']);
+        $exams = DB::table('exam_requests')->where('tenant_id', $tenant)->where('id', 'like', self::PREFIX.'%')->get()->keyBy('id');
+        $now = now();
+        foreach (self::EXAM_VALUES as $i => [$e, $name, $value, $min, $max]) {
+            $exam = $exams->get($this->id('EX', $e + 1));
+            $analyte = $exam ? $analytes->first(fn ($a) => $a->exam_type_id === $exam->exam_type_id && $a->name === $name) : null;
+            if ($exam === null || $analyte === null) {
+                continue; // a clínica renomeou o exame/parâmetro padrão
+            }
+            $species = self::PATIENTS[self::EXAMS[$e][0]][1];
+            if (! DB::table('exam_reference_ranges')->where('tenant_id', $tenant)->where('analyte_id', $analyte->id)->where('species', $species)->exists()) {
+                DB::table('exam_reference_ranges')->insert(['id' => $this->id('RR', $i + 1), 'tenant_id' => $tenant, 'analyte_id' => $analyte->id,
+                    'species' => $species, 'ref_min' => $min, 'ref_max' => $max, 'created_at' => $now, 'updated_at' => $now]);
+            }
+            DB::table('exam_result_values')->insert(['id' => $this->id('EV', $i + 1), 'tenant_id' => $tenant, 'exam_request_id' => $exam->id,
+                'patient_id' => $exam->patient_id, 'analyte_id' => $analyte->id, 'value' => $value, 'unit' => $analyte->unit, 'ref_min' => $min, 'ref_max' => $max,
+                'flag' => ExamResultValue::flagFor((float) $value, (float) $min, (float) $max), 'measured_at' => $exam->collected_at ?? $exam->requested_at,
+                'recorded_by' => $userId, 'created_at' => $now, 'updated_at' => $now]);
+        }
+    }
+
+    /**
+     * Papel timbrado (PDF) e receituário (Word com cabeçalho, logotipo e rodapé) FICTÍCIOS — só para os tipos que a
+     * clínica ainda não enviou (nunca substitui um fundo real).
+     *
+     * @return list<string> arquivos gravados
+     */
+    private function backgrounds(string $userId): array
+    {
+        $service = app(DocumentBackgroundService::class);
+        $current = $service->current();
+        $actor = User::query()->findOrFail($userId);
+        $written = [];
+        if (! isset($current['letterhead'])) {
+            $pdf = PdfRenderer::html(self::letterheadHtml());
+            $bg = $service->store('letterhead', $pdf, ['mime' => 'application/pdf', 'extension' => 'pdf'], 'papel-timbrado-demonstracao.pdf', $actor, $this->id('BG', 1));
+            $written = [$bg->source_path, $bg->render_path];
+        }
+        $docx = self::letterheadDocx('Clínica Demonstração (fictícia)', 'RECEITUÁRIO', 'Rua Fictícia, 100 — São Paulo/SP · (11) 0000-0000 · demonstração');
+        if (! isset($current['prescription']) && $docx !== null) {
+            $bg = $service->store('prescription', $docx, ['mime' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'extension' => 'docx'],
+                'receituario-demonstracao.docx', $actor, $this->id('BG', 2));
+            $written = [...$written, $bg->source_path, $bg->render_path];
+        }
+
+        return $written;
+    }
+
+    /** Papel timbrado fictício: faixa superior com nome, filete e rodapé. */
+    private static function letterheadHtml(): string
+    {
+        return '<!DOCTYPE html><html><head><meta charset="utf-8"><style>@page{margin:0}body{margin:0;font-family:"DejaVu Sans",sans-serif}</style></head><body>'
+            .'<div style="position:absolute;left:0;top:0;width:210mm;height:30mm;background:#0e5e66"></div>'
+            .'<div style="position:absolute;left:18mm;top:9mm;color:#fff;font-size:17pt;font-weight:bold">Clínica Demonstração (fictícia)</div>'
+            .'<div style="position:absolute;left:18mm;top:19mm;color:#d6f1ef;font-size:8.5pt">Medicina veterinária · papel timbrado de demonstração</div>'
+            .'<div style="position:absolute;left:18mm;right:18mm;top:33mm;border-top:1.2pt solid #e0a43a"></div>'
+            .'<div style="position:absolute;left:18mm;right:18mm;bottom:12mm;border-top:0.6pt solid #0e5e66;padding-top:2mm;font-size:7.5pt;color:#0e5e66;text-align:center">'
+            .'Rua Fictícia, 100 — Centro — São Paulo/SP · (11) 0000-0000 · contato@demo.exemplo.test</div></body></html>';
+    }
+
+    /**
+     * DOCX de timbre fictício (Word abre): cabeçalho com logotipo PNG, nome e subtítulo centralizados e rodapé com
+     * endereço; margens de 45/25 mm. Também usado nos testes. Sem ZipArchive no servidor → null.
+     */
+    public static function letterheadDocx(string $name, string $subtitle, string $footer): ?string
+    {
+        if (! class_exists(\ZipArchive::class)) {
+            return null;
+        }
+        $w = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"'
+            .' xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"'
+            .' xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"';
+        $t = fn (string $s, int $size, bool $bold = false, string $color = '0E5E66') => '<w:r><w:rPr>'.($bold ? '<w:b/>' : '').'<w:color w:val="'.$color.'"/><w:sz w:val="'.$size.'"/></w:rPr><w:t xml:space="preserve">'.htmlspecialchars($s, ENT_XML1).'</w:t></w:r>';
+        $logo = '<w:r><w:drawing><wp:inline><wp:extent cx="540000" cy="540000"/><wp:docPr id="1" name="Logotipo"/><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">'
+            .'<pic:pic><pic:nvPicPr><pic:cNvPr id="1" name="logo.png"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rIdLogo"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>'
+            .'<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="540000" cy="540000"/></a:xfrm><a:prstGeom prst="rect"/></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>';
+        $center = '<w:pPr><w:jc w:val="center"/></w:pPr>';
+        $header = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:hdr '.$w.'><w:p>'.$center.$logo.'</w:p><w:p>'.$center.$t($name, 30, true).'</w:p>'
+            .'<w:p>'.$center.$t($subtitle, 20, false, 'B07A1F').'</w:p></w:hdr>';
+        $footerXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr '.$w.'><w:p>'.$center.$t($footer, 15).'</w:p></w:ftr>';
+        $document = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document '.$w.'><w:body><w:p><w:r><w:t>Corpo do documento (não entra no timbre).</w:t></w:r></w:p>'
+            .'<w:sectPr><w:headerReference w:type="default" r:id="rIdH"/><w:footerReference w:type="default" r:id="rIdF"/><w:pgSz w:w="11906" w:h="16838"/>'
+            .'<w:pgMar w:top="2551" w:right="1134" w:bottom="1417" w:left="1134" w:header="567" w:footer="567" w:gutter="0"/></w:sectPr></w:body></w:document>';
+        $rel = fn (string $id, string $type, string $target) => '<Relationship Id="'.$id.'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/'.$type.'" Target="'.$target.'"/>';
+        $rels = fn (string $inner) => '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'.$inner.'</Relationships>';
+        $file = (string) tempnam(sys_get_temp_dir(), 'fvlh');
+        $zip = new \ZipArchive;
+        $zip->open($file, \ZipArchive::OVERWRITE);
+        $zip->addFromString('[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/>'
+            .'<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>');
+        $zip->addFromString('_rels/.rels', $rels($rel('rId1', 'officeDocument', 'word/document.xml')));
+        $zip->addFromString('word/document.xml', $document);
+        $zip->addFromString('word/_rels/document.xml.rels', $rels($rel('rIdH', 'header', 'header1.xml').$rel('rIdF', 'footer', 'footer1.xml')));
+        $zip->addFromString('word/header1.xml', $header);
+        $zip->addFromString('word/_rels/header1.xml.rels', $rels($rel('rIdLogo', 'image', 'media/logo.png')));
+        $zip->addFromString('word/footer1.xml', $footerXml);
+        $zip->addFromString('word/media/logo.png', self::png());
+        $zip->close();
+        $bytes = (string) file_get_contents($file);
+        @unlink($file);
+
+        return $bytes;
     }
 
     /** DOCX mínimo válido (Word abre) com um parágrafo por frase. */
@@ -572,7 +704,7 @@ final class DemoDataService
                     ...$t('issued_documents')->whereIn('patient_id', $patients)->pluck('pdf_path')->all(),
                     ...$t('attachments')->whereIn('patient_id', $patients)->pluck('storage_path')->all(),
                 ];
-                foreach (['clinical_search_documents', 'exam_requests', 'vaccinations', 'issued_documents', 'attachments', 'patient_weights', 'patient_alerts', 'encounter_diagnoses'] as $table) {
+                foreach (['clinical_search_documents', 'exam_result_values', 'exam_requests', 'vaccinations', 'issued_documents', 'attachments', 'patient_weights', 'patient_alerts', 'encounter_diagnoses'] as $table) {
                     $t($table)->whereIn('patient_id', $patients)->delete();
                 }
                 if ($encounters !== []) {
@@ -588,6 +720,17 @@ final class DemoDataService
             $demo('patients')->delete();
             $demo('guardians')->delete();
             $demo('clinical_search_synonyms')->delete();
+            $demo('exam_reference_ranges')->delete();
+            // Fundos demo: apaga (com os arquivos), a não ser que um documento de paciente real o use — aí só aposenta.
+            foreach ($demo('document_backgrounds')->get(['id', 'source_path', 'render_path']) as $bg) {
+                if ($t('issued_documents')->where('background_id', $bg->id)->exists()) {
+                    $t('document_backgrounds')->where('id', $bg->id)->whereNull('retired_at')->update(['retired_at' => now()]);
+                } else {
+                    $t('document_backgrounds')->where('id', $bg->id)->delete();
+                    $files[] = (string) $bg->source_path;
+                    $files[] = (string) $bg->render_path;
+                }
+            }
             $demo('saved_searches')->delete();
             // Modelo importado demo: apaga (com o original), a não ser que um documento de paciente real o use — aí só desativa.
             foreach ($demo('document_templates')->get(['id', 'source_path']) as $tpl) {

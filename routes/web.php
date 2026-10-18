@@ -10,6 +10,7 @@ use App\Http\Controllers\ClinicalCaseController;
 use App\Http\Controllers\ClinicalSearchController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DemoDataController;
+use App\Http\Controllers\DocumentBackgroundController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\DocumentTemplateController;
 use App\Http\Controllers\EncounterController;
@@ -120,6 +121,12 @@ Route::middleware('auth')->group(function () {
             Route::get('/configuracoes/modelos-de-documento/{template}/original', [DocumentTemplateController::class, 'original'])->name('document-templates.original');
             Route::get('/configuracoes/modelos-de-documento/{template}/editar', [DocumentTemplateController::class, 'edit'])->name('document-templates.edit');
             Route::put('/configuracoes/modelos-de-documento/{template}', [DocumentTemplateController::class, 'update'])->name('document-templates.update');
+            Route::get('/configuracoes/fundos-de-documento', [DocumentBackgroundController::class, 'index'])->name('document-backgrounds.index');
+            Route::post('/configuracoes/fundos-de-documento', [DocumentBackgroundController::class, 'store'])->middleware('throttle:attachment-upload')->name('document-backgrounds.store');
+            Route::put('/configuracoes/fundos-de-documento/{background}', [DocumentBackgroundController::class, 'update'])->name('document-backgrounds.update');
+            Route::post('/configuracoes/fundos-de-documento/{background}/remover', [DocumentBackgroundController::class, 'retire'])->name('document-backgrounds.retire');
+            Route::get('/configuracoes/fundos-de-documento/{background}/previa', [DocumentBackgroundController::class, 'preview'])->middleware('throttle:attachment-upload')->name('document-backgrounds.preview');
+            Route::get('/configuracoes/fundos-de-documento/{background}/original', [DocumentBackgroundController::class, 'original'])->name('document-backgrounds.original');
         });
 
         // Vacinação: recepção vê carteira/vencimentos (vaccines:read); equipe clínica registra (vaccines:write).
@@ -148,6 +155,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/pacientes/{patient}/exames', [ExamController::class, 'store'])->name('exams.store');
             Route::post('/exames/{exam}/situacao', [ExamController::class, 'advance'])->name('exams.advance');
             Route::post('/exames/{exam}/resultado', [ExamController::class, 'result'])->middleware('throttle:attachment-upload')->name('exams.result');
+            Route::post('/exames/{exam}/valores', [ExamController::class, 'values'])->name('exams.values');
             Route::post('/exames/{exam}/revisar', [ExamController::class, 'review'])->name('exams.review');
             Route::post('/exames/{exam}/cancelar', [ExamController::class, 'cancel'])->name('exams.cancel');
         });
@@ -155,6 +163,11 @@ Route::middleware('auth')->group(function () {
             Route::get('/configuracoes/exames', [ExamTypeController::class, 'index'])->name('exam-types.index');
             Route::post('/configuracoes/exames', [ExamTypeController::class, 'store'])->name('exam-types.store');
             Route::put('/configuracoes/exames/{type}', [ExamTypeController::class, 'update'])->name('exam-types.update');
+            Route::get('/configuracoes/exames/{type}/parametros', [ExamTypeController::class, 'show'])->name('exam-types.show');
+            Route::post('/configuracoes/exames/{type}/parametros', [ExamTypeController::class, 'storeAnalyte'])->name('exam-analytes.store');
+            Route::put('/configuracoes/exames/parametros/{analyte}', [ExamTypeController::class, 'updateAnalyte'])->name('exam-analytes.update');
+            Route::post('/configuracoes/exames/parametros/{analyte}/faixas', [ExamTypeController::class, 'storeRange'])->name('exam-ranges.store');
+            Route::post('/configuracoes/exames/faixas/{range}/remover', [ExamTypeController::class, 'destroyRange'])->name('exam-ranges.destroy');
         });
 
         // Busca clínica em texto livre no prontuário (ADR-017).

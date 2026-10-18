@@ -6,6 +6,7 @@ use App\Files\TextExtractor;
 use App\Models\DocumentTemplate;
 use App\Models\Encounter;
 use App\Models\ExamRequest;
+use App\Models\ExamResultValue;
 use App\Models\PatientAlert;
 use App\Support\SearchText;
 use App\Tenancy\TenantContext;
@@ -120,8 +121,15 @@ final class ClinicalSearchIndex
             ->get(['exam_requests.id', 'exam_requests.patient_id', 'exam_requests.encounter_id', 'exam_requests.status', 'exam_requests.request_notes',
                 'exam_requests.result_text', 'exam_requests.interpretation', 'exam_requests.requested_at', 'exam_requests.received_at',
                 'exam_requests.requested_by', 'exam_requests.reviewed_by', 'exam_types.name']);
+        // Valores estruturados: "Creatinina: 2,3 mg/dL (acima da faixa)" — a situação é só a comparação com a faixa.
+        $structured = $t('exam_result_values')->join('exam_analytes', fn ($j) => $j->on('exam_analytes.id', '=', 'exam_result_values.analyte_id')->on('exam_analytes.tenant_id', '=', 'exam_result_values.tenant_id'))
+            ->whereIn('exam_result_values.patient_id', $patientIds)->orderBy('exam_analytes.position')
+            ->get(['exam_result_values.exam_request_id', 'exam_result_values.value', 'exam_result_values.value_text', 'exam_result_values.unit', 'exam_result_values.flag', 'exam_analytes.name'])
+            ->groupBy('exam_request_id')
+            ->map(fn ($rows) => $rows->map(fn ($v) => $v->name.': '.($v->value !== null ? ExamResultValue::fmt($v->value) : $v->value_text).($v->unit ? ' '.$v->unit : '')
+                .(in_array($v->flag, ['low', 'high'], true) ? ' ('.mb_strtolower(ExamResultValue::FLAGS[$v->flag]).')' : ''))->join('; '));
         foreach ($exams as $x) {
-            $body = trim($x->name.($x->request_notes ? "\nPedido: ".$x->request_notes : '').($x->result_text ? "\nResultado: ".$x->result_text : '')
+            $body = trim($x->name.($x->request_notes ? "\nPedido: ".$x->request_notes : '').($structured->has($x->id) ? "\nValores: ".$structured->get($x->id) : '').($x->result_text ? "\nResultado: ".$x->result_text : '')
                 .($x->interpretation ? "\nInterpretação: ".$x->interpretation : ''));
             $docs[] = [$x->patient_id, $x->encounter_id, 'exam', $x->id, '', 'Exame: '.$x->name.' — '.(ExamRequest::STATUS[$x->status] ?? $x->status), null,
                 $x->received_at ?? $x->requested_at, $x->reviewed_by ?? $x->requested_by, $body];

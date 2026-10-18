@@ -35,6 +35,8 @@ final class DeployController extends Controller
         return response()->json([
             'php' => PHP_VERSION,
             'extensions_missing' => array_values(array_filter($required, fn ($e) => ! extension_loaded($e))),
+            // Recomendadas: gd (imagens PNG com transparência nos PDFs e fundos de documento).
+            'extensions_recommended_missing' => extension_loaded('gd') ? [] : ['gd'],
             'argon2id' => defined('PASSWORD_ARGON2ID'),
             'hash_driver' => config('hashing.driver'),
             'https' => $request->isSecure(),

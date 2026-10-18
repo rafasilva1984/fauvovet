@@ -27,7 +27,7 @@
                 <h2 class="font-bold">O que acontece</h2>
                 <ul class="list-disc space-y-1 pl-5 text-muted">
                     <li>O <strong class="text-ink">original</strong> fica guardado sem alteração (dá para baixar depois).</li>
-                    <li>O <strong class="text-ink">texto</strong> vira o corpo do modelo. Negrito, tabelas, imagens e timbre <strong class="text-ink">não</strong> são convertidos.</li>
+                    <li>O <strong class="text-ink">texto</strong> vira o corpo do modelo. Negrito, tabelas, imagens e timbre <strong class="text-ink">não</strong> são convertidos — o timbre da clínica é enviado em <a class="font-semibold text-link underline underline-offset-4" href="{{ route('document-backgrounds.index') }}">Fundos de documento</a>.</li>
                     <li>Lacunas como “Paciente: ______” viram variáveis (&#123;&#123;paciente.nome&#125;&#125;). As outras viram [completar].</li>
                     <li>O modelo nasce <strong class="text-ink">desativado</strong>: revise e ative para usar.</li>
                 </ul>

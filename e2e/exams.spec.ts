@@ -47,3 +47,33 @@ test('sinônimos e pesquisa salva na busca clínica', async ({ page }, testInfo)
   await expect(page.getByRole('link', { name: `Prurido ${testInfo.project.name}` })).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test('exames estruturados: faixa no catálogo, valores com situação e gráfico', async ({ page }) => {
+  const errors = trackConsoleErrors(page);
+  await loginInto(page, USERS.ana);
+  await page.goto('configuracoes/exames');
+  await page.getByText('Bioquímica renal (ureia e creatinina)').first().click();
+  await page.getByRole('link', { name: /Parâmetros e faixas de Bioquímica renal/ }).click();
+  await expect(page.getByRole('heading', { level: 1, name: /Parâmetros — Bioquímica renal/ })).toBeVisible();
+  const card = page.locator('form', { has: page.getByRole('button', { name: 'Salvar faixa de Creatinina' }) });
+  await card.getByRole('combobox', { name: 'Espécie' }).selectOption({ label: 'Gato' });
+  await card.getByRole('textbox', { name: 'Mínimo' }).fill('0,8');
+  await card.getByRole('textbox', { name: 'Máximo' }).fill('1,8');
+  await card.getByRole('button', { name: 'Salvar faixa de Creatinina' }).click();
+  await expect(page.getByText('Faixa de “Creatinina” salva.')).toBeVisible();
+
+  await page.goto('pacientes/01K7FV0000000000000PTA0002'); // Mia (gata)
+  await page
+    .getByRole('combobox', { name: 'Pedir exame' })
+    .selectOption({ label: 'Bioquímica renal (ureia e creatinina)' });
+  await page.getByRole('button', { name: 'Solicitar exame' }).click();
+  await expect(page.getByRole('heading', { level: 2, name: 'Valores do exame' })).toBeVisible();
+  const row = page.locator('li', { hasText: 'Creatinina' });
+  await expect(row.getByRole('textbox', { name: 'Ref. mín.' })).toHaveValue('0,8'); // faixa da espécie veio do catálogo
+  await row.getByRole('textbox', { name: 'Resultado' }).fill('2,4');
+  await page.getByRole('button', { name: 'Salvar valores' }).click();
+  await expect(page.getByText(/Valores registrados/)).toBeVisible();
+  await expect(page.getByText('Acima da faixa').first()).toBeVisible();
+  await expect(page.getByText('1 fora da faixa')).toBeVisible();
+  expect(errors).toEqual([]);
+});

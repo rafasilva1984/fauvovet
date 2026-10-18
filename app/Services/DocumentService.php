@@ -2,7 +2,10 @@
 
 namespace App\Services;
 
+use App\Documents\PdfOverlay;
+use App\Documents\PdfRenderer;
 use App\Documents\Placeholders;
+use App\Models\DocumentBackground;
 use App\Models\DocumentTemplate;
 use App\Models\Encounter;
 use App\Models\Guardian;
@@ -16,8 +19,6 @@ use App\Models\User;
 use App\Support\Audit;
 use App\Support\Species;
 use App\Tenancy\TenantContext;
-use Dompdf\Dompdf;
-use Dompdf\Options;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -38,11 +39,17 @@ final class DocumentService
         ['Termo de consentimento', 'consent', 'Termo de consentimento livre e esclarecido', "Eu, {{responsavel.nome}}, documento {{responsavel.documento}}, residente em {{responsavel.endereco}}, responsável pelo animal {{paciente.nome}} ({{paciente.especie}}, {{paciente.raca}}), autorizo a realização de [procedimento/anestesia] pela equipe de {{clinica.nome}}.\n\nDeclaro ter sido informado(a) sobre o procedimento, seus riscos, benefícios e alternativas, e que tive a oportunidade de esclarecer minhas dúvidas.\n\nDeclaro ainda estar ciente de que, em situações de emergência durante o procedimento, a equipe poderá adotar as medidas necessárias para preservar a vida do animal."],
     ];
 
-    public function __construct(private readonly TenantContext $context, private readonly Audit $audit, private readonly ClinicalSearchIndex $search) {}
+    public function __construct(
+        private readonly TenantContext $context,
+        private readonly Audit $audit,
+        private readonly ClinicalSearchIndex $search,
+        private readonly DocumentBackgroundService $backgrounds,
+    ) {}
 
     public function ensureDefaultTemplates(): void
     {
-        if (DocumentTemplate::query()->exists()) {
+        // Só modelos digitados contam: um modelo IMPORTADO (ou da demonstração) antes da 1ª visita não pode impedir os padrão.
+        if (DocumentTemplate::query()->whereNull('source_path')->exists()) {
             return;
         }
         DB::transaction(function () {
@@ -110,8 +117,11 @@ final class DocumentService
         ];
     }
 
-    /** Emite: valida permissão/CRMV, gera o PDF, grava em disco privado com hash e registra auditoria. */
-    public function issue(Patient $patient, ?Encounter $encounter, ?DocumentTemplate $template, string $category, string $title, string $body, User $issuer): IssuedDocument
+    /**
+     * Emite: valida permissão/CRMV, gera o PDF (sobre o fundo escolhido, se houver), grava em disco privado com hash
+     * e registra auditoria. $background: auto | letterhead | prescription | none (DocumentBackground::CHOICES).
+     */
+    public function issue(Patient $patient, ?Encounter $encounter, ?DocumentTemplate $template, string $category, string $title, string $body, User $issuer, string $background = 'auto'): IssuedDocument
     {
         if (! $this->canIssue($category)) {
             abort(403);
@@ -130,20 +140,21 @@ final class DocumentService
         $code = strtoupper(Str::random(12));
         $issuedAt = now();
         $unit = $this->unitFor($encounter);
+        $bg = $this->backgrounds->resolve(isset(DocumentBackground::CHOICES[$background]) ? $background : 'auto', $category);
         $pdf = $this->renderPdf([
             'id' => $id, 'code' => $code, 'title' => $title, 'body' => $body, 'category' => $category,
             'issuedAt' => $issuedAt->copy()->timezone($unit->timezone ?? 'America/Sao_Paulo'),
             'tenant' => Tenant::query()->firstOrFail(), 'unit' => $unit, 'issuer' => $issuer,
             'patient' => $patient, 'values' => $this->values($patient, $encounter, $issuer),
             'primary' => TenantTheme::query()->value('primary_color') ?? TenantTheme::DEFAULT['primary'],
-        ]);
+        ], $bg);
         $path = sprintf('documents/%s/%s/%s.pdf', $this->context->requireId(), $issuedAt->format('Y'), $id);
         Storage::disk('local')->put($path, $pdf);
 
         try {
             $document = new IssuedDocument([
                 'patient_id' => $patient->id, 'encounter_id' => $encounter?->id, 'template_id' => $template?->id,
-                'template_version' => $template?->version, 'category' => $category, 'title' => $title, 'body' => $body,
+                'template_version' => $template?->version, 'background_id' => $bg?->id, 'category' => $category, 'title' => $title, 'body' => $body,
                 'pdf_path' => $path, 'pdf_sha256' => hash('sha256', $pdf), 'pdf_bytes' => strlen($pdf), 'verification_code' => $code,
                 'issued_by' => $issuer->id, 'issuer_membership_id' => (string) $this->context->membership()?->id, 'issued_at' => $issuedAt,
             ]);
@@ -187,29 +198,44 @@ final class DocumentService
         return $bytes;
     }
 
-    /** @param array<string, mixed> $data */
-    public function renderPdf(array $data): string
+    /**
+     * PDF do documento. Com fundo: margens do fundo, sem o cabeçalho padrão, e o texto impresso sobre o timbre.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function renderPdf(array $data, ?DocumentBackground $background = null): string
     {
-        return $this->renderHtml(view('documents.pdf', $data)->render());
+        $html = view('documents.pdf', [...$data, 'background' => $background])->render();
+
+        return $background === null
+            ? PdfRenderer::html($html)
+            : PdfOverlay::compose(PdfRenderer::html($html), $this->backgrounds->renderBytes($background));
     }
 
     /** HTML (já escapado pela view) → PDF, com as mesmas restrições de segurança do dompdf. */
     public function renderHtml(string $html): string
     {
-        $options = new Options;
-        $options->setIsRemoteEnabled(false);       // nunca busca nada fora do servidor
-        $options->setIsPhpEnabled(false);
-        $options->setIsJavascriptEnabled(false);
-        $options->setChroot(resource_path('pdf'));
-        $options->setDefaultFont('DejaVu Sans');    // acentos do português
-        $options->setTempDir(storage_path('framework/cache'));
-        $options->setFontCache(storage_path('framework/cache'));
-        $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html, 'UTF-8');
-        $dompdf->setPaper('A4');
-        $dompdf->render();
+        return PdfRenderer::html($html);
+    }
 
-        return (string) $dompdf->output();
+    /** Prévia de um fundo com texto e dados FICTÍCIOS (não grava nada) — para conferir margens. */
+    public function previewBackground(DocumentBackground $background, User $viewer): string
+    {
+        $tenant = Tenant::query()->firstOrFail();
+        $patient = new Patient(['name' => 'Paciente de exemplo', 'species' => 'canine', 'sex' => 'female']);
+        $sample = $background->kind === 'prescription'
+            ? "Uso veterinário — Paciente de exemplo (Cão, 12 kg)\n\n1. Medicamento fictício 50 mg — comprimido\n   1 comprimido — via oral — a cada 12 horas — por 7 dias.\n\n2. Medicamento fictício 10 mg/mL — suspensão\n   2 mL — via oral — a cada 24 horas — por 5 dias.\n\nOrientações: texto de exemplo para conferir onde o conteúdo começa e termina sobre o seu receituário."
+            : str_repeat("Texto de exemplo para conferir as margens sobre o papel timbrado. Este parágrafo é fictício e serve só para mostrar onde o conteúdo do documento começa, até onde vai nas laterais e onde termina no rodapé.\n\n", 4);
+        $values = array_fill_keys(array_keys(Placeholders::LIST), '');
+
+        return $this->renderPdf([
+            'id' => 'PREVIA', 'code' => 'PREVIA000000', 'title' => $background->kind === 'prescription' ? 'Receituário' : 'Documento de exemplo',
+            'body' => $sample, 'category' => $background->kind === 'prescription' ? 'prescription' : 'guidance', 'issuedAt' => now('America/Sao_Paulo'),
+            'tenant' => $tenant, 'unit' => null, 'issuer' => $viewer, 'patient' => $patient,
+            'values' => [...$values, 'paciente.especie' => 'Cão', 'paciente.raca' => 'SRD', 'paciente.sexo' => 'fêmea', 'paciente.idade' => '5 anos',
+                'paciente.peso_atual' => '12 kg', 'responsavel.nome' => 'Responsável de exemplo', 'clinica.documento' => ''],
+            'primary' => TenantTheme::query()->value('primary_color') ?? TenantTheme::DEFAULT['primary'],
+        ], $background);
     }
 
     private function unitFor(?Encounter $encounter): ?Unit

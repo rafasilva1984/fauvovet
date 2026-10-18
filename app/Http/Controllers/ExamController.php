@@ -24,6 +24,7 @@ final class ExamController extends Controller
     {
         $status = in_array($s = (string) $request->query('situacao', 'abertos'), ['abertos', ...array_keys(ExamRequest::STATUS)], true) ? $s : 'abertos';
         $list = ExamRequest::query()->with(['patient:id,name,species', 'type:id,name,category'])
+            ->withCount(['values as out_of_range_count' => fn ($q) => $q->whereIn('flag', ['low', 'high'])])
             ->when($status === 'abertos', fn ($q) => $q->whereNotIn('status', ['reviewed', 'cancelled']), fn ($q) => $q->where('status', $status))
             ->orderBy('requested_at')->limit(200)->get();
 
@@ -51,7 +52,7 @@ final class ExamController extends Controller
         $exam->load(['patient', 'type', 'requester:id,name', 'reviewer:id,name,crmv', 'resultAttachment']);
         $this->audit->record('exam.viewed', (string) $request->user()?->getAuthIdentifier(), 'exam', $exam->id);
 
-        return view('exams.show', ['exam' => $exam]);
+        return view('exams.show', ['exam' => $exam, 'rows' => $this->exams->valueRows($exam)]);
     }
 
     public function advance(Request $request, ExamRequest $exam): RedirectResponse
@@ -71,6 +72,22 @@ final class ExamController extends Controller
         $this->exams->registerResult($exam, $request->input('result_text'), $request->file('file'), $this->actor($request));
 
         return redirect()->route('exams.show', $exam)->with('status', 'Resultado registrado.');
+    }
+
+    /** Valores estruturados (analitos) — campo vazio apaga enquanto o exame não foi revisado. */
+    public function values(Request $request, ExamRequest $exam): RedirectResponse
+    {
+        $request->validate([
+            'values' => ['required', 'array', 'max:100'],
+            'values.*.value' => ['nullable', 'string', 'max:60'],
+            'values.*.ref_min' => ['nullable', 'string', 'max:20'],
+            'values.*.ref_max' => ['nullable', 'string', 'max:20'],
+        ]);
+        /** @var array<string, array{value?: ?string, ref_min?: ?string, ref_max?: ?string}> $input */
+        $input = (array) $request->input('values');
+        $n = $this->exams->recordValues($exam, $input, $this->actor($request));
+
+        return redirect()->route('exams.show', $exam)->with('status', $n > 0 ? "Valores registrados ({$n})." : 'Nenhum valor preenchido.');
     }
 
     public function review(Request $request, ExamRequest $exam): RedirectResponse

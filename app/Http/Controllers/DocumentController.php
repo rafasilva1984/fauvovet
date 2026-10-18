@@ -3,23 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\Documents\Placeholders;
+use App\Models\DocumentBackground;
 use App\Models\DocumentTemplate;
 use App\Models\Encounter;
 use App\Models\IssuedDocument;
 use App\Models\Patient;
 use App\Models\User;
+use App\Services\DocumentBackgroundService;
 use App\Services\DocumentService;
 use App\Support\Audit;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /** Emissão, consulta, download e anulação de documentos (receitas, atestados...). Escopo da clínica + auditoria. */
 final class DocumentController extends Controller
 {
-    public function __construct(private readonly DocumentService $documents, private readonly Audit $audit) {}
+    public function __construct(private readonly DocumentService $documents, private readonly Audit $audit, private readonly DocumentBackgroundService $backgrounds) {}
 
     /** Escolher o modelo e revisar o texto já preenchido com os dados do paciente/atendimento. */
     public function create(Request $request, Patient $patient): View
@@ -38,6 +41,7 @@ final class DocumentController extends Controller
             'template' => $template,
             'prefilled' => $template ? Placeholders::fill($template->body, $this->documents->values($patient, $encounter, $user)) : null,
             'needsCrmv' => trim((string) $user->crmv) === '',
+            'backgrounds' => $this->backgrounds->current(),
         ]);
     }
 
@@ -48,6 +52,7 @@ final class DocumentController extends Controller
             'encounter_id' => ['nullable', 'string', 'size:26'],
             'title' => ['required', 'string', 'min:2', 'max:160'],
             'body' => ['required', 'string', 'min:5', 'max:20000'],
+            'background' => ['nullable', Rule::in(array_keys(DocumentBackground::CHOICES))],
         ], ['body.required' => 'O documento está vazio.']);
         // Lembretes do modelo ainda não preenchidos ("[Dose]", "[via]"...): avisa antes de emitir.
         if (preg_match_all('/\[[^\]\n]{2,60}\]/u', $data['body'], $m) && ! $request->boolean('keep_brackets')) {
@@ -59,7 +64,8 @@ final class DocumentController extends Controller
         $template = DocumentTemplate::query()->where('active', true)->findOrFail($data['template_id']);
         $encounter = ! empty($data['encounter_id']) ? Encounter::query()->where('patient_id', $patient->id)->findOrFail($data['encounter_id']) : null;
 
-        $document = $this->documents->issue($patient, $encounter, $template, $template->category, $data['title'], $data['body'], $this->user($request));
+        $document = $this->documents->issue($patient, $encounter, $template, $template->category, $data['title'], $data['body'], $this->user($request),
+            $data['background'] ?? $template->background);
 
         return redirect()->route('documents.show', $document)->with('status', 'Documento emitido. O PDF foi gerado e guardado.');
     }

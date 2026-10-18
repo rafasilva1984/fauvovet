@@ -36,8 +36,11 @@
                         <input type="hidden" name="template_id" value="{{ $template->id }}">
                         @if ($encounter)<input type="hidden" name="encounter_id" value="{{ $encounter->id }}">@endif
                         @if ($errors->any())<x-alert>{{ $errors->first('body') ?: $errors->first() }}</x-alert>@endif
-                        <x-field name="title" label="Título" :value="$template->title" required />
-                        <x-textarea name="body" label="Texto do documento" :value="$prefilled" rows="16" hint="Substitua os trechos entre [colchetes]. O cabeçalho da clínica, os dados do paciente e do tutor e a assinatura entram automaticamente no PDF." />
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <x-field name="title" label="Título" :value="$template->title" required />
+                            <x-select name="background" id="documento-fundo" label="Fundo" :options="\App\Models\DocumentBackground::options($backgrounds)" :value="old('background', $template->background)" />
+                        </div>
+                        <x-textarea name="body" label="Texto do documento" :value="$prefilled" rows="16" hint="Substitua os trechos entre [colchetes]. O cabeçalho da clínica (ou o fundo escolhido), os dados do paciente e do tutor e a assinatura entram automaticamente no PDF." />
                         @if ($errors->has('keep_brackets'))
                             <label class="flex min-h-11 items-center gap-3 rounded-xl border border-warning/30 bg-warning-bg px-3 text-sm text-warning">
                                 <input type="checkbox" name="keep_brackets" value="1" class="size-4">

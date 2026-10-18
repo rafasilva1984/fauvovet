@@ -1,5 +1,8 @@
-{{-- PDF do documento (dompdf). Todo texto vem ESCAPADO ({{ }}): o corpo é texto puro, nunca HTML. Sem recursos remotos. --}}
+{{-- PDF do documento (dompdf). Todo texto vem ESCAPADO ({{ }}): o corpo é texto puro, nunca HTML. Sem recursos remotos.
+     Com $background (papel timbrado/receituário): margens do fundo, sem cabeçalho/rodapé próprios — o texto é
+     impresso sobre o fundo (PdfOverlay) e o código de verificação vai ao fim do conteúdo. --}}
 @php
+    $background ??= null;
     $v = $values;
     $paragraphs = preg_split("/\n{2,}/", trim(str_replace("\r", '', $body))) ?: [];
     $signedByVet = in_array($category, \App\Models\DocumentTemplate::SIGNED_BY_VET, true);
@@ -11,7 +14,11 @@
 <meta charset="utf-8">
 <title>{{ $title }}</title>
 <style>
+    @if ($background)
+    @page { margin: {{ (int) $background->margin_top }}mm {{ (int) $background->margin_side }}mm {{ (int) $background->margin_bottom }}mm {{ (int) $background->margin_side }}mm; }
+    @else
     @page { margin: 26mm 18mm 22mm 18mm; }
+    @endif
     body { font-family: 'DejaVu Sans', sans-serif; font-size: 10.5pt; color: #13232a; line-height: 1.55; }
     header { position: fixed; top: -19mm; left: 0; right: 0; height: 15mm; border-bottom: 2.5pt solid {{ $primary }}; }
     header .name { font-size: 13pt; font-weight: bold; color: {{ $primary }}; }
@@ -27,9 +34,11 @@
     .line { border-top: 0.8pt solid #13232a; padding-top: 1.5mm; }
     .muted { color: #4c5f66; font-size: 8pt; }
     .place { text-align: right; margin-top: 8mm; }
+    .verify { margin-top: 8mm; font-size: 7pt; color: #4c5f66; text-align: center; }
 </style>
 </head>
 <body>
+@if (! $background)
 <header>
     <div class="name">{{ $tenant->trade_name }}</div>
     <div class="meta">
@@ -39,6 +48,7 @@
 <footer>
     Emitido eletronicamente pelo FauvoVet em {{ $issuedAt->format('d/m/Y \à\s H:i') }} · Código de verificação: <strong>{{ $code }}</strong> · Documento {{ $id }}
 </footer>
+@endif
 
 <h1>{{ mb_strtoupper($title) }}</h1>
 
@@ -68,5 +78,8 @@
         </td>
     </tr>
 </table>
+@if ($background)
+    <p class="verify">Emitido eletronicamente pelo FauvoVet em {{ $issuedAt->format('d/m/Y \à\s H:i') }} · Código de verificação: <strong>{{ $code }}</strong> · Documento {{ $id }}</p>
+@endif
 </body>
 </html>

@@ -164,7 +164,8 @@ final class PatientController extends Controller
                     ->with('uploader:id,name')->orderByDesc('created_at')->limit(60)->get(),
                 'documents' => IssuedDocument::query()->where('patient_id', $patient->id)
                     ->with('issuer:id,name')->orderByDesc('issued_at')->limit(30)->get(),
-                'exams' => ExamRequest::query()->where('patient_id', $patient->id)->with('type:id,name')->orderByDesc('requested_at')->limit(30)->get(),
+                'exams' => ExamRequest::query()->where('patient_id', $patient->id)->with('type:id,name')
+                    ->withCount(['values as out_of_range_count' => fn ($q) => $q->whereIn('flag', ['low', 'high'])])->orderByDesc('requested_at')->limit(30)->get(),
                 'examTypes' => $this->context->can('clinical:write') ? $this->examTypes() : collect(),
             ];
         }

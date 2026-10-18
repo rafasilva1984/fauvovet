@@ -299,3 +299,43 @@ modelo de outro projeto dele já operado na Locaweb (Laravel + Vite, Node só pa
     - tudo indexado na busca clínica e auditado (inclusive visualização).
 - **Fora desta entrega:** analitos estruturados com faixa de referência por espécie, gráficos comparativos e
   integração com laboratórios (registrados em `docs/IDEAS.md`).
+
+## ADR-020 — Fundos de documento (papel timbrado e receituário) e exames estruturados (2026-10-21)
+
+- **Contexto:** pedido do proprietário: "o sistema precisa aceitar um PDF ou DOCX com papel timbrado e/ou receituário,
+  um local para cada, que viram fundos padrão dos documentos, e todo documento com um campo para escolher o fundo";
+  junto, o próximo passo do roteiro (exames estruturados).
+- **Decisão — fundos:**
+  - Dois espaços por clínica: **papel timbrado** e **receituário**. Aceita PDF, DOCX, JPG e PNG (até 10 MB, tipo pelo
+    conteúdo). O original fica guardado (disco privado, SHA-256, download protegido) e o sistema prepara um "fundo
+    pronto": PDF A4 de uma página.
+  - **Automático:** receitas usam o receituário; os demais documentos, o timbrado; sem o preferido, usa o outro; sem
+    nenhum, o cabeçalho padrão do FauvoVet. Cada modelo tem o campo **Fundo** (automático, timbrado, receituário, sem
+    fundo; trocar gera nova versão) e a emissão permite trocar para aquele documento.
+  - **Composição:** o dompdf gera o documento com as margens do fundo e sem o cabeçalho próprio; o FPDI (setasign/fpdi
+    2.6 + setasign/fpdf 1.9, MIT, PHP puro) imprime cada página sobre a 1ª página do fundo. O código de verificação
+    vai ao fim do texto.
+  - **PDF 1.5+ (Word, Acrobat):** o leitor gratuito do FPDI não lê tabela de referências comprimida. Em vez da extensão
+    comercial, `PdfXrefFlattener` acrescenta ao final do arquivo os objetos de /ObjStm como objetos comuns e uma
+    tabela clássica (os bytes originais ficam intactos). PDF criptografado é recusado com mensagem.
+  - **DOCX sem Word no servidor:** `DocxLetterhead` converte cabeçalho/rodapé (textos com tamanho/negrito/cor,
+    alinhamento, imagens em linha e ancoradas, VML antigo) e imagens ancoradas no corpo; margens vêm do próprio Word.
+    O corpo não entra. EMF/WMF/SVG não são suportados (aviso). A tela avisa que é aproximado e oferece **prévia** com
+    texto fictício; margens ajustáveis.
+  - Trocar/remover um fundo **aposenta** o anterior (não apaga). Documentos emitidos guardam o próprio PDF e o
+    `background_id` usado. Configuração em `documents:templates`.
+- **Decisão — exames estruturados:**
+  - Parâmetros (analitos) por exame com unidade; o catálogo padrão traz nome/unidade dos exames comuns, **sem faixa**
+    (a faixa varia por laboratório, método e espécie — mesma regra dos sinônimos: nada clínico inventado).
+  - Faixa por espécie ou "qualquer espécie", cadastrada pela clínica; no resultado ela vem sugerida pela espécie do
+    paciente e pode ser ajustada para a do laudo — a faixa usada é **copiada no valor**.
+  - Situação = comparação numérica (abaixo/dentro/acima/sem faixa); valor não numérico é aceito sem comparação. Não é
+    interpretação clínica (a revisão assinada continua sendo do veterinário).
+  - Valores editáveis até a revisão; registrar valores marca "resultado recebido". Alerta "N fora da faixa" no painel
+    de exames e na ficha; gráfico comparativo por parâmetro (SVG, faixa sombreada); valores entram na busca clínica.
+- **Correção junto:** os modelos padrão não eram criados se a clínica importasse um modelo (ou carregasse a
+  demonstração) antes da 1ª visita à lista; agora só modelos digitados contam.
+- **Riscos:** DOCX com layout complexo (caixas de texto, formas, fontes próprias) sai diferente — mitigação: prévia e
+  recomendação de enviar o mesmo timbre em PDF. PDF com recursos raros pode falhar na leitura (mensagem orienta
+  "Imprimir → Salvar como PDF"). Sem GD na hospedagem, PNG com transparência pode falhar no dompdf (o diagnóstico de
+  deploy passa a mostrar `gd`).

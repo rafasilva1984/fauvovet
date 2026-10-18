@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
  * @property string $body
  * @property int $version
  * @property bool $active
+ * @property string $background auto | letterhead | prescription | none
  * @property string|null $source_name
  * @property string|null $source_mime
  * @property string|null $source_path
@@ -43,7 +44,7 @@ class DocumentTemplate extends Model implements TenantOwned
     /** Categorias que só o médico-veterinário emite (com CRMV). */
     public const SIGNED_BY_VET = ['prescription', 'certificate', 'referral'];
 
-    protected $fillable = ['category', 'name', 'title', 'body', 'version', 'active', 'updated_by'];
+    protected $fillable = ['category', 'name', 'title', 'body', 'version', 'active', 'background', 'updated_by'];
 
     protected function casts(): array
     {

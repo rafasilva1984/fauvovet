@@ -236,6 +236,7 @@ test('acessibilidade WCAG AA (axe): exames, sinônimos e importação de modelo'
     'configuracoes/exames',
     'configuracoes/sinonimos',
     'configuracoes/modelos-de-documento/importar',
+    'configuracoes/fundos-de-documento',
     'pacientes/01K7FV0000000000000PTA0003',
   ]) {
     await page.goto(path);
@@ -244,5 +245,9 @@ test('acessibilidade WCAG AA (axe): exames, sinônimos e importação de modelo'
   await page.getByRole('combobox', { name: 'Pedir exame' }).selectOption({ label: 'Hemograma completo' });
   await page.getByRole('button', { name: 'Solicitar exame' }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Hemograma completo' })).toBeVisible();
-  await axe(page); // detalhe do exame com etapas, resultado e revisão
+  await axe(page); // detalhe do exame com etapas, valores, resultado e revisão
+  await page.goto('configuracoes/exames');
+  await page.getByText('Hemograma completo').first().click();
+  await page.getByRole('link', { name: /Parâmetros e faixas de Hemograma completo/ }).click();
+  await axe(page); // parâmetros e faixas
 });

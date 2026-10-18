@@ -19,6 +19,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $encounter_id
  * @property string|null $template_id
  * @property int|null $template_version
+ * @property string|null $background_id
  * @property string $category
  * @property string $title
  * @property string $body
@@ -43,7 +44,7 @@ class IssuedDocument extends Model implements TenantOwned
     /** Únicos campos que podem mudar depois da emissão (anulação). */
     private const VOID_FIELDS = ['voided_at', 'voided_by', 'void_reason', 'updated_at'];
 
-    protected $fillable = ['patient_id', 'encounter_id', 'template_id', 'template_version', 'category', 'title', 'body', 'pdf_path',
+    protected $fillable = ['patient_id', 'encounter_id', 'template_id', 'template_version', 'background_id', 'category', 'title', 'body', 'pdf_path',
         'pdf_sha256', 'pdf_bytes', 'verification_code', 'issued_by', 'issuer_membership_id', 'issued_at'];
 
     protected function casts(): array

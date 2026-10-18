@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FauvoVet — Fundos e exames estruturados</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #1a2935; background: #f4f7f8; line-height: 1.65; font-size: 17px; }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 16px 80px; }
+    header { border-radius: 20px; padding: 32px; color: white; background: linear-gradient(120deg, #0b4652, #1a7375); }
+    header p { color: #e1f5f0; margin-bottom: 0; }
+    h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.2; margin: 0; }
+    h2 { font-size: 1.3rem; margin: 0 0 12px; }
+    h3 { font-size: 1.12rem; margin: 28px 0 8px; padding-top: 16px; border-top: 1px dashed #c9d6d8; }
+    h4 { font-size: 1rem; margin: 18px 0 6px; }
+    section { margin-top: 20px; background: #fff; padding: 24px; border: 1px solid #dee7e8; border-radius: 14px; }
+    p, li { overflow-wrap: anywhere; }
+    code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { background: #eaf1f2; padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+    pre code { background: none; padding: 0; }
+    kbd { border: 1px solid #b8c6c9; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: #fff; font-size: 0.9em; }
+    pre { overflow-x: auto; border-radius: 8px; padding: 14px; color: #e9fbff; background: #172b32; font-size: 0.9rem; line-height: 1.5; }
+    .tag { display: inline-block; font-size: 0.8rem; font-weight: 700; border: 1px solid #f5cf83; background: #fff8e4; color: #7a4b12; border-radius: 30px; padding: 3px 10px; }
+    .where { display: inline-block; font-size: 0.78rem; font-weight: 700; border-radius: 30px; padding: 2px 10px; margin-right: 6px; vertical-align: middle; }
+    .w-term { background: #1f3b44; color: #d9fbff; }
+    .w-web { background: #e1effd; color: #0f3e72; }
+    .w-fz { background: #fde8e1; color: #7a2a0f; }
+    .w-np { background: #ece5fb; color: #42237a; }
+    .w-panel { background: #e2f6e8; color: #145c2e; }
+    .note { border-left: 4px solid #338b96; background: #eef7f8; padding: 10px 12px; border-radius: 6px; }
+    .warn { border-left: 4px solid #c27c0e; background: #fff8e4; padding: 10px 12px; border-radius: 6px; }
+    .stop { border-left: 4px solid #b3261e; background: #fdecea; padding: 10px 12px; border-radius: 6px; }
+    .ok { border-left: 4px solid #1d7a45; background: #e8f6ee; padding: 10px 12px; border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid #e0e7e8; text-align: left; vertical-align: top; }
+    small { color: #52646d; }
+    .pass { color: #116b3a; font-weight: 700; }
+    .notrun { color: #8a5a00; font-weight: 700; }
+    ol.steps > li { margin-bottom: 12px; }
+    .map { font-size: 0.85rem; }
+    .shots { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .shots figure { margin: 0; }
+    .shots img { width: 100%; height: auto; border-radius: 12px; border: 1px solid #dee7e8; display: block; }
+    .shots figcaption { font-size: 0.85rem; color: #52646d; margin-top: 4px; }
+    .shots .tall img { max-height: 520px; object-fit: cover; object-position: top; }
+    nav ol { columns: 2; column-gap: 32px; }
+    @media (max-width: 640px) { nav ol { columns: 1; } body { font-size: 16px; } section { padding: 18px; } header { padding: 22px; } }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e4eef0; background: #0f1a1e; }
+      section { background: #15242a; border-color: #23373e; }
+      th, td { border-color: #23373e; }
+      code { background: #213840; }
+      kbd { background: #1d3138; border-color: #3b5760; }
+      .warn { background: #2a2210; } .note { background: #12303a; } .stop { background: #3a1614; } .ok { background: #12301f; }
+      small { color: #9fb3ba; }
+      h3 { border-color: #2c454c; }
+      .pass { color: #5fd28f; } .notrun { color: #f0b54a; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="tag">INCREMENTO IMPLEMENTADO — FASE 3</span>
+      <h1>Fundos de documento (papel timbrado e receituário) + exames estruturados</h1>
+      <p>ID: <strong>2026-10-21-fundos-exames-estruturados</strong> · Data: <strong>21/10/2026</strong> · Versão: <strong>0.16.0</strong> · Módulos: <strong>Documentos, Exames (ADR-020)</strong> · Estado: <strong>implementado e testado localmente; publicação a cargo do proprietário (seção 7)</strong></p>
+    </header>
+
+    <section>
+      <h2>1. Objetivo</h2>
+      <ul>
+        <li><strong>Pedido do proprietário:</strong> <em>"o sistema precisa aceitar um PDF ou DOCX com papel timbrado e/ou receituário, um local para cada; assim que enviados viram fundos padrão dos documentos, e todos os documentos devem ter um campo para selecionar o fundo"</em>.</li>
+        <li><strong>Próximo passo do roteiro (Fase 3):</strong> exames estruturados — parâmetros com unidade e faixa de referência por espécie, alerta de fora da faixa e gráfico comparativo.</li>
+      </ul>
+      <div class="shots">
+        <figure><img src="img/2026-10-21-fundos.jpg" alt="Tela Fundos de documento com papel timbrado e receituário em uso (dados fictícios)" loading="lazy"><figcaption>Configurações → Fundos de documento</figcaption></figure>
+        <figure class="tall"><img src="img/2026-10-21-previa-0.jpg" alt="Prévia de documento impresso sobre o papel timbrado fictício" loading="lazy"><figcaption>Prévia: texto sobre o papel timbrado (PDF)</figcaption></figure>
+        <figure class="tall"><img src="img/2026-10-21-previa-1.jpg" alt="Prévia de receita sobre o receituário convertido do Word (fictício)" loading="lazy"><figcaption>Prévia: receita sobre o receituário (Word)</figcaption></figure>
+        <figure><img src="img/2026-10-21-emissao-fundo.jpg" alt="Emissão de documento com o campo Fundo (dados fictícios)" loading="lazy"><figcaption>Campo “Fundo” na emissão</figcaption></figure>
+        <figure class="tall"><img src="img/2026-10-21-exame-valores.jpg" alt="Exame com valores estruturados e situação em relação à faixa (dados fictícios)" loading="lazy"><figcaption>Valores do exame com faixa e situação</figcaption></figure>
+        <figure><img src="img/2026-10-21-exame-serie.jpg" alt="Exame revisado com gráfico comparativo da creatinina (dados fictícios)" loading="lazy"><figcaption>Série histórica (gráfico comparativo)</figcaption></figure>
+        <figure><img src="img/2026-10-21-parametros.jpg" alt="Parâmetros e faixas de referência do exame (dados fictícios)" loading="lazy"><figcaption>Parâmetros e faixas no catálogo</figcaption></figure>
+        <figure class="tall"><img src="img/2026-10-21-exame-celular.jpg" alt="Valores do exame no celular (dados fictícios)" loading="lazy"><figcaption>Exame no celular</figcaption></figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>2. O que mudou</h2>
+      <h3>Fundos de documento</h3>
+      <ul>
+        <li><strong>Configurações → Fundos de documento</strong> (quem configura modelos: titular, gestão, veterinário): um espaço para o <strong>papel timbrado</strong> e outro para o <strong>receituário</strong>.</li>
+        <li>Aceita <strong>PDF</strong> (1ª página), <strong>Word DOCX</strong> (cabeçalho, rodapé, logotipo e imagens de fundo; margens do próprio Word) e <strong>JPG/PNG</strong> (folha inteira). Até 10 MB; tipo conferido pelo conteúdo; original guardado com SHA-256.</li>
+        <li>Assim que enviado vira o <strong>fundo padrão</strong>: receitas no receituário, demais documentos no timbrado (sem o preferido, usa o outro; sem nenhum, o cabeçalho padrão).</li>
+        <li><strong>Campo “Fundo”</strong> em cada modelo (automático, papel timbrado, receituário, sem fundo — trocar gera nova versão) e na emissão de cada documento.</li>
+        <li><strong>Prévia em PDF</strong> com texto fictício e <strong>margens ajustáveis</strong> (superior, inferior, laterais).</li>
+        <li>Substituir/remover <strong>aposenta</strong> o anterior; documentos emitidos não mudam e guardam qual fundo usaram.</li>
+        <li>PDFs do Word/Acrobat (tabela comprimida, PDF 1.5+) são aceitos; PDF protegido por senha é recusado com explicação.</li>
+      </ul>
+      <h3>Exames estruturados</h3>
+      <ul>
+        <li><strong>Catálogo de exames → Parâmetros e faixas</strong>: parâmetros com unidade (o catálogo padrão traz nome/unidade de hemograma, renal, hepática e urinálise, <strong>sem faixa</strong>) e faixas por espécie ou “qualquer espécie”.</li>
+        <li>No exame, quadro <strong>Valores do exame</strong>: resultado + faixa (sugerida pela espécie, ajustável à do laudo). Situação: abaixo / dentro / acima / sem faixa. Texto como “negativo” é aceito.</li>
+        <li>Alerta <strong>“N fora da faixa”</strong> no painel de exames e na ficha; <strong>gráfico comparativo</strong> por parâmetro com a faixa sombreada; valores entram na <strong>busca clínica</strong>.</li>
+        <li>Valores editáveis até a revisão do veterinário; depois ficam somente leitura.</li>
+      </ul>
+      <h3>Correção</h3>
+      <p>Os modelos padrão (receita, atestado…) não eram criados se a clínica importasse um modelo ou carregasse a demonstração antes de abrir a lista de modelos.</p>
+      <h3>Arquivos e dependências</h3>
+      <ul class="map">
+        <li>Migração <code>2026_10_21_000001_create_document_backgrounds_and_exam_values</code> (4 tabelas + 2 colunas).</li>
+        <li><code>app/Documents/{PdfOverlay,PdfXrefFlattener,DocxLetterhead,PdfRenderer}.php</code>, <code>app/Files/ZipReader.php</code>, <code>app/Services/DocumentBackgroundService.php</code>, <code>app/Http/Controllers/DocumentBackgroundController.php</code>, modelos <code>DocumentBackground</code>, <code>ExamAnalyte</code>, <code>ExamReferenceRange</code>, <code>ExamResultValue</code>.</li>
+        <li>Telas: <code>documents/backgrounds</code>, <code>exams/analytes</code>, <code>exams/_values</code>, <code>exams/_sparkline</code>.</li>
+        <li>Dependências: <code>setasign/fpdi</code> 2.6.9 e <code>setasign/fpdf</code> 1.9.0 (MIT, PHP puro).</li>
+        <li>Demonstração <strong>v5</strong>.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>3. Pré-requisitos</h2>
+      <p>Os mesmos das entregas anteriores. Há dependência PHP nova: rode <code>pnpm bootstrap</code> antes de gerar o pacote. Recomendado no servidor: extensão <code>gd</code> (o <code>diagnostico</code> agora mostra <code>extensions_recommended_missing</code>).</p>
+      <p class="warn"><strong>Git Bash/macOS:</strong> NOT RUN.</p>
+    </section>
+
+    <section>
+      <h2>4. Passo a passo (no seu computador)</h2>
+      <ol class="steps">
+        <li><span class="where w-term">Terminal</span> <code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm bootstrap</code> → <code>pnpm db:start</code> → <code>pnpm db:migrate</code>.</li>
+        <li><span class="where w-term">Terminal</span> <code>pnpm dev</code> → titular → <em>Configurações → Dados de demonstração</em> → <em>Atualizar demonstração</em>.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>5. Como testar</h2>
+<pre><code>pnpm verify --e2e
+pnpm test:tenant-isolation</code></pre>
+      <ul>
+        <li><code>DocumentBackgroundTest</code> (9): PDF vira padrão e o PDF emitido contém timbre + texto (sem o cabeçalho padrão); receituário nas receitas e escolha manual; fundo no modelo gera versão; PDF com tabela comprimida; DOCX (cabeçalho, logotipo, rodapé, margens, prévia); imagem; recusa de arquivo falso/criptografado; substituir/margens/remover sem alterar documento emitido; permissão; isolamento.</li>
+        <li><code>ExamValuesTest</code> (5): parâmetros sem faixa pronta e faixas por espécie; valores, situação, faixa do laudo, bloqueio após revisão, histórico, alerta, busca; faixa por espécie; permissões; isolamento.</li>
+        <li><code>DemoDataTest</code>: demonstração v5 e “não substitui fundo real”.</li>
+      </ul>
+
+      <h3>Confirmar o funcionamento com os dados de demonstração</h3>
+      <p>Na produção, depois de publicar (seção 7), entre com o usuário <strong>titular</strong>.</p>
+      <ol class="steps">
+        <li><span class="where w-web">Navegador</span> <em>Configurações → Dados de demonstração</em> → faixa “Demonstração desatualizada (… a atual é 5)” → <em>Atualizar demonstração</em>. <strong>Deve aparecer:</strong> “… 10 exames …”.</li>
+        <li><strong>Fundos:</strong> <em>Configurações → Fundos de documento</em>. <strong>Deve aparecer:</strong> Papel timbrado <em>Em uso</em> (papel-timbrado-demonstracao.pdf) e Receituário <em>Em uso</em> (receituario-demonstracao.docx, com o aviso “posições e fontes são aproximadas”). Se a clínica já tinha enviado um fundo real, a demonstração não o substitui.</li>
+        <li><em>Ver prévia (PDF)</em> de cada um: o texto de exemplo aparece sobre a faixa verde da “Clínica Demonstração (fictícia)” e, no receituário, abaixo do logotipo e do título RECEITUÁRIO, com o endereço no rodapé.</li>
+        <li><strong>Margens:</strong> no papel timbrado mude <em>Superior</em> para 60 → <em>Salvar margens</em> → prévia: o texto começa mais abaixo. Volte para 40.</li>
+        <li><strong>Emitir sobre o receituário:</strong> ficha do <strong>Bento</strong> → <em>Emitir documento</em> → <em>Receita simples</em>. O campo <strong>Fundo</strong> vem em “Automático”. Complete os colchetes → <em>Emitir PDF</em>. <strong>Deve aparecer:</strong> o PDF sobre o receituário, sem o cabeçalho padrão, com o código de verificação no fim do texto.</li>
+        <li><strong>Escolher outro fundo:</strong> emita um <em>Atestado de saúde</em> mudando <strong>Fundo</strong> para “Receituário”, e outro com “Sem fundo” (volta o cabeçalho padrão).</li>
+        <li><strong>Fundo no modelo:</strong> <em>Modelos de documento → Orientações pós-consulta → Editar</em> → <em>Fundo do documento</em>: “Receituário” → salvar (vira nova versão). Na emissão, esse modelo já vem com “Receituário”.</li>
+        <li><strong>Envie o seu timbre:</strong> em <em>Fundos de documento</em>, <em>Substituir papel timbrado</em> com o PDF ou Word da clínica → <em>Ver prévia</em> → ajuste as margens. (Pode remover depois em <em>Parar de usar</em>.)</li>
+        <li><strong>Série histórica:</strong> <em>Exames → aba Revisado → Simba · Bioquímica renal</em> (o mais recente). <strong>Deve aparecer:</strong> Creatinina 3,8 mg/dL <em>Acima da faixa</em>, “anterior 2,6 em …” e um gráfico com 3 pontos subindo e a faixa sombreada.</li>
+        <li><strong>Registrar valores:</strong> <em>Exames → Bento · Hemograma completo</em> (selo “1 fora da faixa”). Leucócitos 19.800 <em>Acima da faixa</em>. Mude para <code>15000</code> → <em>Salvar valores</em> → vira <em>Dentro da faixa</em>. Revise e assine: os valores ficam somente leitura.</li>
+        <li><strong>Faixas no catálogo:</strong> <em>Configurações → Catálogo de exames → Bioquímica renal → Parâmetros e faixas</em>. <strong>Deve aparecer:</strong> Creatinina com faixa “Gato: 0,8 – 1,8 mg/dL” (fictícia da demonstração). Cadastre a faixa de Cão do seu laboratório.</li>
+        <li><strong>Busca:</strong> <em>Busca clínica</em> → <code>leucocitos</code>. <strong>Deve aparecer:</strong> Bento, com “Leucócitos: 19.800 /µL (acima da faixa)” (ou o valor que você salvou).</li>
+        <li><strong>Permissão:</strong> com usuário de recepção, <em>Fundos de documento</em> e <em>Parâmetros</em> respondem “Acesso negado”.</li>
+      </ol>
+      <p class="warn">As faixas da demonstração são <strong>inventadas</strong>. Antes de usar com pacientes reais, cadastre as faixas do laboratório da clínica.</p>
+    </section>
+
+    <section>
+      <h2>6. Performance e usabilidade</h2>
+      <ul>
+        <li><strong>Geração do PDF com fundo</strong> (local, WSL): composição dompdf + FPDI soma poucas dezenas de ms ao PDF sem fundo; teste automatizado completo de fundos (9 testes, ~25 PDFs) em ~9 s.</li>
+        <li><strong>Fundo preparado no envio</strong> (não a cada emissão): o PDF de 1 página fica pronto e só é sobreposto.</li>
+        <li><strong>Exame:</strong> 3 consultas para valores, faixas e histórico (índice <code>(tenant, paciente, parâmetro, data)</code>).</li>
+        <li><strong>Celular:</strong> valores em 3 colunas (resultado, mín., máx.), nada além da borda; axe sem violações em Fundos, exame com valores e Parâmetros.</li>
+        <li><strong>Volume grande e medição na Locaweb:</strong> NOT RUN.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>7. Publicação na Locaweb</h2>
+      <ol class="steps">
+        <li><span class="where w-term">Terminal</span> <code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm bootstrap</code> → <code>pnpm db:start</code> → <code>pnpm verify --e2e</code> → <code>pnpm deploy:package</code> → <code>pnpm deploy:copiar</code></li>
+        <li><span class="where w-panel">Painel Locaweb</span> backup do banco.</li>
+        <li><span class="where w-term">Terminal</span> <code>pnpm deploy:token</code>.</li>
+        <li><span class="where w-fz">FileZilla</span> <code>.env</code> do servidor: <code>DEPLOY_TOOLS_ENABLED=true</code> + token novo; mantenha <code>FAUVOVET_DEMO_DATA=true</code>; envie e apague <code>bootstrap/cache/config.php</code>.</li>
+        <li><span class="where w-fz">FileZilla</span> <code>app-fauvovet</code> (tudo exceto <code>storage</code>; inclui <code>vendor/setasign</code> novo) e <code>public_html/fauvovet</code>, com <em>Sobrescrever</em>.</li>
+        <li><span class="where w-term">Terminal</span> <code>diagnostico</code> → <code>pending_migrations</code>: <strong>1</strong> (ou mais, se entregas anteriores não subiram) → <code>migrar</code> → <code>otimizar</code>. Confira <code>extensions_recommended_missing</code> (ideal: vazio).</li>
+        <li><span class="where w-fz">FileZilla</span> <code>DEPLOY_TOOLS_ENABLED=false</code> → enviar → apagar <code>bootstrap/cache/config.php</code>.</li>
+        <li><span class="where w-term">Terminal</span> <code>SMOKE_URL=https://dradeboragaldino.com.br/fauvovet pnpm smoke</code> (5 PASS).</li>
+        <li><span class="where w-web">Navegador</span> seção 5, <strong>"Confirmar o funcionamento com os dados de demonstração"</strong>.</li>
+      </ol>
+      <p class="stop">Sem HTTPS válido, só dados fictícios. Antes do primeiro paciente real: remover a demonstração (os fundos fictícios saem junto) e voltar <code>FAUVOVET_DEMO_DATA=false</code>.</p>
+    </section>
+
+    <section>
+      <h2>8. Rollback</h2>
+      <ul>
+        <li><strong>Código:</strong> reenvie o pacote anterior em <code>.deploy/</code> + <em>otimizar</em>. As tabelas/colunas novas ficam sem uso; PDFs já emitidos com fundo continuam abrindo normalmente.</li>
+        <li><strong>Banco:</strong> restaure o backup do passo 2 (fundos e valores criados depois somem; os arquivos em <code>storage/app/private/backgrounds</code> podem ser apagados).</li>
+        <li><strong>Local:</strong> <code>git revert</code> e <code>node scripts/php.mjs artisan migrate:rollback --step=1</code> (só desenvolvimento).</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>9. Troubleshooting</h2>
+      <table>
+        <tr><th>Sintoma</th><th>Causa e solução</th></tr>
+        <tr><td>Texto em cima do logotipo/rodapé</td><td>Aumente a margem superior/inferior em <em>Fundos de documento</em> e confira a prévia.</td></tr>
+        <tr><td>Word convertido ficou diferente</td><td>Caixas de texto, formas e fontes próprias não são reproduzidas. No Word: <em>Arquivo → Salvar como → PDF</em> e envie o PDF.</td></tr>
+        <tr><td>“Imagem em formato EMF/WMF não é suportada”</td><td>Logotipo vetorial do Word. Troque por PNG/JPG no Word ou envie em PDF.</td></tr>
+        <tr><td>“PDF protegido por senha”</td><td>Gere o PDF sem proteção (Imprimir → Salvar como PDF).</td></tr>
+        <tr><td>“Recurso que ainda não conseguimos ler”</td><td>PDF incomum: abra-o e use Imprimir → Salvar como PDF; envie o novo.</td></tr>
+        <tr><td>Documento saiu sem fundo</td><td>Fundo “Sem fundo” no modelo/emissão, ou nenhum fundo enviado.</td></tr>
+        <tr><td>Exame sem quadro de valores</td><td>O exame não tem parâmetros: cadastre em <em>Catálogo de exames → Parâmetros e faixas</em>.</td></tr>
+        <tr><td>Situação “Sem faixa”</td><td>Informe mín./máx. no resultado ou cadastre a faixa da espécie no catálogo.</td></tr>
+        <tr><td>Erro 500 em Fundos/Exames</td><td>Migração não aplicada: <code>diagnostico</code> → <code>migrar</code>.</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>10. Evidências e status</h2>
+      <table>
+        <tr><th>Verificação</th><th>Status</th><th>Detalhe</th></tr>
+        <tr><td><code>pnpm verify --e2e</code></td><td class="pass">PASS</td><td>9/9 etapas</td></tr>
+        <tr><td>PHPUnit</td><td class="pass">PASS</td><td>209 testes, 2.376 asserções (16 novos: fundos 9, exames estruturados 5, demonstração v5 2)</td></tr>
+        <tr><td>Isolamento</td><td class="pass">PASS</td><td>48 testes (2 novos: fundos de documento; parâmetros/faixas/valores)</td></tr>
+        <tr><td>E2E + axe + borda no celular</td><td class="pass">PASS</td><td>85 testes: 83 PASS + 2 flaky (cadastro de paciente no desktop e convite no celular — specs não alterados, passaram na 2ª tentativa local por oscilação de rede do WSL) + 1 ignorado de propósito; novos: fundos de documento, exames estruturados, axe em Fundos/Parâmetros/exame com valores. Corrigido teste instável da miniatura de anexo (carregamento preguiçoso no celular).</td></tr>
+        <tr><td>DOCX reais da clínica (layouts variados), PDF de outros geradores</td><td class="notrun">NOT RUN</td><td>Testado com DOCX/PDF sintéticos (inclui PDF 1.5 com tabela comprimida); confirmar com os arquivos da clínica via prévia</td></tr>
+        <tr><td>Integração com laboratório, OCR, DOC legado</td><td class="notrun">NOT RUN</td><td>Fora desta entrega (<code>docs/IDEAS.md</code>)</td></tr>
+      </table>
+      <p><strong>Commit:</strong> registrado no <code>docs/PROGRESS.md</code> após a sincronização.</p>
+      <p><strong>Próximo passo sugerido (Fase 3):</strong> prescrição estruturada (medicamentos, dose por peso, via, frequência) gerando a receita sobre o receituário; depois internação.</p>
+    </section>
+  </main>
+</body>
+</html>

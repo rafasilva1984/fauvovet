@@ -21,6 +21,7 @@
             ['route' => 'exam-types.index', 'label' => 'Catálogo de exames', 'icon' => 'list', 'perm' => 'exams:configure'],
             ['route' => 'vaccines.index', 'label' => 'Catálogo de vacinas', 'icon' => 'syringe', 'perm' => 'vaccines:configure'],
             ['route' => 'document-templates.index', 'label' => 'Modelos de documento', 'icon' => 'copy', 'perm' => 'documents:templates'],
+            ['route' => 'document-backgrounds.index', 'label' => 'Fundos de documento', 'icon' => 'palette', 'perm' => 'documents:templates'],
             ['route' => 'search.synonyms', 'label' => 'Sinônimos da busca', 'icon' => 'search', 'perm' => 'search:configure'],
             ['route' => 'settings.appearance', 'label' => 'Aparência', 'icon' => 'palette', 'perm' => 'theme:update'],
             ...(config('fauvovet.demo_data') ? [['route' => 'settings.demo-data', 'label' => 'Dados de demonstração', 'icon' => 'sparkles', 'perm' => 'tenant:update']] : []),

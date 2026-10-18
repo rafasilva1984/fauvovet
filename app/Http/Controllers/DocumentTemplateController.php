@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Documents\Placeholders;
 use App\Documents\TemplateImporter;
+use App\Models\DocumentBackground;
 use App\Models\DocumentTemplate;
+use App\Services\DocumentBackgroundService;
 use App\Services\DocumentService;
 use App\Support\Audit;
 use App\Tenancy\TenantContext;
@@ -19,7 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
 /** Modelos de documento da clínica. Só variáveis da whitelist; editar gera nova versão (documentos emitidos não mudam). */
 final class DocumentTemplateController extends Controller
 {
-    public function __construct(private readonly DocumentService $documents, private readonly Audit $audit, private readonly TenantContext $context) {}
+    public function __construct(private readonly DocumentService $documents, private readonly Audit $audit, private readonly TenantContext $context, private readonly DocumentBackgroundService $backgrounds) {}
 
     public function index(): View
     {
@@ -30,7 +32,7 @@ final class DocumentTemplateController extends Controller
 
     public function create(): View
     {
-        return view('documents.template-form', ['template' => new DocumentTemplate(['category' => 'guidance', 'active' => true])]);
+        return view('documents.template-form', ['template' => new DocumentTemplate(['category' => 'guidance', 'active' => true, 'background' => 'auto']), 'backgrounds' => $this->backgrounds->current()]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -79,14 +81,14 @@ final class DocumentTemplateController extends Controller
 
     public function edit(DocumentTemplate $template): View
     {
-        return view('documents.template-form', ['template' => $template]);
+        return view('documents.template-form', ['template' => $template, 'backgrounds' => $this->backgrounds->current()]);
     }
 
     public function update(Request $request, DocumentTemplate $template): RedirectResponse
     {
         $data = $this->validated($request, $template);
         $template->fill([...$data, 'active' => $request->boolean('active'), 'updated_by' => $request->user()?->getAuthIdentifier()]);
-        if ($template->isDirty(['title', 'body', 'category'])) {
+        if ($template->isDirty(['title', 'body', 'category', 'background'])) {
             $template->version++; // nova versão; documentos já emitidos guardam o próprio texto
         }
         $template->save();
@@ -95,18 +97,22 @@ final class DocumentTemplateController extends Controller
         return redirect()->route('document-templates.index')->with('status', "Modelo “{$template->name}” salvo (versão {$template->version}).");
     }
 
-    /** @return array{category: string, name: string, title: string, body: string} */
+    /** @return array{category: string, name: string, title: string, body: string, background: string} */
     private function validated(Request $request, ?DocumentTemplate $current = null): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'category' => ['required', Rule::in(array_keys(DocumentTemplate::CATEGORIES))],
             'name' => ['required', 'string', 'min:2', 'max:120', Rule::unique('document_templates', 'name')->where('tenant_id', $this->context->requireId())->ignore($current?->id)],
             'title' => ['required', 'string', 'min:2', 'max:160'],
+            'background' => ['nullable', Rule::in(array_keys(DocumentBackground::CHOICES))],
             'body' => ['required', 'string', 'min:5', 'max:20000', function (string $attr, mixed $value, Closure $fail) {
                 if (($bad = Placeholders::unknown((string) $value)) !== []) {
                     $fail('Variáveis não reconhecidas: {{'.implode('}}, {{', $bad).'}}. Use só as da lista.');
                 }
             }],
         ], ['name.unique' => 'Já existe um modelo com este nome.']);
+        $data['background'] ??= $current->background ?? 'auto';
+
+        return $data;
     }
 }

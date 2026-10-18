@@ -6,6 +6,7 @@ use App\Tenancy\BelongsToTenant;
 use App\Tenancy\TenantOwned;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Exame do catálogo da clínica. Desativar em vez de apagar (há pedidos ligados).
@@ -15,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $category
  * @property string|null $sample
  * @property bool $active
+ * @property int|null $analytes_count
  */
 class ExamType extends Model implements TenantOwned
 {
@@ -40,5 +42,11 @@ class ExamType extends Model implements TenantOwned
     protected function casts(): array
     {
         return ['active' => 'boolean'];
+    }
+
+    /** @return HasMany<ExamAnalyte, $this> */
+    public function analytes(): HasMany
+    {
+        return $this->hasMany(ExamAnalyte::class, 'exam_type_id');
     }
 }

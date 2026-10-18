@@ -1,7 +1,8 @@
 @props(['name', 'label', 'type' => 'text', 'hint' => null, 'value' => null, 'required' => false])
 @php
     $id = $attributes->get('id', 'f-'.str_replace(['[', ']', '.'], '-', $name));
-    $error = $errors->first($name);
+    $key = str_replace(['[', ']'], ['.', ''], $name); // "values[x][value]" → "values.x.value" (old/erros)
+    $error = $errors->first($key);
     $describedBy = trim(($hint && ! $error ? "{$id}-hint " : '').($error ? "{$id}-err" : ''));
 @endphp
 <div {{ $attributes->only('class')->merge(['class' => 'flex flex-col gap-1.5']) }}>
@@ -10,7 +11,7 @@
     </label>
     <div class="relative">
         <input id="{{ $id }}" name="{{ $name }}" type="{{ $type }}"
-            @if ($type !== 'password') value="{{ old($name, $value) }}" @endif
+            @if ($type !== 'password') value="{{ old($key, $value) }}" @endif
             @if ($required) required @endif
             @if ($error) aria-invalid="true" @endif
             @if ($describedBy) aria-describedby="{{ $describedBy }}" @endif

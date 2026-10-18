@@ -9,7 +9,8 @@
                 <li>
                     <a href="{{ route('exams.show', $e) }}" class="flex flex-wrap items-center gap-2 rounded-xl bg-surface-2 p-2.5 text-sm hover:bg-tint">
                         <span class="min-w-0 flex-1 font-semibold">{{ $e->type->name }}<span class="block text-xs font-normal text-muted">{{ $e->requested_at->timezone('America/Sao_Paulo')->format('d/m/Y') }}</span></span>
-                        <x-badge :tone="\App\Models\ExamRequest::TONE[$e->status]" :dot="true">{{ \App\Models\ExamRequest::STATUS[$e->status] }}</x-badge>
+                        @if ($e->out_of_range_count)<x-badge tone="danger">{{ $e->out_of_range_count }} fora da faixa</x-badge>@endif
+                            <x-badge :tone="\App\Models\ExamRequest::TONE[$e->status]" :dot="true">{{ \App\Models\ExamRequest::STATUS[$e->status] }}</x-badge>
                     </a>
                 </li>
             @endforeach

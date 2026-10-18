@@ -2,11 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Documents\PdfRenderer;
 use App\Models\AuditEvent;
 use App\Models\Patient;
 use App\Services\DemoDataService;
 use App\Tenancy\TenantContext;
 use Database\Seeders\DatabaseSeeder as Seed;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\Group;
@@ -141,7 +143,7 @@ final class DemoDataTest extends TestCase
     {
         config(['fauvovet.demo_data' => true]);
         $this->loginInto('ana', Seed::TENANT_A);
-        $this->post(self::URL)->assertSessionHasNoErrors()->assertSessionHas('status', fn ($m) => str_contains($m, '7 exames'));
+        $this->post(self::URL)->assertSessionHasNoErrors()->assertSessionHas('status', fn ($m) => str_contains($m, '10 exames'));
         $pt = fn (int $n) => '/pacientes/'.DemoDataService::idFor(Seed::TENANT_A, 'PT', $n);
         $id = fn (string $k, int $n) => DemoDataService::idFor(Seed::TENANT_A, $k, $n);
 
@@ -178,6 +180,53 @@ final class DemoDataTest extends TestCase
         }
         Storage::disk('local')->assertMissing((string) $tpl);
         $this->get('/busca?q=coceira')->assertDontSee('Sinônimos da clínica usados');
+    }
+
+    /** Demonstração v5: fundos de documento + exames estruturados (guia 2026-10-21-fundos-exames-estruturados.html, seção 5). */
+    public function test_demo_v5_fundos_de_documento_e_exames_estruturados(): void
+    {
+        config(['fauvovet.demo_data' => true]);
+        $this->loginInto('ana', Seed::TENANT_A);
+        $this->post(self::URL)->assertSessionHasNoErrors();
+        $id = fn (string $k, int $n) => DemoDataService::idFor(Seed::TENANT_A, $k, $n);
+
+        // Fundos: timbrado PDF e receituário Word fictícios, já em uso.
+        $this->get('/configuracoes/fundos-de-documento')->assertSee('papel-timbrado-demonstracao.pdf')->assertSee('receituario-demonstracao.docx')->assertSee('Em uso');
+        $this->get('/configuracoes/fundos-de-documento/'.$id('BG', 1).'/previa')->assertOk()->assertHeader('Content-Type', 'application/pdf');
+        $this->get(self::URL)->assertSee('Fundos de documento: papel timbrado');
+        // Receita para o Bento sai sobre o receituário.
+        $bento = $id('PT', 1);
+        $this->get("/pacientes/{$bento}/documentos/novo")->assertOk(); // cria os modelos padrão
+        $tpl = $this->sys(fn () => DB::table('document_templates')->where('tenant_id', Seed::TENANT_A)->where('name', 'Receita simples')->value('id'));
+        $this->post("/pacientes/{$bento}/documentos", ['template_id' => $tpl, 'title' => 'Receituário', 'body' => 'Medicamento fictício — 1 comprimido a cada 12 h.'])->assertSessionHasNoErrors();
+        $this->assertSame($id('BG', 2), $this->sys(fn () => DB::table('issued_documents')->where('tenant_id', Seed::TENANT_A)->where('patient_id', $bento)->value('background_id')));
+
+        // Exames estruturados: série da creatinina do Simba, hemograma do Bento com leucócitos acima da faixa.
+        $this->get('/exames/'.$id('EX', 1))->assertSee('Creatinina')->assertSee('3,8')->assertSee('Acima da faixa')->assertSee('Evolução:', false);
+        $this->get('/exames/'.$id('EX', 10))->assertSee('Leucócitos')->assertSee('value="19.800"', false)->assertSee('1 fora da faixa');
+        $this->get('/exames')->assertSee('Bento · Hemograma completo')->assertSee('fora da faixa');
+        $this->get('/busca?q=leucocitos')->assertSee('acima da faixa');
+
+        $paths = $this->sys(fn () => DB::table('document_backgrounds')->where('tenant_id', Seed::TENANT_A)->pluck('render_path')->all());
+        $this->post(self::URL.'/remover', ['confirm' => '1'])->assertSessionHasNoErrors();
+        foreach (['document_backgrounds', 'exam_result_values', 'exam_reference_ranges'] as $table) {
+            $this->assertSame(0, $this->demoRows($table, Seed::TENANT_A), $table);
+        }
+        foreach ($paths as $path) {
+            Storage::disk('local')->assertMissing($path);
+        }
+    }
+
+    public function test_demo_nao_substitui_fundo_real_da_clinica(): void
+    {
+        config(['fauvovet.demo_data' => true]);
+        $this->loginInto('ana', Seed::TENANT_A);
+        $pdf = PdfRenderer::html('<p>Timbre real fictício</p>');
+        $this->post('/configuracoes/fundos-de-documento', ['kind' => 'letterhead', 'file' => UploadedFile::fake()->createWithContent('timbre-real.pdf', $pdf)])->assertSessionHasNoErrors();
+        $this->post(self::URL)->assertSessionHasNoErrors();
+        $this->get('/configuracoes/fundos-de-documento')->assertSee('timbre-real.pdf')->assertDontSee('papel-timbrado-demonstracao.pdf')->assertSee('receituario-demonstracao.docx');
+        $this->post(self::URL.'/remover', ['confirm' => '1']);
+        $this->get('/configuracoes/fundos-de-documento')->assertSee('timbre-real.pdf')->assertDontSee('receituario-demonstracao.docx');
     }
 
     public function test_remover_apaga_demo_e_o_registrado_nela_sem_tocar_o_resto(): void

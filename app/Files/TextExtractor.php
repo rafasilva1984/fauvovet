@@ -66,51 +66,12 @@ final class TextExtractor
 
     private static function docx(string $bytes): string
     {
-        $xml = self::zipEntry($bytes, 'word/document.xml');
+        $xml = ZipReader::entry($bytes, 'word/document.xml');
         if ($xml === null) {
             return '';
         }
         $xml = (string) preg_replace(['#</w:p>#', '#<w:(tab|br)\b[^>]*/>#'], ["\n", ' '], $xml);
 
         return html_entity_decode(strip_tags($xml), ENT_QUOTES | ENT_XML1, 'UTF-8');
-    }
-
-    /** Lê uma entrada do ZIP pelo diretório central (armazenada ou deflate). */
-    private static function zipEntry(string $zip, string $name): ?string
-    {
-        $eocd = strrpos($zip, "PK\x05\x06");
-        if ($eocd === false || strlen($zip) < $eocd + 22) {
-            return null;
-        }
-        /** @var array{entries: int, cdsize: int, cdoffset: int} $end */
-        $end = unpack('ventries/Vcdsize/Vcdoffset', substr($zip, $eocd + 10, 10));
-        $pos = $end['cdoffset'];
-        for ($i = 0; $i < $end['entries'] && $pos + 46 <= strlen($zip); $i++) {
-            if (substr($zip, $pos, 4) !== "PK\x01\x02") {
-                return null;
-            }
-            /** @var array{method: int, csize: int, usize: int, nlen: int, elen: int, clen: int, offset: int} $h */
-            $h = unpack('vmethod', substr($zip, $pos + 10, 2)) + unpack('Vcsize/Vusize', substr($zip, $pos + 20, 8))
-                + unpack('vnlen/velen/vclen', substr($zip, $pos + 28, 6)) + unpack('Voffset', substr($zip, $pos + 42, 4));
-            $entry = substr($zip, $pos + 46, $h['nlen']);
-            $pos += 46 + $h['nlen'] + $h['elen'] + $h['clen'];
-            if ($entry !== $name) {
-                continue;
-            }
-            if ($h['usize'] > self::MAX_BYTES * 3) {
-                return null; // proteção contra "zip bomb"
-            }
-            /** @var array{nlen: int, elen: int} $local */
-            $local = unpack('vnlen/velen', substr($zip, $h['offset'] + 26, 4));
-            $data = substr($zip, $h['offset'] + 30 + $local['nlen'] + $local['elen'], $h['csize']);
-
-            return match ($h['method']) {
-                0 => $data,
-                8 => ($out = @gzinflate($data, self::MAX_BYTES * 3)) === false ? null : $out,
-                default => null,
-            };
-        }
-
-        return null;
     }
 }

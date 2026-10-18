@@ -21,7 +21,8 @@ test('veterinário anexa imagem e PDF ao prontuário, vê a miniatura e remove',
   await expect(page.getByRole('main').getByRole('status')).toContainText('Anexo enviado');
   const thumb = page.getByRole('img', { name: `Miniatura de Raio-X ${tag}` });
   await expect(thumb).toBeVisible();
-  expect(await thumb.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(1); // carregou de verdade
+  await thumb.scrollIntoViewIfNeeded(); // miniatura com loading="lazy": no celular pode estar fora da tela
+  await expect.poll(() => thumb.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(1); // carregou de verdade
 
   await page.getByLabel('Arquivo').setInputFiles({ name: 'hemograma.pdf', mimeType: 'application/pdf', buffer: PDF });
   await page.getByLabel('Título', { exact: true }).fill(`Hemograma ${tag}`);

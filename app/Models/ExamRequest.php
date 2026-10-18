@@ -5,9 +5,11 @@ namespace App\Models;
 use App\Clinical\ClinicalRecordLocked;
 use App\Tenancy\BelongsToTenant;
 use App\Tenancy\TenantOwned;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -39,6 +41,8 @@ use Illuminate\Support\Carbon;
  * @property-read User $requester
  * @property-read User|null $reviewer
  * @property-read Attachment|null $resultAttachment
+ * @property-read Collection<int, ExamResultValue> $values
+ * @property int|null $out_of_range_count
  */
 class ExamRequest extends Model implements TenantOwned
 {
@@ -111,6 +115,12 @@ class ExamRequest extends Model implements TenantOwned
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    /** @return HasMany<ExamResultValue, $this> */
+    public function values(): HasMany
+    {
+        return $this->hasMany(ExamResultValue::class, 'exam_request_id');
     }
 
     /** @return BelongsTo<Attachment, $this> */

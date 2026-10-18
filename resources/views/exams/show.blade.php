@@ -49,8 +49,10 @@
                 @endif
             </x-card>
 
+            @include('exams._values')
+
             <x-card>
-                <h2 class="mb-3 font-bold">Resultado</h2>
+                <h2 class="mb-3 font-bold">Resultado em texto e laudo</h2>
                 @if ($exam->result_text)
                     <div class="whitespace-pre-line rounded-xl bg-surface-2 p-3 text-sm">{{ $exam->result_text }}</div>
                 @endif
