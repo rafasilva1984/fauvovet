@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Documents\TemplateImporter;
 use App\Models\AppointmentType;
 use App\Models\Attachment;
+use App\Models\ExamRequest;
+use App\Models\ExamType;
 use App\Models\Membership;
 use App\Models\Unit;
 use App\Models\Vaccine;
@@ -30,9 +33,10 @@ final class DemoDataService
     /**
      * Versão do conjunto de demonstração; SUBIR a cada entrega que amplia os dados. Fica gravada no 1º responsável demo
      * para a tela avisar "demonstração desatualizada" e oferecer "Atualizar" (remover + carregar).
-     * 1 = 18/10 (base) · 2 = 19/10 (busca em texto livre) · 3 = 19/10 (anexos com texto + correções da busca).
+     * 1 = 18/10 (base) · 2 = 19/10 (busca em texto livre) · 3 = 19/10 (anexos com texto + correções da busca) ·
+     * 4 = 20/10 (sinônimos, pesquisa salva, modelo importado e exames).
      */
-    public const VERSION = 3;
+    public const VERSION = 4;
 
     /** Responsáveis: [nome, celular, cidade/UF]. */
     private const GUARDIANS = [
@@ -155,6 +159,27 @@ final class DemoDataService
         [18, 'png', 'Foto do casco', 'image', ''],
     ];
 
+    /** Sinônimos da clínica de demonstração (configuração fictícia, como uma clínica faria). */
+    private const SYNONYMS = [
+        "recusa alimentar\nnão se alimenta\nanorexia",
+        "prurido\ncoceira",
+        "DRC\ndoença renal crônica",
+    ];
+
+    /**
+     * Exames: [paciente, exame do catálogo, situação, dias atrás do pedido, laboratório, resultado, interpretação, motivo de cancelamento].
+     * Uma situação de cada para o painel "Exames".
+     */
+    private const EXAMS = [
+        [10, 'Bioquímica renal (ureia e creatinina)', 'reviewed', 25, 'Laboratório Fictício Vet', 'Creatinina 3,8 mg/dL; ureia 120 mg/dL; fósforo 6,9 mg/dL (valores fictícios).', 'Azotemia compatível com doença renal crônica já diagnosticada; manter dieta renal e repetir em 60 dias (demonstração).', null],
+        [0, 'Citologia', 'received', 6, 'Na própria clínica', 'Citologia de pele: cocos e neutrófilos degenerados; Malassezia rara (fictício).', null, null],
+        [11, 'Coproparasitológico', 'received', 9, 'Laboratório Fictício Vet', 'Pesquisa de cistos: Giardia sp. POSITIVO (fictício).', null, null],
+        [19, 'Hemograma completo', 'in_analysis', 3, 'Laboratório Fictício Vet', null, null, null],
+        [17, 'Hemograma completo', 'collected', 1, null, null, null, null],
+        [7, 'Ecocardiograma', 'requested', 0, null, null, null, null],
+        [2, 'Urinálise', 'cancelled', 12, null, null, null, 'Tutor optou por não realizar (demonstração).'],
+    ];
+
     /** Alertas: [paciente, tipo, gravidade, descrição]. */
     private const ALERTS = [
         [0, 'allergy', 'high', 'Alergia a penicilina — demonstração'],
@@ -215,7 +240,7 @@ final class DemoDataService
     /**
      * Atualiza para a versão atual: remove a demonstração antiga e carrega a nova.
      *
-     * @return array{patients: int, encounters: int, vaccinations: int, appointments: int, cases: int, addenda: int, attachments: int}
+     * @return array{patients: int, encounters: int, vaccinations: int, appointments: int, cases: int, addenda: int, attachments: int, exams: int}
      */
     public function refresh(string $userId): array
     {
@@ -224,7 +249,7 @@ final class DemoDataService
         return $this->load($userId);
     }
 
-    /** @return array{patients: int, encounters: int, vaccinations: int, appointments: int, cases: int, addenda: int, attachments: int} */
+    /** @return array{patients: int, encounters: int, vaccinations: int, appointments: int, cases: int, addenda: int, attachments: int, exams: int} */
     public function load(string $userId): array
     {
         $tenant = $this->context->requireId();
@@ -331,6 +356,8 @@ final class DemoDataService
 
                 $this->cases($base, $userId, $encounterOf, $now);
                 $written = $this->attachmentFiles($base, $userId, $now);
+                $written = [...$written, ...$this->searchAndTemplates($userId, $now)];
+                $this->exams($userId, $tz);
                 // Busca clínica: os pacientes demo já entram no índice.
                 foreach (array_keys(self::PATIENTS) as $i) {
                     $this->search->reindexPatient($this->id('PT', $i + 1));
@@ -346,7 +373,7 @@ final class DemoDataService
 
         return [
             'patients' => count(self::PATIENTS), 'encounters' => count(self::ENCOUNTERS), 'vaccinations' => count(self::VACCINES),
-            'appointments' => count(self::APPOINTMENTS), 'cases' => 3, 'addenda' => count(self::ADDENDA), 'attachments' => count(self::ATTACHMENTS),
+            'appointments' => count(self::APPOINTMENTS), 'cases' => 3, 'addenda' => count(self::ADDENDA), 'attachments' => count(self::ATTACHMENTS), 'exams' => count(self::EXAMS),
         ];
     }
 
@@ -385,13 +412,65 @@ final class DemoDataService
         return $paths;
     }
 
+    /**
+     * Sinônimos, uma pesquisa salva compartilhada e um modelo importado de DOCX (com o original guardado).
+     *
+     * @return list<string> arquivos gravados
+     */
+    private function searchAndTemplates(string $userId, Carbon $now): array
+    {
+        $tenant = $this->context->requireId();
+        foreach (self::SYNONYMS as $i => $terms) {
+            DB::table('clinical_search_synonyms')->insert(['id' => $this->id('SY', $i + 1), 'tenant_id' => $tenant, 'terms' => $terms,
+                'created_by' => $userId, 'created_at' => $now, 'updated_at' => $now]);
+        }
+        DB::table('saved_searches')->insert(['id' => $this->id('SS', 1), 'tenant_id' => $tenant, 'user_id' => $userId, 'name' => 'Gatos com doença renal (demonstração)',
+            'params' => json_encode(['q' => 'renal', 'especie' => 'feline']), 'shared' => true, 'created_at' => $now, 'updated_at' => $now]);
+
+        $text = "TERMO DE CONSENTIMENTO PARA SEDAÇÃO (modelo fictício de demonstração)\nPaciente: __________\nEspécie: ______  Raça: ______\n"
+            ."Tutor responsável: ______________  CPF: ______________\nDeclaro ter sido informado(a) dos riscos da sedação e autorizo o procedimento.\n"
+            ."Assinatura: ______________\nData: ____/____/______";
+        $bytes = self::docx($text);
+        if ($bytes === null || DB::table('document_templates')->where('tenant_id', $tenant)->where('id', $this->id('TP', 1))->exists()) {
+            return [];
+        }
+        [$body] = TemplateImporter::convert(str_replace('. ', ".\n", $text));
+        $r = app(TemplateImporter::class)->create($bytes, ['mime' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'extension' => 'docx'],
+            'termo-sedacao-clinica.docx', 'consent', 'Termo de sedação (importado — demonstração)', $body, $userId, $this->id('TP', 1));
+
+        return [(string) $r['template']->source_path];
+    }
+
+    /** Pedidos de exame em todas as situações (catálogo padrão da clínica). */
+    private function exams(string $userId, string $tz): void
+    {
+        app(ExamService::class)->ensureDefaults();
+        $types = ExamType::query()->pluck('id', 'name');
+        $tenant = $this->context->requireId();
+        foreach (self::EXAMS as $i => [$p, $name, $status, $daysAgo, $lab, $result, $interpretation, $cancel]) {
+            if (! isset($types[$name])) {
+                continue; // a clínica renomeou o exame padrão
+            }
+            $at = Carbon::now($tz)->subDays($daysAgo)->setTime(10, 0)->utc();
+            $step = fn (string $s, int $plusHours) => array_search($status, ExamRequest::FLOW, true) >= array_search($s, ExamRequest::FLOW, true) && $status !== 'cancelled' ? $at->copy()->addHours($plusHours) : null;
+            DB::table('exam_requests')->insert([
+                'id' => $this->id('EX', $i + 1), 'tenant_id' => $tenant, 'patient_id' => $this->id('PT', $p + 1), 'exam_type_id' => $types[$name],
+                'status' => $status, 'lab_name' => $lab, 'request_notes' => 'Pedido fictício de demonstração.', 'requested_by' => $userId, 'requested_at' => $at,
+                'collected_at' => $step('collected', 1), 'sent_at' => $step('in_analysis', 3), 'received_at' => $step('received', 48),
+                'result_text' => $result, 'result_by' => $result ? $userId : null, 'interpretation' => $interpretation,
+                'reviewed_at' => $step('reviewed', 50), 'reviewed_by' => $status === 'reviewed' ? $userId : null,
+                'cancelled_at' => $cancel ? $at->copy()->addDay() : null, 'cancel_reason' => $cancel, 'created_at' => $at, 'updated_at' => $at,
+            ]);
+        }
+    }
+
     /** DOCX mínimo válido (Word abre) com um parágrafo por frase. */
     private static function docx(string $text): ?string
     {
         if (! class_exists(\ZipArchive::class)) {
             return null;
         }
-        $paras = implode('', array_map(fn ($t) => '<w:p><w:r><w:t xml:space="preserve">'.htmlspecialchars($t, ENT_XML1).'</w:t></w:r></w:p>', preg_split('/(?<=\.)\s+/', $text) ?: [$text]));
+        $paras = implode('', array_map(fn ($t) => '<w:p><w:r><w:t xml:space="preserve">'.htmlspecialchars($t, ENT_XML1).'</w:t></w:r></w:p>', preg_split('/(?<=\.)\s+|\n/', $text) ?: [$text]));
         $file = (string) tempnam(sys_get_temp_dir(), 'fvdocx');
         $zip = new \ZipArchive;
         $zip->open($file, \ZipArchive::OVERWRITE);
@@ -493,7 +572,7 @@ final class DemoDataService
                     ...$t('issued_documents')->whereIn('patient_id', $patients)->pluck('pdf_path')->all(),
                     ...$t('attachments')->whereIn('patient_id', $patients)->pluck('storage_path')->all(),
                 ];
-                foreach (['clinical_search_documents', 'vaccinations', 'issued_documents', 'attachments', 'patient_weights', 'patient_alerts', 'encounter_diagnoses'] as $table) {
+                foreach (['clinical_search_documents', 'exam_requests', 'vaccinations', 'issued_documents', 'attachments', 'patient_weights', 'patient_alerts', 'encounter_diagnoses'] as $table) {
                     $t($table)->whereIn('patient_id', $patients)->delete();
                 }
                 if ($encounters !== []) {
@@ -508,6 +587,17 @@ final class DemoDataService
             }
             $demo('patients')->delete();
             $demo('guardians')->delete();
+            $demo('clinical_search_synonyms')->delete();
+            $demo('saved_searches')->delete();
+            // Modelo importado demo: apaga (com o original), a não ser que um documento de paciente real o use — aí só desativa.
+            foreach ($demo('document_templates')->get(['id', 'source_path']) as $tpl) {
+                if ($t('issued_documents')->where('template_id', $tpl->id)->exists()) {
+                    $t('document_templates')->where('id', $tpl->id)->update(['active' => false]);
+                } else {
+                    $t('document_templates')->where('id', $tpl->id)->delete();
+                    $files[] = (string) $tpl->source_path;
+                }
+            }
         });
         $this->search->refreshCount();
         foreach ($files as $path) {

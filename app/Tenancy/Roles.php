@@ -24,9 +24,9 @@ final class Roles
     private const BASE = ['tenant:read', 'units:read'];
 
     private const MATRIX = [
-        'tenant_owner' => ['tenant:update', 'theme:update', 'units:create', 'members:read', 'members:manage', 'audit:read', 'patients:read', 'patients:write', 'schedule:read', 'schedule:write', 'schedule:attend', 'schedule:configure', 'clinical:read', 'clinical:write', 'documents:templates', 'vaccines:read', 'vaccines:write', 'vaccines:configure', 'research:manage'],
-        'tenant_manager' => ['units:create', 'members:read', 'members:manage', 'audit:read', 'patients:read', 'patients:write', 'schedule:read', 'schedule:write', 'schedule:configure', 'documents:templates', 'vaccines:read', 'vaccines:configure'],
-        'veterinarian' => ['patients:read', 'patients:write', 'schedule:read', 'schedule:write', 'schedule:attend', 'clinical:read', 'clinical:write', 'clinical:sign', 'documents:templates', 'vaccines:read', 'vaccines:write', 'vaccines:configure', 'research:manage'],
+        'tenant_owner' => ['tenant:update', 'theme:update', 'units:create', 'members:read', 'members:manage', 'audit:read', 'patients:read', 'patients:write', 'schedule:read', 'schedule:write', 'schedule:attend', 'schedule:configure', 'clinical:read', 'clinical:write', 'documents:templates', 'vaccines:read', 'vaccines:write', 'vaccines:configure', 'research:manage', 'search:configure', 'exams:configure'],
+        'tenant_manager' => ['units:create', 'members:read', 'members:manage', 'audit:read', 'patients:read', 'patients:write', 'schedule:read', 'schedule:write', 'schedule:configure', 'documents:templates', 'vaccines:read', 'vaccines:configure', 'exams:configure'],
+        'veterinarian' => ['patients:read', 'patients:write', 'schedule:read', 'schedule:write', 'schedule:attend', 'clinical:read', 'clinical:write', 'clinical:sign', 'documents:templates', 'vaccines:read', 'vaccines:write', 'vaccines:configure', 'research:manage', 'search:configure', 'exams:configure'],
         'clinical_assistant' => ['patients:read', 'patients:write', 'schedule:read', 'schedule:write', 'schedule:attend', 'clinical:read', 'clinical:write', 'vaccines:read', 'vaccines:write'],
         'receptionist' => ['patients:read', 'patients:write', 'schedule:read', 'schedule:write', 'vaccines:read'],
         'finance' => ['patients:read', 'schedule:read'],

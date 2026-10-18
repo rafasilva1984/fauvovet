@@ -136,6 +136,50 @@ final class DemoDataTest extends TestCase
         }
     }
 
+    /** Demonstração v4 (fecha Fase 2 + início da Fase 3): passos do guia 2026-10-20-fase2-fase3.html, seção 5. */
+    public function test_demo_v4_sinonimos_pesquisa_salva_modelo_importado_e_exames(): void
+    {
+        config(['fauvovet.demo_data' => true]);
+        $this->loginInto('ana', Seed::TENANT_A);
+        $this->post(self::URL)->assertSessionHasNoErrors()->assertSessionHas('status', fn ($m) => str_contains($m, '7 exames'));
+        $pt = fn (int $n) => '/pacientes/'.DemoDataService::idFor(Seed::TENANT_A, 'PT', $n);
+        $id = fn (string $k, int $n) => DemoDataService::idFor(Seed::TENANT_A, $k, $n);
+
+        // Sinônimos: "coceira" também acha "prurido"; "anorexia" acha recusa alimentar / não se alimenta.
+        $this->get('/configuracoes/sinonimos')->assertSee('recusa alimentar = não se alimenta = anorexia');
+        $this->get('/busca?q=coceira')->assertSee('Sinônimos da clínica usados')->assertSee($pt(1), false)->assertSee('<mark>prurido</mark>', false);
+        $this->get('/busca?q=anorexia')->assertSee($pt(11), false)->assertSee($pt(13), false);
+        $this->get('/busca?q=DRC')->assertSee($pt(12), false);
+        // Pesquisa salva compartilhada.
+        $this->get('/busca')->assertSee('Gatos com doença renal (demonstração)');
+        $this->get('/busca?q=renal&especie=feline')->assertSee($pt(11), false)->assertDontSee($pt(1), false);
+        // Modelo importado de DOCX: desativado, com variáveis e original.
+        $this->get('/configuracoes/modelos-de-documento')->assertSee('Termo de sedação (importado — demonstração)')->assertSee('importado de termo-sedacao-clinica.docx');
+        $this->get('/configuracoes/modelos-de-documento/'.$id('TP', 1).'/editar')->assertSee('Paciente: {{paciente.nome}}', false)->assertSee('Assinatura: [completar]');
+        $this->get('/configuracoes/modelos-de-documento/'.$id('TP', 1).'/original')->assertOk();
+        // Exames: uma situação de cada.
+        $this->get('/exames')->assertSee('Bento · Citologia')->assertSee('Toby · Ecocardiograma')->assertDontSee('Simba · Bioquímica renal');
+        $this->get('/exames?situacao=reviewed')->assertSee('Simba · Bioquímica renal');
+        $this->get('/exames?situacao=cancelled')->assertSee('Pipoca · Urinálise');
+        $this->get('/exames/'.$id('EX', 2))->assertSee('Revisar e assinar')->assertSee('Malassezia');
+        $this->get('/busca?q=giardia')->assertSee($pt(12), false)->assertSee('Exame: Coproparasitológico');
+
+        // Passo 3: revisar o exame do Bento; passo 7: sinônimo criado pelo usuário.
+        $this->post('/exames/'.$id('EX', 2).'/revisar', ['interpretation' => 'Piodermite com Malassezia (fictício).', 'confirm' => '1'])->assertSessionHasNoErrors();
+        $this->get('/exames/'.$id('EX', 2))->assertSee('Revisado e assinado por Ana');
+        $this->get('/exames')->assertSeeInOrder(['Em aberto', '4']);
+        $this->post('/configuracoes/sinonimos', ['terms' => "vômito\nêmese"])->assertSessionHasNoErrors();
+        $this->get('/busca?q=emese')->assertSee($pt(10), false)->assertSee('<mark>Vômito</mark>', false);
+
+        $tpl = $this->sys(fn () => DB::table('document_templates')->where('id', $id('TP', 1))->value('source_path'));
+        $this->post(self::URL.'/remover', ['confirm' => '1'])->assertSessionHasNoErrors();
+        foreach (['exam_requests', 'clinical_search_synonyms', 'saved_searches', 'document_templates'] as $table) {
+            $this->assertSame(0, $this->demoRows($table, Seed::TENANT_A), $table);
+        }
+        Storage::disk('local')->assertMissing((string) $tpl);
+        $this->get('/busca?q=coceira')->assertDontSee('Sinônimos da clínica usados');
+    }
+
     public function test_remover_apaga_demo_e_o_registrado_nela_sem_tocar_o_resto(): void
     {
         config(['fauvovet.demo_data' => true]);

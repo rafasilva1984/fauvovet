@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Files\TextExtractor;
 use App\Models\DocumentTemplate;
 use App\Models\Encounter;
+use App\Models\ExamRequest;
 use App\Models\PatientAlert;
 use App\Support\SearchText;
 use App\Tenancy\TenantContext;
@@ -20,7 +21,7 @@ use Illuminate\Support\Str;
  */
 final class ClinicalSearchIndex
 {
-    public const VERSION = 2; // subir quando a forma de indexar mudar: a próxima busca reconstrói tudo
+    public const VERSION = 3; // subir quando a forma de indexar mudar: a próxima busca reconstrói tudo
 
     public function __construct(private readonly TenantContext $context) {}
 
@@ -111,6 +112,19 @@ final class ClinicalSearchIndex
         foreach ($vaccinations as $v) {
             $text = "Vacina {$v->name}, dose {$v->dose_number}, lote {$v->lot}.".($v->notes ? ' '.$v->notes : '');
             $docs[] = [$v->patient_id, $v->encounter_id, 'vaccination', $v->id, '', 'Vacina', null, $v->applied_on, $v->created_by, $text];
+        }
+
+        // Exames: nome, pedido, resultado em texto e interpretação (o laudo anexado entra como anexo).
+        $exams = $t('exam_requests')->join('exam_types', fn ($j) => $j->on('exam_types.id', '=', 'exam_requests.exam_type_id')->on('exam_types.tenant_id', '=', 'exam_requests.tenant_id'))
+            ->whereIn('exam_requests.patient_id', $patientIds)->where('exam_requests.status', '!=', 'cancelled')
+            ->get(['exam_requests.id', 'exam_requests.patient_id', 'exam_requests.encounter_id', 'exam_requests.status', 'exam_requests.request_notes',
+                'exam_requests.result_text', 'exam_requests.interpretation', 'exam_requests.requested_at', 'exam_requests.received_at',
+                'exam_requests.requested_by', 'exam_requests.reviewed_by', 'exam_types.name']);
+        foreach ($exams as $x) {
+            $body = trim($x->name.($x->request_notes ? "\nPedido: ".$x->request_notes : '').($x->result_text ? "\nResultado: ".$x->result_text : '')
+                .($x->interpretation ? "\nInterpretação: ".$x->interpretation : ''));
+            $docs[] = [$x->patient_id, $x->encounter_id, 'exam', $x->id, '', 'Exame: '.$x->name.' — '.(ExamRequest::STATUS[$x->status] ?? $x->status), null,
+                $x->received_at ?? $x->requested_at, $x->reviewed_by ?? $x->requested_by, $body];
         }
 
         // Anexos: texto extraído (PDF/DOCX) quando houver; senão só título/descrição, sinalizando "sem texto pesquisável".

@@ -67,6 +67,8 @@
                 @include('documents._list', ['documents' => $clinical['documents']])
             </x-card>
 
+            @include('exams._patient', ['exams' => $clinical['exams'], 'examTypes' => $clinical['examTypes']])
+
             @include('attachments._panel', ['attachments' => $clinical['attachments'], 'encounter' => null])
 
             <x-card>

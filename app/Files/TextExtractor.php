@@ -43,7 +43,8 @@ final class TextExtractor
         } catch (Throwable) {
             return ['status' => 'failed', 'text' => null];
         }
-        $text = trim((string) preg_replace(["/[ \t\x{00A0}]+/u", "/\n{3,}/"], [' ', "\n\n"], str_replace("\r", '', $text)));
+        $text = (string) preg_replace("/[ \t\x{00A0}]+/u", ' ', str_replace("\r", '', $text));
+        $text = trim((string) preg_replace("/\n{3,}/", "\n\n", implode("\n", array_map('trim', explode("\n", $text)))));
         if (! mb_check_encoding($text, 'UTF-8')) {
             $text = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
         }

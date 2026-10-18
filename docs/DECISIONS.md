@@ -274,3 +274,28 @@ modelo de outro projeto dele já operado na Locaweb (Laravel + Vite, Node só pa
     - Anexos antigos são lidos em lotes de 30 (1ª abertura da busca ou botão).
 - **Riscos:** PDFs com codificação exótica podem sair sem texto ("failed"/"no_text", visível ao usuário); leitura
   síncrona no envio pode pesar com PDFs grandes — limite de 10 MB e ideia de fila registrada em `docs/IDEAS.md`.
+
+## ADR-019 — Fecha a Fase 2 (sinônimos, pesquisas salvas, importação de modelos) e abre a Fase 3 com exames (2026-10-20)
+
+- **Contexto:** pedido do proprietário: "finalizar a parte 2 e iniciar a 3 numa única entrega".
+- **Decisão:**
+  - **Sinônimos da clínica:** grupos de expressões cadastrados pela equipe (`search:configure`: titular e
+    veterinário). Na consulta, cada termo ou frase vale por qualquer item do grupo, inclusive no `NÃO`; uma expressão
+    de várias palavras digitada sem aspas é reconhecida. O sistema não traz sinônimos prontos (§3.3 ex. 6). A
+    expansão é feita na consulta, então muda na hora, sem reindexar.
+  - **Pesquisas salvas:** termo + filtros; privadas por padrão, opção "compartilhar com a clínica"; quem criou ou o
+    titular exclui.
+  - **Importação de modelos** (§4.2): DOCX/PDF com texto.
+    - O original é guardado (privado, SHA-256, download protegido), o texto é extraído e lacunas com rótulo
+      conhecido viram variáveis da whitelist; as demais viram `[completar]`.
+    - O modelo nasce DESATIVADO para revisão, e editar cria versões.
+    - DOC legado, PDF com campos de formulário e OCR ficam para depois, e a tela diz o que não é convertido.
+  - **Exames (Fase 3):**
+    - catálogo genérico editável;
+    - pedido na ficha; situações solicitado → coletado → em análise → recebido → revisado (pode pular etapas,
+      nunca voltar) ou cancelado;
+    - resultado em texto e/ou laudo anexado (vira anexo pesquisável);
+    - revisão com interpretação assinada (`clinical:sign`); revisado e cancelado são imutáveis;
+    - tudo indexado na busca clínica e auditado (inclusive visualização).
+- **Fora desta entrega:** analitos estruturados com faixa de referência por espécie, gráficos comparativos e
+  integração com laboratórios (registrados em `docs/IDEAS.md`).

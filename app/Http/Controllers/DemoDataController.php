@@ -40,7 +40,7 @@ final class DemoDataController extends Controller
         }
         $this->audit->record('demo_data.loaded', $userId, 'tenant', null, $r);
 
-        return redirect()->route('settings.demo-data')->with('status', "Demonstração carregada: {$r['patients']} pacientes, {$r['encounters']} atendimentos, {$r['vaccinations']} vacinas, {$r['appointments']} agendamentos, {$r['attachments']} anexos e {$r['cases']} casos científicos.");
+        return redirect()->route('settings.demo-data')->with('status', "Demonstração carregada: {$r['patients']} pacientes, {$r['encounters']} atendimentos, {$r['vaccinations']} vacinas, {$r['appointments']} agendamentos, {$r['attachments']} anexos, {$r['exams']} exames e {$r['cases']} casos científicos.");
     }
 
     /** Demonstração desatualizada → remove e carrega a versão atual num clique. */
@@ -55,7 +55,7 @@ final class DemoDataController extends Controller
         }
         $this->audit->record('demo_data.refreshed', $userId, 'tenant', null, $r);
 
-        return redirect()->route('settings.demo-data')->with('status', "Demonstração atualizada: {$r['patients']} pacientes, {$r['encounters']} atendimentos, {$r['attachments']} anexos e {$r['cases']} casos científicos.");
+        return redirect()->route('settings.demo-data')->with('status', "Demonstração atualizada: {$r['patients']} pacientes, {$r['encounters']} atendimentos, {$r['attachments']} anexos, {$r['exams']} exames e {$r['cases']} casos científicos.");
     }
 
     public function remove(Request $request): RedirectResponse

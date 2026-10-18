@@ -5,6 +5,16 @@
     <x-page-header icon="list" eyebrow="Modelos de documento" :title="$template->exists ? 'Editar '.$template->name : 'Novo modelo'" :description="$template->exists ? 'Versão atual: '.$template->version.'. Salvar alterações de texto cria a versão '.($template->version + 1).'.' : null" />
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <x-card>
+            @if ($template->source_name)
+                <x-alert tone="info" class="mb-4">
+                    <strong>Importado de {{ $template->source_name }}</strong> em {{ $template->imported_at?->timezone('America/Sao_Paulo')->format('d/m/Y H:i') }}.
+                    O texto foi convertido; formatação, tabelas e imagens do original não. Revise antes de ativar.
+                    <a href="{{ route('document-templates.original', $template) }}" class="font-semibold underline underline-offset-4">Baixar original</a>
+                    @if (session('import_suggestions'))
+                        <span class="mt-2 block">Variáveis sugeridas: {{ implode('; ', session('import_suggestions')) }}.</span>
+                    @endif
+                </x-alert>
+            @endif
             <form method="POST" action="{{ $template->exists ? route('document-templates.update', $template) : route('document-templates.store') }}" class="flex flex-col gap-4" novalidate>
                 @csrf
                 @if ($template->exists) @method('PUT') @endif

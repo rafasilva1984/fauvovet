@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Appointment;
 use App\Models\Attachment;
 use App\Models\Encounter;
+use App\Models\ExamRequest;
+use App\Models\ExamType;
 use App\Models\Guardian;
 use App\Models\IssuedDocument;
 use App\Models\Patient;
@@ -16,6 +18,7 @@ use App\Models\Vaccine;
 use App\Services\ClinicalRecordService;
 use App\Services\ClinicalSearchIndex;
 use App\Services\ClinicalSearchService;
+use App\Services\ExamService;
 use App\Services\PatientRegistry;
 use App\Services\PatientSearch;
 use App\Services\VaccinationService;
@@ -23,6 +26,7 @@ use App\Support\Audit;
 use App\Tenancy\TenantContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -160,6 +164,8 @@ final class PatientController extends Controller
                     ->with('uploader:id,name')->orderByDesc('created_at')->limit(60)->get(),
                 'documents' => IssuedDocument::query()->where('patient_id', $patient->id)
                     ->with('issuer:id,name')->orderByDesc('issued_at')->limit(30)->get(),
+                'exams' => ExamRequest::query()->where('patient_id', $patient->id)->with('type:id,name')->orderByDesc('requested_at')->limit(30)->get(),
+                'examTypes' => $this->context->can('clinical:write') ? $this->examTypes() : collect(),
             ];
         }
 
@@ -196,5 +202,13 @@ final class PatientController extends Controller
         $this->registry->unlink($patient, $guardian, (string) $request->user()?->getAuthIdentifier());
 
         return redirect()->route('patients.show', $patient)->with('status', "{$guardian->name} desvinculado(a) do paciente.");
+    }
+
+    /** @return Collection<int, ExamType> */
+    private function examTypes(): Collection
+    {
+        app(ExamService::class)->ensureDefaults();
+
+        return ExamType::query()->where('active', true)->orderBy('name')->get(['id', 'name']);
     }
 }

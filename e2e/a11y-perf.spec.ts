@@ -228,3 +228,21 @@ test('acessibilidade WCAG AA (axe): dados de demonstração', async ({ page }) =
   await page.getByRole('button', { name: 'Remover demonstração' }).click();
   await expect(page.getByRole('button', { name: 'Carregar demonstração' })).toBeVisible();
 });
+
+test('acessibilidade WCAG AA (axe): exames, sinônimos e importação de modelo', async ({ page }) => {
+  await loginInto(page, USERS.ana);
+  for (const path of [
+    'exames',
+    'configuracoes/exames',
+    'configuracoes/sinonimos',
+    'configuracoes/modelos-de-documento/importar',
+    'pacientes/01K7FV0000000000000PTA0003',
+  ]) {
+    await page.goto(path);
+    await axe(page);
+  }
+  await page.getByRole('combobox', { name: 'Pedir exame' }).selectOption({ label: 'Hemograma completo' });
+  await page.getByRole('button', { name: 'Solicitar exame' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Hemograma completo' })).toBeVisible();
+  await axe(page); // detalhe do exame com etapas, resultado e revisão
+});

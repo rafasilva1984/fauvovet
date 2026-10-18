@@ -11,14 +11,17 @@
             ['route' => 'search.index', 'label' => 'Busca clínica', 'icon' => 'search', 'perm' => 'clinical:read'],
         ],
         'Clínica' => [
+            ['route' => 'exams.index', 'label' => 'Exames', 'icon' => 'flask', 'perm' => 'clinical:read'],
             ['route' => 'cases.index', 'label' => 'Casos científicos', 'icon' => 'flask', 'perm' => 'research:manage'],
             ['route' => 'units.index', 'label' => 'Unidades', 'icon' => 'building', 'perm' => 'units:read'],
             ['route' => 'team.index', 'label' => 'Equipe', 'icon' => 'shield', 'perm' => 'members:read'],
         ],
         'Configurações' => [
             ['route' => 'settings.appointment-types', 'label' => 'Tipos de atendimento', 'icon' => 'list', 'perm' => 'schedule:configure'],
+            ['route' => 'exam-types.index', 'label' => 'Catálogo de exames', 'icon' => 'list', 'perm' => 'exams:configure'],
             ['route' => 'vaccines.index', 'label' => 'Catálogo de vacinas', 'icon' => 'syringe', 'perm' => 'vaccines:configure'],
             ['route' => 'document-templates.index', 'label' => 'Modelos de documento', 'icon' => 'copy', 'perm' => 'documents:templates'],
+            ['route' => 'search.synonyms', 'label' => 'Sinônimos da busca', 'icon' => 'search', 'perm' => 'search:configure'],
             ['route' => 'settings.appearance', 'label' => 'Aparência', 'icon' => 'palette', 'perm' => 'theme:update'],
             ...(config('fauvovet.demo_data') ? [['route' => 'settings.demo-data', 'label' => 'Dados de demonstração', 'icon' => 'sparkles', 'perm' => 'tenant:update']] : []),
         ],

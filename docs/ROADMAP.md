@@ -35,9 +35,19 @@ Depois: modelos de documento por clínica, vacinação.
 - [x] Texto de anexos PDF/DOCX na busca, com status "sem texto pesquisável" (exemplos 4 e 10 do §3.3) + campo único de
       busca em Pacientes, aspas curvas/"ou" e demonstração versionada (19/10/2026).
 - [ ] OCR de imagens/PDF escaneado (avaliar custo/hospedagem).
-- [ ] Dicionário de sinônimos da clínica; pesquisas salvas.
-- [ ] Importação de modelos DOCX/PDF com versões. Aceite: CLAUDE.md §3.3.
+- [x] Dicionário de sinônimos da clínica; pesquisas salvas (20/10/2026).
+- [x] Importação de modelos DOCX/PDF: original preservado, texto convertido, variáveis sugeridas, revisão e versões (20/10/2026).
+- [ ] DOC legado e PDF com campos de formulário (conversão isolada).
 
-## Fases 3–6
+**Fase 2 encerrada em 20/10/2026** (pendências acima seguem no backlog: OCR, DOC legado, PDF com campos).
+
+## Fase 3 — Consolidação clínica (iniciada em 20/10/2026)
+
+- [x] Vacinação (18/10/2026).
+- [x] Exames: catálogo, pedido, situação até a revisão assinada, resultado + laudo, busca (20/10/2026).
+- [ ] Exames estruturados: analitos com intervalo de referência por espécie, comparativo e gráficos.
+- [ ] Prescrição estruturada; internação; cirurgia; portal do responsável.
+
+## Fases 4–6
 
 Ver CLAUDE.md §11.

@@ -8,7 +8,7 @@
         $examples = ['dermatite', '"recusa alimentar" ou "não se alimenta"', 'penicilina antibiótico', 'renal NÃO felino', 'tonometria'];
     @endphp
     <x-page-header title="Busca clínica" icon="search" eyebrow="Prontuário"
-        description="Procure palavras e frases em todo o prontuário da clínica: atendimentos finalizados, diagnósticos, adendos, alertas, documentos emitidos, vacinas e o texto de anexos PDF/DOCX." />
+        description="Procure palavras e frases em todo o prontuário da clínica: atendimentos finalizados, diagnósticos, adendos, alertas, documentos emitidos, vacinas, exames e o texto de anexos PDF/DOCX." />
 
     @if ($demo !== null)
         <x-alert tone="warning" class="mb-4">
@@ -53,6 +53,21 @@
         </details>
     </form>
 
+    @if ($saved->isNotEmpty())
+        <nav aria-label="Pesquisas salvas" class="mb-4 flex flex-wrap items-center gap-2">
+            <span class="text-sm font-semibold text-muted">Pesquisas salvas:</span>
+            @foreach ($saved as $s)
+                <span class="inline-flex items-center gap-1 rounded-xl border border-line bg-surface pl-3 shadow-card">
+                    <a href="{{ route('search.index', $s->params) }}" class="inline-flex min-h-11 items-center text-sm font-semibold text-link hover:underline">{{ $s->name }}</a>
+                    @if ($s->shared)<x-badge tone="tint">clínica</x-badge>@endif
+                    @if ($s->user_id === auth()->id() || $fvCan('tenant:update'))
+                        <form method="POST" action="{{ route('search.saved.destroy', $s) }}">@csrf @method('DELETE')<button class="inline-flex size-11 items-center justify-center rounded-xl text-muted hover:text-danger" aria-label="Excluir pesquisa salva {{ $s->name }}"><x-icon name="close" :size="16" /></button></form>
+                    @endif
+                </span>
+            @endforeach
+        </nav>
+    @endif
+
     @if ($result === null)
         <x-card class="flex flex-col gap-3">
             <h2 class="text-lg font-semibold">Exemplos</h2>
@@ -73,6 +88,21 @@
             @foreach ($result['parsed']['exclude'] as $x)<x-badge tone="neutral">sem “{{ $x }}”</x-badge>@endforeach
             @if ($result['parsed']['ignored'] !== [])<span class="text-xs text-muted">Ignorado: {{ implode(', ', $result['parsed']['ignored']) }}</span>@endif
         </div>
+        @if ($result['expanded'] !== [])
+            <p class="mb-3 text-sm text-muted">Sinônimos da clínica usados:
+                @foreach ($result['expanded'] as $from => $to)<span class="font-semibold text-ink">{{ $from }}</span> → {{ implode(', ', $to) }}@if (! $loop->last); @endif @endforeach
+                @if ($fvCan('search:configure'))· <a href="{{ route('search.synonyms') }}" class="font-semibold text-link underline underline-offset-4">editar sinônimos</a>@endif
+            </p>
+        @endif
+        <details class="mb-4" @if ($errors->has('name')) open @endif>
+            <summary class="inline-flex min-h-11 cursor-pointer items-center gap-2 text-sm font-semibold text-link"><x-icon name="plus" :size="16" /> Salvar esta pesquisa</summary>
+            <form method="POST" action="{{ route('search.saved.store', request()->query()) }}" class="mt-2 flex flex-wrap items-end gap-3" novalidate>
+                @csrf
+                <x-field name="name" label="Nome da pesquisa" class="min-w-56 flex-1" required />
+                <label class="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" name="shared" value="1" class="size-4"> Compartilhar com a clínica</label>
+                <x-button variant="secondary">Salvar</x-button>
+            </form>
+        </details>
         @if ($result['truncated'])
             <x-alert tone="warning" class="mb-3">Muitos registros com estes termos: a lista pode estar incompleta. Refine com mais palavras ou filtros.</x-alert>
         @endif
@@ -97,6 +127,7 @@
                                     $pt = $r['patient'];
                                     $href = match (true) {
                                         $ev['source'] === 'document' => route('documents.show', $ev['source_id']),
+                                        $ev['source'] === 'exam' => route('exams.show', $ev['source_id']),
                                         $ev['encounter_id'] !== null => route('encounters.show', $ev['encounter_id']),
                                         default => route('patients.show', $pt->id),
                                     };

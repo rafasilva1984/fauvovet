@@ -74,6 +74,11 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
   (ADR-018). Junto: **texto de anexos PDF/DOCX na busca** (`smalot/pdfparser`; DOCX sem ext-zip), etiquetas de
   leitura, "sem texto pesquisável" para imagens, leitura de anexos antigos em lote; demonstração v3 com laudo PDF,
   sorologia DOCX e foto.
+- **Fase 2 ENCERRADA + Fase 3 INICIADA (20/10; local, não publicado):** sinônimos da clínica (sem prontos), pesquisas
+  salvas (privadas/compartilhadas), importação de modelos DOCX/PDF (original com hash, variáveis sugeridas, nasce
+  desativado, versões); **Exames**: catálogo, pedido na ficha, painel por situação, etapas com data, resultado + laudo
+  pesquisável, revisão assinada (`clinical:sign`), cancelamento; demonstração v4 (ADR-019). Pendências da Fase 2 no
+  backlog: OCR, DOC legado, PDF com campos.
 - **Regra do proprietário (17/10/2026):** toda entrega amplia os dados de demonstração e o guia traz "Confirmar o
   funcionamento com os dados de demonstração" (também no `TEMPLATE.html`).
 - **Não implementado:** exames estruturados, internação, (alergias, peso, vacinas), busca clínica, lembretes, visão mensal/salas/recorrência; MFA, recuperação de senha, e-mail transacional; backup automático.
@@ -84,7 +89,7 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
 - **Tutorial de deploy didático:** o proprietário achou o passo a passo de `DEPLOY_LOCAWEB.md` difícil de seguir (faltava
   configuração do banco e o que copiar para onde). Reescrito como guia completo, etapas A–H, com glossário, mapa de pastas,
   folha de anotações e troubleshooting; novo comando `pnpm deploy:copiar` (pacote → `C:\fauvovet-deploy`, fora do OneDrive).
-- **Último guia HTML:** [`docs/changes/2026-10-19-busca-anexos.html`](changes/2026-10-19-busca-anexos.html)
+- **Último guia HTML:** [`docs/changes/2026-10-20-fase2-fase3.html`](changes/2026-10-20-fase2-fase3.html)
 
 ## Ambiente (verificado)
 
@@ -173,13 +178,13 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 
 ## Próxima ação exata
 
-1. Proprietário: publicação única (`docs/changes/2026-10-19-busca-anexos.html` › seção 7; 1 migração nova;
-   `pnpm bootstrap` antes do pacote por causa da biblioteca nova). Depois seguir "Confirmar o funcionamento com os dados
-   de demonstração" (seção 5), começando por **Atualizar demonstração**. Antes do primeiro paciente real: remover a
-   demonstração e voltar `FAUVOVET_DEMO_DATA=false`. HTTPS continua pendente (deixar para o final, a pedido).
-2. Próximo incremento sugerido: dicionário de sinônimos da clínica + pesquisas salvas (fecha a busca da Fase 2), ou
-   exames estruturados (Fase 3). Entrada: `app/Support/SearchText.php`, `app/Services/ClinicalSearchService.php`.
-   Lembrar: subir `DemoDataService::VERSION`, ampliar a demonstração e a seção de confirmação do guia.
+1. Proprietário: publicação única (`docs/changes/2026-10-20-fase2-fase3.html` › seção 7; `pnpm bootstrap` antes do
+   pacote; 1 migração, ou 2 se a "busca em anexos" não subiu). Depois a seção 5 "Confirmar o funcionamento com os
+   dados de demonstração", começando por **Atualizar demonstração** (v4). Ajustar o catálogo de exames. Antes do
+   primeiro paciente real: remover a demonstração e `FAUVOVET_DEMO_DATA=false`. HTTPS pendente (deixar para o final).
+2. Próximo incremento sugerido (Fase 3): exames estruturados — analitos com unidade e faixa de referência por espécie,
+   alerta fora da faixa, gráfico comparativo. Entrada: `app/Services/ExamService.php`, `resources/views/exams/show.blade.php`.
+   Lembrar: subir `DemoDataService::VERSION` (→ 5), ampliar a demonstração e a seção de confirmação do guia.
 
 ## Histórico de incrementos
 
@@ -203,4 +208,5 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 | 2026-10-18 | **Casos científicos**: séries/relatos, consentimento, estatísticas, exportação anonimizada                      | [2026-10-18-casos-cientificos.html](changes/2026-10-18-casos-cientificos.html)               | verify --e2e 9/9 (PHPUnit 164, isolamento 40)                      | main — hash na próxima atualização | push nesta sessão      | Publicar; busca em texto livre        |
 | 2026-10-18 | **Dados de demonstração**: carga/remoção de dados fictícios pelo titular (chave no `.env`)                      | [2026-10-18-dados-demonstracao.html](changes/2026-10-18-dados-demonstracao.html)             | verify --e2e 9/9 (PHPUnit 169, isolamento 41, E2E 72)              | `bc41bf8`                          | push OK, CI            | Busca clínica em texto livre          |
 | 2026-10-19 | **Busca clínica em texto livre** + demonstração ampliada                                                        | [2026-10-19-busca-clinica.html](changes/2026-10-19-busca-clinica.html)                       | verify --e2e 9/9 (PHPUnit 175, isolamento 42, E2E 75)              | `510b47b`                          | push OK, CI, publicado | Correção + anexos                     |
-| 2026-10-19 | **Correção da busca (relato) + texto de anexos PDF/DOCX**                                                       | [2026-10-19-busca-anexos.html](changes/2026-10-19-busca-anexos.html)                         | verify --e2e 9/9 (PHPUnit 180, isolamento 43, E2E 75)              | main — hash na próxima atualização | push nesta sessão      | Sinônimos/pesquisas salvas            |
+| 2026-10-19 | **Correção da busca (relato) + texto de anexos PDF/DOCX**                                                       | [2026-10-19-busca-anexos.html](changes/2026-10-19-busca-anexos.html)                         | verify --e2e 9/9 (PHPUnit 180, isolamento 43, E2E 75)              | `6702fc1`/`b0475c4`                | push OK, CI            | Fase 2 + exames                       |
+| 2026-10-20 | **Fim da Fase 2 (sinônimos, pesquisas salvas, importação de modelos) + Exames (Fase 3)**                        | [2026-10-20-fase2-fase3.html](changes/2026-10-20-fase2-fase3.html)                           | verify --e2e 9/9 (PHPUnit 193, isolamento 46, E2E 81)              | main — hash na próxima atualização | push nesta sessão      | Exames estruturados                   |

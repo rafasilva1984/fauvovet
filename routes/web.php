@@ -13,6 +13,8 @@ use App\Http\Controllers\DemoDataController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\DocumentTemplateController;
 use App\Http\Controllers\EncounterController;
+use App\Http\Controllers\ExamController;
+use App\Http\Controllers\ExamTypeController;
 use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\OnboardingController;
@@ -20,6 +22,8 @@ use App\Http\Controllers\PatientAlertController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PostalCodeController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SavedSearchController;
+use App\Http\Controllers\SearchSynonymController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\VaccinationController;
@@ -111,6 +115,9 @@ Route::middleware('auth')->group(function () {
             Route::get('/configuracoes/modelos-de-documento', [DocumentTemplateController::class, 'index'])->name('document-templates.index');
             Route::get('/configuracoes/modelos-de-documento/novo', [DocumentTemplateController::class, 'create'])->name('document-templates.create');
             Route::post('/configuracoes/modelos-de-documento', [DocumentTemplateController::class, 'store'])->name('document-templates.store');
+            Route::get('/configuracoes/modelos-de-documento/importar', [DocumentTemplateController::class, 'importForm'])->name('document-templates.import');
+            Route::post('/configuracoes/modelos-de-documento/importar', [DocumentTemplateController::class, 'import'])->middleware('throttle:attachment-upload')->name('document-templates.import.store');
+            Route::get('/configuracoes/modelos-de-documento/{template}/original', [DocumentTemplateController::class, 'original'])->name('document-templates.original');
             Route::get('/configuracoes/modelos-de-documento/{template}/editar', [DocumentTemplateController::class, 'edit'])->name('document-templates.edit');
             Route::put('/configuracoes/modelos-de-documento/{template}', [DocumentTemplateController::class, 'update'])->name('document-templates.update');
         });
@@ -132,8 +139,34 @@ Route::middleware('auth')->group(function () {
             Route::put('/configuracoes/vacinas/{vaccine}', [VaccineController::class, 'update'])->name('vaccines.update');
         });
 
+        // Exames (Fase 3, ADR-019): ver = clinical:read; pedir/etapas/resultado = clinical:write; revisar = clinical:sign (no serviço).
+        Route::middleware('permission:clinical:read')->group(function () {
+            Route::get('/exames', [ExamController::class, 'index'])->name('exams.index');
+            Route::get('/exames/{exam}', [ExamController::class, 'show'])->name('exams.show');
+        });
+        Route::middleware('permission:clinical:write')->group(function () {
+            Route::post('/pacientes/{patient}/exames', [ExamController::class, 'store'])->name('exams.store');
+            Route::post('/exames/{exam}/situacao', [ExamController::class, 'advance'])->name('exams.advance');
+            Route::post('/exames/{exam}/resultado', [ExamController::class, 'result'])->middleware('throttle:attachment-upload')->name('exams.result');
+            Route::post('/exames/{exam}/revisar', [ExamController::class, 'review'])->name('exams.review');
+            Route::post('/exames/{exam}/cancelar', [ExamController::class, 'cancel'])->name('exams.cancel');
+        });
+        Route::middleware('permission:exams:configure')->group(function () {
+            Route::get('/configuracoes/exames', [ExamTypeController::class, 'index'])->name('exam-types.index');
+            Route::post('/configuracoes/exames', [ExamTypeController::class, 'store'])->name('exam-types.store');
+            Route::put('/configuracoes/exames/{type}', [ExamTypeController::class, 'update'])->name('exam-types.update');
+        });
+
         // Busca clínica em texto livre no prontuário (ADR-017).
         Route::get('/busca', [ClinicalSearchController::class, 'index'])->middleware(['permission:clinical:read', 'throttle:clinical-search'])->name('search.index');
+        Route::post('/busca/salvas', [SavedSearchController::class, 'store'])->middleware('permission:clinical:read')->name('search.saved.store');
+        Route::delete('/busca/salvas/{search}', [SavedSearchController::class, 'destroy'])->middleware('permission:clinical:read')->name('search.saved.destroy');
+        Route::middleware('permission:search:configure')->group(function () {
+            Route::get('/configuracoes/sinonimos', [SearchSynonymController::class, 'index'])->name('search.synonyms');
+            Route::post('/configuracoes/sinonimos', [SearchSynonymController::class, 'store'])->name('search.synonyms.store');
+            Route::put('/configuracoes/sinonimos/{synonym}', [SearchSynonymController::class, 'update'])->name('search.synonyms.update');
+            Route::delete('/configuracoes/sinonimos/{synonym}', [SearchSynonymController::class, 'destroy'])->name('search.synonyms.destroy');
+        });
         Route::post('/busca/anexos', [ClinicalSearchController::class, 'readAttachments'])->middleware(['permission:clinical:write', 'throttle:clinical-search'])->name('search.attachments');
         Route::post('/busca/reindexar', [ClinicalSearchController::class, 'rebuild'])->middleware(['permission:tenant:update', 'throttle:clinical-search'])->name('search.rebuild');
 

@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FauvoVet — Fase 2 e exames</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #1a2935; background: #f4f7f8; line-height: 1.65; font-size: 17px; }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 16px 80px; }
+    header { border-radius: 20px; padding: 32px; color: white; background: linear-gradient(120deg, #0b4652, #1a7375); }
+    header p { color: #e1f5f0; margin-bottom: 0; }
+    h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.2; margin: 0; }
+    h2 { font-size: 1.3rem; margin: 0 0 12px; }
+    h3 { font-size: 1.12rem; margin: 28px 0 8px; padding-top: 16px; border-top: 1px dashed #c9d6d8; }
+    h4 { font-size: 1rem; margin: 18px 0 6px; }
+    section { margin-top: 20px; background: #fff; padding: 24px; border: 1px solid #dee7e8; border-radius: 14px; }
+    p, li { overflow-wrap: anywhere; }
+    code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { background: #eaf1f2; padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+    pre code { background: none; padding: 0; }
+    kbd { border: 1px solid #b8c6c9; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: #fff; font-size: 0.9em; }
+    pre { overflow-x: auto; border-radius: 8px; padding: 14px; color: #e9fbff; background: #172b32; font-size: 0.9rem; line-height: 1.5; }
+    .tag { display: inline-block; font-size: 0.8rem; font-weight: 700; border: 1px solid #f5cf83; background: #fff8e4; color: #7a4b12; border-radius: 30px; padding: 3px 10px; }
+    .where { display: inline-block; font-size: 0.78rem; font-weight: 700; border-radius: 30px; padding: 2px 10px; margin-right: 6px; vertical-align: middle; }
+    .w-term { background: #1f3b44; color: #d9fbff; }
+    .w-web { background: #e1effd; color: #0f3e72; }
+    .w-fz { background: #fde8e1; color: #7a2a0f; }
+    .w-np { background: #ece5fb; color: #42237a; }
+    .w-panel { background: #e2f6e8; color: #145c2e; }
+    .note { border-left: 4px solid #338b96; background: #eef7f8; padding: 10px 12px; border-radius: 6px; }
+    .warn { border-left: 4px solid #c27c0e; background: #fff8e4; padding: 10px 12px; border-radius: 6px; }
+    .stop { border-left: 4px solid #b3261e; background: #fdecea; padding: 10px 12px; border-radius: 6px; }
+    .ok { border-left: 4px solid #1d7a45; background: #e8f6ee; padding: 10px 12px; border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid #e0e7e8; text-align: left; vertical-align: top; }
+    small { color: #52646d; }
+    .pass { color: #116b3a; font-weight: 700; }
+    .notrun { color: #8a5a00; font-weight: 700; }
+    ol.steps > li { margin-bottom: 12px; }
+    .map { font-size: 0.85rem; }
+    .shots { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .shots figure { margin: 0; }
+    .shots img { width: 100%; height: auto; border-radius: 12px; border: 1px solid #dee7e8; display: block; }
+    .shots figcaption { font-size: 0.85rem; color: #52646d; margin-top: 4px; }
+    .shots .tall img { max-height: 520px; object-fit: cover; object-position: top; }
+    nav ol { columns: 2; column-gap: 32px; }
+    @media (max-width: 640px) { nav ol { columns: 1; } body { font-size: 16px; } section { padding: 18px; } header { padding: 22px; } }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e4eef0; background: #0f1a1e; }
+      section { background: #15242a; border-color: #23373e; }
+      th, td { border-color: #23373e; }
+      code { background: #213840; }
+      kbd { background: #1d3138; border-color: #3b5760; }
+      .warn { background: #2a2210; } .note { background: #12303a; } .stop { background: #3a1614; } .ok { background: #12301f; }
+      small { color: #9fb3ba; }
+      h3 { border-color: #2c454c; }
+      .pass { color: #5fd28f; } .notrun { color: #f0b54a; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="tag">INCREMENTO IMPLEMENTADO — FIM DA FASE 2 + INÍCIO DA FASE 3</span>
+      <h1>Sinônimos, pesquisas salvas e importação de modelos (fecha a Fase 2) + Exames (abre a Fase 3)</h1>
+      <p>ID: <strong>2026-10-20-fase2-fase3</strong> · Data: <strong>20/10/2026</strong> · Versão: <strong>0.15.0</strong> · Módulos: <strong>Busca clínica, Documentos, Exames (ADR-019)</strong> · Estado: <strong>implementado e testado localmente; publicação única a cargo do proprietário (seção 7)</strong></p>
+    </header>
+
+    <section>
+      <h2>1. Objetivo</h2>
+      <p>Pedido do proprietário: <em>"finalizar a parte 2 e iniciar a 3 numa única entrega"</em>.</p>
+      <ul>
+        <li><strong>Fase 2 (busca e documentos), encerrada:</strong>
+          <ul>
+            <li>a clínica cria seus <strong>sinônimos</strong> ("coceira" = "prurido");</li>
+            <li>salva <strong>pesquisas</strong> que usa sempre;</li>
+            <li><strong>importa os modelos que já usa</strong> (termos e atestados em Word ou PDF) sem redigitar.</li>
+          </ul>
+        </li>
+        <li><strong>Fase 3 (consolidação clínica), iniciada:</strong> <strong>Exames</strong>, do pedido na ficha até a revisão assinada pelo veterinário, com painel por situação e resultado pesquisável.</li>
+      </ul>
+      <div class="shots">
+        <figure><img src="img/2026-10-20-exames-painel.jpg" alt="Painel de exames com abas por situação e lista de pedidos (dados fictícios)" loading="lazy"><figcaption>Painel de exames</figcaption></figure>
+        <figure class="tall"><img src="img/2026-10-20-exame-detalhe.jpg" alt="Detalhe de exame com etapas, resultado e revisão do veterinário (dados fictícios)" loading="lazy"><figcaption>Exame: etapas, resultado e revisão</figcaption></figure>
+        <figure><img src="img/2026-10-20-busca-sinonimos.jpg" alt="Busca por coceira usando sinônimo prurido (dados fictícios)" loading="lazy"><figcaption>Sinônimos da clínica na busca</figcaption></figure>
+        <figure><img src="img/2026-10-20-modelo-importado.jpg" alt="Modelo importado de DOCX com variáveis sugeridas (dados fictícios)" loading="lazy"><figcaption>Modelo importado de DOCX</figcaption></figure>
+        <figure class="tall"><img src="img/2026-10-20-exames-celular.jpg" alt="Painel de exames no celular (dados fictícios)" loading="lazy"><figcaption>Exames no celular</figcaption></figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>2. O que mudou</h2>
+      <h3>Fase 2: busca</h3>
+      <ul>
+        <li><strong>Configurações → Sinônimos da busca</strong> (titular e veterinário):
+          <ul>
+            <li>cada grupo lista expressões equivalentes, uma por linha;</li>
+            <li>na busca, qualquer uma encontra todas, inclusive com <code>NÃO</code>;</li>
+            <li>vale na hora, sem reconstruir o índice; a busca mostra "Sinônimos da clínica usados";</li>
+            <li><strong>nada vem pronto</strong>: equivalência clínica é decisão da equipe.</li>
+          </ul>
+        </li>
+        <li><strong>Pesquisas salvas:</strong> na Busca clínica, <em>Salvar esta pesquisa</em> guarda o termo e os filtros.
+          <ul>
+            <li>ficam como atalhos no topo da tela;</li>
+            <li>são privadas, ou compartilhadas com a clínica se marcar a opção;</li>
+            <li>quem criou ou o titular pode excluir.</li>
+          </ul>
+        </li>
+      </ul>
+      <h3>Fase 2: importação de modelos</h3>
+      <ul>
+        <li><strong>Configurações → Modelos de documento → Importar DOCX/PDF.</strong></li>
+        <li><strong>Original:</strong> guardado intacto, com hash, e disponível em <em>Baixar original</em>.</li>
+        <li><strong>Texto:</strong> vira o corpo do modelo, e o título sai da primeira linha.</li>
+        <li><strong>Lacunas:</strong> com rótulo conhecido ("Paciente: ____", "Tutor: ____", "CPF: ____", "Data: __/__/__") viram variáveis, como <code>&#123;&#123;paciente.nome&#125;&#125;</code>. As demais viram <code>[completar]</code>.</li>
+        <li><strong>Revisão:</strong> o modelo nasce <strong>desativado</strong>; ao revisar e ativar, vira versão 2.</li>
+        <li><strong>O que não é convertido:</strong> formatação, tabelas, imagens e timbre (a tela avisa).</li>
+        <li><strong>Recusados com mensagem:</strong> PDF digitalizado (sem texto), imagens e DOC antigo.</li>
+      </ul>
+      <h3>Fase 3: exames</h3>
+      <ul>
+        <li><strong>Menu → Exames:</strong> painel com abas por situação (Em aberto, Solicitado, Coletado, Em análise, Resultado recebido, Revisado, Cancelado), cada uma com contagem e dias desde o pedido.</li>
+        <li><strong>Pedido:</strong> na ficha do paciente, bloco <em>Exames</em> → escolher exame, laboratório e observações → <em>Solicitar exame</em>.</li>
+        <li><strong>Etapas:</strong> <em>Avançar para</em> a próxima situação. Dá para pular etapas (exame feito na clínica vai direto a "recebido"), mas não voltar. Cada etapa grava data e hora.</li>
+        <li><strong>Resultado:</strong> em texto e/ou laudo (PDF, imagem, DOCX). O laudo vira anexo do prontuário e o texto dele fica pesquisável.</li>
+        <li><strong>Revisão do veterinário:</strong> interpretação + confirmação → <em>Revisar e assinar</em>. Depois disso o exame não muda mais.</li>
+        <li><strong>Cancelamento</strong> com motivo. Pedidos nunca são apagados.</li>
+        <li><strong>Configurações → Catálogo de exames:</strong> 9 exames genéricos para ajustar ao laboratório da clínica; desativar em vez de apagar.</li>
+        <li><strong>Busca clínica:</strong> nome do exame, pedido, resultado e interpretação (origem "Exame"). O laudo anexado entra como anexo.</li>
+        <li><strong>Permissões:</strong> ver = equipe clínica; pedir, avançar e registrar resultado = veterinário/assistente/titular; revisar = só médico-veterinário. Recepção e financeiro: sem acesso. Tudo auditado, inclusive quem abriu o exame.</li>
+      </ul>
+      <h3>Demonstração v4</h3>
+      <ul>
+        <li>3 grupos de sinônimos (recusa alimentar / não se alimenta / anorexia; prurido / coceira; DRC / doença renal crônica);</li>
+        <li>a pesquisa compartilhada "Gatos com doença renal (demonstração)";</li>
+        <li>o "Termo de sedação" importado de DOCX;</li>
+        <li><strong>7 exames, um em cada situação</strong>, como a creatinina revisada do Simba, a citologia do Bento esperando revisão e a Giardia da Nina.</li>
+      </ul>
+      <h3>Arquivos</h3>
+      <ul>
+        <li><strong>Migração:</strong> <code>2026_10_20_000001_create_phase2_close_and_exam_tables</code>.</li>
+        <li><strong>Busca e documentos:</strong> <code>ClinicalSearchService</code> (sinônimos), <code>SearchText</code>, <code>SearchSynonymController</code>, <code>SavedSearchController</code>, <code>app/Documents/TemplateImporter.php</code>, <code>DocumentTemplateController</code>.</li>
+        <li><strong>Exames:</strong> <code>ExamService</code>, <code>ExamController</code>, <code>ExamTypeController</code>, modelos <code>ExamType</code>/<code>ExamRequest</code>/<code>ClinicalSearchSynonym</code>/<code>SavedSearch</code>.</li>
+        <li><strong>Telas:</strong> <code>resources/views/exams/*</code>, <code>search/synonyms</code>, <code>documents/template-import</code>.</li>
+        <li><strong>Permissões novas:</strong> <code>search:configure</code> e <code>exams:configure</code>.</li>
+        <li><strong>Índice de busca:</strong> versão 3, reconstruído sozinho na 1ª busca.</li>
+      </ul>
+      <p>Dependências novas: nenhuma.</p>
+    </section>
+
+    <section>
+      <h2>3. Pré-requisitos</h2>
+      <p>Os mesmos das entregas anteriores. Se a entrega "busca em anexos" ainda não foi publicada, este pacote a inclui (rode <code>pnpm bootstrap</code> antes, por causa da biblioteca de PDF).</p>
+      <p class="warn"><strong>Git Bash/macOS:</strong> NOT RUN.</p>
+    </section>
+
+    <section>
+      <h2>4. Passo a passo (no seu computador)</h2>
+      <ol class="steps">
+        <li><span class="where w-term">Terminal</span> <code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm bootstrap</code> → <code>pnpm db:start</code> → <code>pnpm db:migrate</code>.</li>
+        <li><span class="where w-term">Terminal</span> <code>pnpm dev</code> → titular → <em>Configurações → Dados de demonstração</em> → <em>Atualizar demonstração</em> (ou <em>Carregar</em>).</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>5. Como testar</h2>
+<pre><code>pnpm verify --e2e
+pnpm test:tenant-isolation</code></pre>
+      <ul>
+        <li><code>SearchSynonymAndSavedTest</code> (5): nenhum sinônimo pronto, grupo expande consulta e exclusão, expressão sem aspas, edição/exclusão, pesquisas privadas × compartilhadas, permissões e isolamento.</li>
+        <li><code>TemplateImportTest</code> (3): DOCX → modelo desativado com variáveis, original idêntico no download, ativação vira versão 2, PDF com texto, recusa de imagem/PDF sem texto/nome repetido, recepção 403, isolamento.</li>
+        <li><code>ExamTest</code> (4): fluxo completo (não volta etapa, etapa pulada sem data, resultado + laudo pesquisáveis, revisão exige confirmação e assina, imutável), cancelamento, catálogo, permissões, isolamento + FK composta.</li>
+        <li><code>DemoDataTest</code>: cada passo abaixo, com os dados de demonstração.</li>
+      </ul>
+
+      <h3>Confirmar o funcionamento com os dados de demonstração</h3>
+      <p>Na produção, depois de publicar (seção 7), entre com o usuário <strong>titular</strong>.</p>
+      <ol class="steps">
+        <li><span class="where w-web">Navegador</span> <em>Configurações → Dados de demonstração</em>.
+          <ul>
+            <li><strong>Deve aparecer</strong> a faixa amarela "Demonstração desatualizada (versão 1 ou 3; a atual é 4)". Clique em <em>Atualizar demonstração</em>.</li>
+            <li><strong>Deve aparecer:</strong> "Demonstração atualizada: 22 pacientes, 33 atendimentos, 3 anexos, 7 exames e 3 casos científicos".</li>
+            <li>Se não houver demonstração, use <em>Carregar demonstração</em>.</li>
+          </ul>
+        </li>
+        <li><strong>Painel de exames:</strong> menu <em>Exames</em> (no celular, em "Mais opções").
+          <ul>
+            <li><strong>Deve aparecer:</strong> aba <em>Em aberto 5</em>, com Nina · Coproparasitológico e Bento · Citologia (Resultado recebido), Floco · Hemograma (Em análise), Sol · Hemograma (Coletado) e Toby · Ecocardiograma (Solicitado).</li>
+            <li>A aba <em>Revisado 1</em> mostra Simba · Bioquímica renal; <em>Cancelado 1</em> mostra Pipoca · Urinálise.</li>
+          </ul>
+        </li>
+        <li><strong>Revisar um exame:</strong> clique em <em>Bento · Citologia</em>.
+          <ul>
+            <li><strong>Deve aparecer:</strong> as etapas com data até "Resultado recebido", o resultado "cocos e neutrófilos degenerados; Malassezia rara" e, à direita, <em>Revisão do veterinário</em>.</li>
+            <li>Escreva uma interpretação, marque "Confirmo a revisão" e clique em <em>Revisar e assinar</em>.</li>
+            <li><strong>Deve aparecer:</strong> "Revisado e assinado por (você) · CRMV… em (data). Somente leitura". O formulário de resultado some.</li>
+          </ul>
+        </li>
+        <li><strong>Pedir um exame do zero:</strong> abra a ficha da <strong>Mia</strong> (ou de qualquer paciente) → bloco <em>Exames</em> → <em>Pedir exame</em>: Hemograma completo → <em>Solicitar exame</em>.
+          <ul>
+            <li><em>Avançar para: Coletado</em> → <em>Atualizar situação</em>.</li>
+            <li>Escreva um resultado e anexe um PDF qualquer → <em>Registrar resultado</em>. A situação vira "Resultado recebido", e o laudo aparece com a etiqueta "Texto pesquisável".</li>
+          </ul>
+        </li>
+        <li><strong>Exame na busca:</strong> <em>Busca clínica</em> → <code>giardia</code>. <strong>Deve aparecer:</strong> Nina, com "Exame: Coproparasitológico — Resultado recebido" e o trecho "<mark>Giardia</mark> sp. POSITIVO". Clicar no título abre o exame.</li>
+        <li><strong>Sinônimos:</strong> <em>Configurações → Sinônimos da busca</em>.
+          <ul>
+            <li><strong>Deve aparecer:</strong> 3 grupos, por exemplo "recusa alimentar = não se alimenta = anorexia".</li>
+            <li>Na Busca clínica, digite <code>coceira</code>. <strong>Deve aparecer:</strong> "Sinônimos da clínica usados: coceira → prurido" e pacientes com "<mark>prurido</mark>" destacado, como o Bento.</li>
+            <li>Busque também <code>anorexia</code> (Simba e Frajola) e <code>DRC</code> (gatos com doença renal crônica).</li>
+          </ul>
+        </li>
+        <li><strong>Criar um sinônimo seu:</strong> em <em>Sinônimos da busca</em>, crie o grupo "vômito / êmese" e busque <code>emese</code>. <strong>Deve aparecer:</strong> o Bidu, com "<mark>Vômito</mark> e diarreia".</li>
+        <li><strong>Pesquisas salvas:</strong> no topo da Busca clínica aparece o atalho <em>Gatos com doença renal (demonstração)</em>, com a etiqueta "clínica".
+          <ul>
+            <li>Clique nele: aplica <code>renal</code> + espécie Gato.</li>
+            <li>Faça uma busca sua → <em>Salvar esta pesquisa</em> → dê um nome → <em>Salvar</em>. O atalho aparece; o "x" exclui.</li>
+          </ul>
+        </li>
+        <li><strong>Modelo importado:</strong> <em>Configurações → Modelos de documento</em>.
+          <ul>
+            <li><strong>Deve aparecer</strong> "Termo de sedação (importado — demonstração) · versão 1 · desativado · importado de termo-sedacao-clinica.docx".</li>
+            <li>Clique em <em>Editar</em>: a faixa "Importado de…" e o texto com <code>Paciente: &#123;&#123;paciente.nome&#125;&#125;</code>, <code>CPF: &#123;&#123;responsavel.documento&#125;&#125;</code>, <code>Assinatura: [completar]</code>. <em>Baixar original</em> abre o DOCX.</li>
+            <li>Marque <em>Ativo</em> e salve: vira versão 2 e passa a aparecer em <em>Emitir documento</em> na ficha.</li>
+          </ul>
+        </li>
+        <li><strong>Importar o seu próprio modelo:</strong> <em>Modelos de documento → Importar DOCX/PDF</em>. Envie um termo que a clínica já usa, em Word, com nome e categoria. <strong>Deve aparecer:</strong> a tela de edição com "Variáveis sugeridas: Paciente → &#123;&#123;paciente.nome&#125;&#125;…". Um PDF escaneado é recusado com explicação.</li>
+        <li><strong>Permissão:</strong> com um usuário de recepção, os menus <em>Exames</em>, <em>Sinônimos</em> e <em>Catálogo de exames</em> não aparecem, e os endereços respondem "Acesso negado".</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>6. Performance e usabilidade</h2>
+      <ul>
+        <li><strong>Local</strong> (WSL, seed + demonstração v4): 25 requisições entre painel de exames, abas e buscas com sinônimo: <strong>p50 39–40 ms, p95 48–60 ms, máx. 68 ms</strong>.</li>
+        <li><strong>Sinônimos:</strong> 1 consulta extra por variante do grupo (cada uma usa o índice de termos). Grupos grandes multiplicam consultas; recomendação: até ~10 expressões por grupo.</li>
+        <li><strong>Celular:</strong> abas dos exames quebram em linhas (nada passa da borda), formulários em coluna única; axe sem violações em Exames, detalhe, catálogo, Sinônimos e Importar.</li>
+        <li><strong>Volume grande:</strong> NOT RUN.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>7. Publicação única na Locaweb</h2>
+      <ol class="steps">
+        <li><span class="where w-term">Terminal</span> <code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm bootstrap</code> → <code>pnpm db:start</code> → <code>pnpm verify --e2e</code> → <code>pnpm deploy:package</code> → <code>pnpm deploy:copiar</code></li>
+        <li><span class="where w-panel">Painel Locaweb</span> backup do banco.</li>
+        <li><span class="where w-term">Terminal</span> <code>pnpm deploy:token</code>.</li>
+        <li><span class="where w-fz">FileZilla</span> <code>.env</code> do servidor: <code>DEPLOY_TOOLS_ENABLED=true</code> + token novo; mantenha <code>FAUVOVET_DEMO_DATA=true</code>; envie e apague <code>bootstrap/cache/config.php</code>.</li>
+        <li><span class="where w-fz">FileZilla</span> <code>app-fauvovet</code> (tudo exceto <code>storage</code>) e <code>public_html/fauvovet</code>, com <em>Sobrescrever</em>.</li>
+        <li><span class="where w-term">Terminal</span> <code>diagnostico</code> → <code>pending_migrations</code>: <strong>1</strong> se a "busca em anexos" já foi publicada, ou <strong>2</strong> se não → <code>migrar</code> → <code>otimizar</code>.</li>
+        <li><span class="where w-fz">FileZilla</span> <code>DEPLOY_TOOLS_ENABLED=false</code> → enviar → apagar <code>bootstrap/cache/config.php</code>.</li>
+        <li><span class="where w-term">Terminal</span> <code>SMOKE_URL=https://dradeboragaldino.com.br/fauvovet pnpm smoke</code> (5 PASS).</li>
+        <li><span class="where w-web">Navegador</span> seção 5, <strong>"Confirmar o funcionamento com os dados de demonstração"</strong>, começando por <em>Atualizar demonstração</em>.</li>
+        <li><span class="where w-web">Navegador</span> <em>Configurações → Catálogo de exames</em>: ajuste os 9 exames genéricos aos que a clínica realmente pede.</li>
+      </ol>
+      <p class="stop">Sem HTTPS válido, só dados fictícios. Antes do primeiro paciente real: remover a demonstração e voltar <code>FAUVOVET_DEMO_DATA=false</code>.</p>
+    </section>
+
+    <section>
+      <h2>8. Rollback</h2>
+      <ul>
+        <li><strong>Código:</strong> reenvie o pacote anterior em <code>.deploy/</code> + <em>otimizar</em>. As tabelas novas ficam sem uso; o índice de busca da versão anterior é reconstruído sozinho.</li>
+        <li><strong>Banco:</strong> restaure o backup do passo 2 (exames e sinônimos criados depois somem).</li>
+        <li><strong>Local:</strong> <code>git revert</code> e <code>migrate:rollback --step=1</code> (só desenvolvimento).</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>9. Troubleshooting</h2>
+      <table>
+        <tr><th>Sintoma</th><th>Causa e solução</th></tr>
+        <tr><td>Exemplos do guia não aparecem</td><td>Demonstração desatualizada: <em>Atualizar demonstração</em>.</td></tr>
+        <tr><td>Sinônimo não funciona</td><td>O grupo precisa de duas expressões diferentes. Palavras comuns ("de", "com") sozinhas são ignoradas. Confira em <em>Sinônimos da busca</em>.</td></tr>
+        <tr><td>"Não foi possível converter" ao importar</td><td>PDF digitalizado ou protegido. Digite o modelo em <em>Novo modelo</em>, ou salve o Word como DOCX e importe.</td></tr>
+        <tr><td>Modelo importado não aparece ao emitir</td><td>Ele nasce desativado: revise e marque <em>Ativo</em>.</td></tr>
+        <tr><td>Botão "Revisar e assinar" ausente</td><td>Só aparece com o resultado recebido e para médico-veterinário (assistente não assina).</td></tr>
+        <tr><td>"Etapa inválida"</td><td>Exames só avançam; revisão é feita no quadro "Revisão do veterinário".</td></tr>
+        <tr><td>Erro 500 em Exames</td><td>Migração não aplicada: <code>diagnostico</code> → <code>migrar</code>.</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>10. Evidências e status</h2>
+      <table>
+        <tr><th>Verificação</th><th>Status</th><th>Detalhe</th></tr>
+        <tr><td><code>pnpm verify --e2e</code></td><td class="pass">PASS</td><td>9/9 etapas</td></tr>
+        <tr><td>PHPUnit</td><td class="pass">PASS</td><td>193 testes (13 novos: sinônimos/pesquisas 5, importação 3, exames 4, demonstração v4 1)</td></tr>
+        <tr><td>Isolamento</td><td class="pass">PASS</td><td>46 testes (3 novos: sinônimos/pesquisas, modelo importado, exames + FK composta)</td></tr>
+        <tr><td>E2E + axe + borda no celular</td><td class="pass">PASS</td><td>81 testes; exame do pedido à revisão, sinônimo + pesquisa salva, demonstração (exames e sinônimos), axe em Exames, detalhe, catálogo, Sinônimos e Importar</td></tr>
+        <tr><td>Aceite §3.3 (busca) — todos os 10 exemplos</td><td class="pass">PASS</td><td>ex. 6 agora também por sinônimo da clínica; demais cobertos nas entregas anteriores</td></tr>
+        <tr><td>Exames estruturados (faixa de referência), integração com laboratório, OCR, DOC legado</td><td class="notrun">NOT RUN</td><td>Fora desta entrega (<code>docs/IDEAS.md</code>)</td></tr>
+      </table>
+      <p><strong>Commit:</strong> registrado no <code>docs/PROGRESS.md</code> após a sincronização.</p>
+      <p><strong>Próximo passo sugerido (Fase 3):</strong> exames estruturados (valores com faixa de referência por espécie, alerta de fora da faixa e gráfico comparativo), depois prescrição estruturada ou internação.</p>
+    </section>
+  </main>
+</body>
+</html>

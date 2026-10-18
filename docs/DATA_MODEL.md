@@ -101,6 +101,17 @@ CEP pela consulta `/cep/{cep}`). Migração aditiva.
 | `attachments`               | `text_status` (indexed/no_text/failed/too_large; nulo = não lido), `extracted_text`, `text_chars`, `text_extracted_at` — derivados, original intocado |
 | `clinical_search_documents` | `source_type` ganha `attachment`                                                                                                                      |
 
+## 2026_10_20_000001_create_phase2_close_and_exam_tables
+
+| Tabela                      | Escopo  | Integridade                                                                                                                                                               |
+| --------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `clinical_search_synonyms`  | clínica | grupo de expressões equivalentes definido pela clínica (uma por linha); nada vem pronto                                                                                   |
+| `saved_searches`            | clínica | pesquisa salva (termo + filtros JSON) do usuário; `shared` = visível à equipe; exclui quem criou ou o titular                                                             |
+| `document_templates`        | clínica | + `source_*` e `imported_*`: original importado (DOCX/PDF) em disco privado com SHA-256                                                                                   |
+| `exam_types`                | clínica | catálogo (nome único, categoria, material); desativar em vez de apagar                                                                                                    |
+| `exam_requests`             | clínica | FKs compostas (paciente, atendimento, exame, laudo anexado); situação + data de cada etapa, resultado, interpretação/revisor; revisado e cancelado são finais; não exclui |
+| `clinical_search_documents` | clínica | `source_type` ganha `exam`                                                                                                                                                |
+
 Tabelas de clínica registradas no firewall: `TenantQueryFirewall::TENANT_TABLES` (um teste falha se uma tabela com
 `tenant_id` não estiver na lista).
 

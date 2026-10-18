@@ -27,6 +27,10 @@ test('dados de demonstração: carregar, ver na busca/vacinas/casos e remover', 
   // Simba e Frajola (demo) + Jabu (seed da clínica B: "Recusa alimentar há 5 dias").
   await expect(page.getByRole('heading', { name: 'No prontuário: 3 pacientes' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Simba' })).toBeVisible();
+  await page.goto('exames');
+  await expect(page.getByText('Bento · Citologia')).toBeVisible();
+  await page.goto('busca?q=coceira');
+  await expect(page.getByText('Sinônimos da clínica usados')).toBeVisible();
   await page.goto('vacinas');
   await expect(page.getByText(/Atrasada/).first()).toBeVisible();
   await page.goto('casos');

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SavedSearch;
 use App\Services\AttachmentService;
 use App\Services\ClinicalSearchIndex;
 use App\Services\ClinicalSearchService;
@@ -37,7 +38,8 @@ final class ClinicalSearchController extends Controller
         }
 
         return view('search.index', ['f' => $f, 'result' => $result, 'status' => $this->index->status(), 'built' => $built,
-            'pendingAttachments' => $this->attachments->pendingCount(), 'demo' => app(DemoDataService::class)->outdated()]);
+            'pendingAttachments' => $this->attachments->pendingCount(),
+            'saved' => SavedSearch::query()->where(fn ($q) => $q->where('user_id', (string) $request->user()?->getAuthIdentifier())->orWhere('shared', true))->with('user:id,name')->orderBy('name')->get(), 'demo' => app(DemoDataService::class)->outdated()]);
     }
 
     /** Lê o texto de um lote de anexos antigos (enviados antes desta versão). */

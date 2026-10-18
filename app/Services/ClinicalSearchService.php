@@ -25,13 +25,13 @@ final class ClinicalSearchService
     /** Teto de registros por termo — protege contra consultas caras; acima disso pede para refinar. */
     public const MAX_HITS = 5000;
 
-    public const SOURCES = ['encounter' => 'Atendimento', 'diagnosis' => 'Diagnóstico', 'addendum' => 'Adendo', 'alert' => 'Alerta', 'document' => 'Documento emitido', 'vaccination' => 'Vacina', 'attachment' => 'Anexo (texto extraído)'];
+    public const SOURCES = ['encounter' => 'Atendimento', 'diagnosis' => 'Diagnóstico', 'addendum' => 'Adendo', 'alert' => 'Alerta', 'document' => 'Documento emitido', 'vaccination' => 'Vacina', 'attachment' => 'Anexo (texto extraído)', 'exam' => 'Exame'];
 
     public const PERIODS = ['30' => 'Últimos 30 dias', '180' => 'Últimos 6 meses', '365' => 'Últimos 12 meses', '730' => 'Últimos 2 anos', '1825' => 'Últimos 5 anos'];
 
     public const SORTS = ['relevancia' => 'Relevância', 'recentes' => 'Mais recentes', 'antigos' => 'Mais antigos', 'nome' => 'Nome do paciente'];
 
-    private const WEIGHT = ['diagnosis' => 3, 'encounter' => 2, 'addendum' => 2, 'alert' => 2, 'document' => 1, 'vaccination' => 1, 'attachment' => 1];
+    private const WEIGHT = ['diagnosis' => 3, 'encounter' => 2, 'addendum' => 2, 'alert' => 2, 'document' => 1, 'vaccination' => 1, 'attachment' => 1, 'exam' => 2];
 
     public function __construct(private readonly TenantContext $context) {}
 
@@ -53,44 +53,45 @@ final class ClinicalSearchService
 
     /**
      * @param  array{q: string, especie: string, periodo: string, origem: string, situacao: string, ordem: string, pagina: int}  $f
-     * @return array{parsed: array{groups: list<array{terms: list<string>, phrases: list<string>}>, exclude: list<string>, ignored: list<string>}, total: int, hits: int, truncated: bool, results: list<array<string, mixed>>, pages: int}
+     * @return array{parsed: array{groups: list<array{terms: list<string>, phrases: list<string>}>, exclude: list<string>, ignored: list<string>}, total: int, hits: int, truncated: bool, results: list<array<string, mixed>>, pages: int, expanded: array<string, list<string>>}
      */
     public function search(array $f): array
     {
         $parsed = SearchText::parse($f['q']);
-        $empty = ['parsed' => $parsed, 'total' => 0, 'hits' => 0, 'truncated' => false, 'results' => [], 'pages' => 0];
+        $empty = ['parsed' => $parsed, 'total' => 0, 'hits' => 0, 'truncated' => false, 'results' => [], 'pages' => 0, 'expanded' => []];
         if ($parsed['groups'] === []) {
             return $empty;
         }
         $truncated = false;
-        $match = []; // item => [doc_id => patient_id]
-        foreach ($parsed['groups'] as $g) {
-            foreach ($g['terms'] as $t) {
-                $match['t:'.$t] ??= $this->termDocs($t, $f, $truncated);
-            }
-            foreach ($g['phrases'] as $p) {
-                $match['p:'.$p] ??= $this->phraseDocs($p, $f, $truncated);
-            }
-        }
-        $excluded = [];
-        foreach ($parsed['exclude'] as $x) {
-            $docs = str_starts_with($x, '"') ? $this->phraseDocs(trim($x, '"'), $f, $truncated) : $this->termDocs($x, $f, $truncated);
-            $excluded += array_flip(array_values($docs));
-        }
+        $synonyms = $this->synonymGroups();
+        $expanded = [];
+        $match = []; // variante ("t:termo" ou "p:frase") => [doc_id => patient_id]
+        $docsOf = function (string $variant) use (&$match, $f, &$truncated): array {
+            return $match[$variant] ??= str_starts_with($variant, 'p:') ? $this->phraseDocs(substr($variant, 2), $f, $truncated) : $this->termDocs(substr($variant, 2), $f, $truncated);
+        };
 
         $patients = [];
         foreach ($parsed['groups'] as $g) {
-            $items = [...array_map(fn ($t) => 't:'.$t, $g['terms']), ...array_map(fn ($p) => 'p:'.$p, $g['phrases'])];
             $set = null;
-            foreach ($items as $item) {
-                $ids = array_flip(array_values($match[$item]));
+            foreach ($this->items($g, $synonyms, $expanded) as $variants) {
+                $ids = [];
+                foreach ($variants as $v) { // um item casa se QUALQUER sinônimo dele aparecer
+                    $ids += array_flip(array_values($docsOf($v)));
+                }
                 $set = $set === null ? $ids : array_intersect_key($set, $ids);
             }
             $patients += $set ?? [];
         }
+        $excluded = [];
+        foreach ($parsed['exclude'] as $x) {
+            $item = str_starts_with($x, '"') ? 'p:'.trim($x, '"') : 't:'.$x;
+            foreach ($this->variants($item, $synonyms, $expanded) as $v) {
+                $excluded += array_flip(array_values($this->scopedDocs($v, $f, $truncated)));
+            }
+        }
         $patients = array_diff_key($patients, $excluded);
         if ($patients === []) {
-            return ['truncated' => $truncated] + $empty;
+            return ['truncated' => $truncated, 'expanded' => $expanded] + $empty;
         }
 
         // Evidências: registros que casaram algum item, só dos pacientes do resultado.
@@ -142,7 +143,113 @@ final class ClinicalSearchService
             return ['patient' => $r['patient'], 'evidence' => $evidence->take(3)->all(), 'more' => max(0, $evidence->count() - 3), 'hits' => $evidence->count()];
         })->values()->all();
 
-        return ['parsed' => $parsed, 'total' => $total, 'hits' => $docs->count(), 'truncated' => $truncated, 'results' => $results, 'pages' => (int) ceil($total / self::PER_PAGE)];
+        return ['parsed' => $parsed, 'total' => $total, 'hits' => $docs->count(), 'truncated' => $truncated, 'results' => $results, 'pages' => (int) ceil($total / self::PER_PAGE), 'expanded' => $expanded];
+    }
+
+    /**
+     * Grupos de sinônimos da clínica, cada um como lista de variantes ("t:radical" para palavra, "p:frase" para expressão).
+     *
+     * @return list<list<string>>
+     */
+    private function synonymGroups(): array
+    {
+        return DB::table('clinical_search_synonyms')->where('tenant_id', $this->context->requireId())->pluck('terms')
+            ->map(fn ($terms) => SearchText::synonymVariants((string) $terms))->filter(fn ($g) => count($g) > 1)->values()->all();
+    }
+
+    /**
+     * Itens de uma alternativa, cada um com suas variantes. Se uma expressão de várias palavras cadastrada como sinônimo
+     * aparece em sequência nos termos digitados (sem aspas), ela vira um item só (frase) — "recusa alimentar" casa com
+     * o grupo "recusa alimentar / não se alimenta / anorexia".
+     *
+     * @param  array{terms: list<string>, phrases: list<string>}  $g
+     * @param  list<list<string>>  $synonyms
+     * @param  array<string, list<string>>  $expanded
+     * @return list<list<string>>
+     */
+    private function items(array $g, array $synonyms, array &$expanded): array
+    {
+        $terms = $g['terms'];
+        $phrases = $g['phrases'];
+        foreach ($synonyms as $group) {
+            foreach ($group as $variant) {
+                if (! str_starts_with($variant, 'p:')) {
+                    continue;
+                }
+                $words = array_values(array_map(fn ($w) => SearchText::stem($w), array_filter(explode(' ', substr($variant, 2)), fn ($w) => SearchText::significant($w))));
+                if ($words === []) {
+                    continue;
+                }
+                $at = self::sequenceAt($terms, $words);
+                if ($at !== null) {
+                    array_splice($terms, $at, count($words));
+                    $phrases[] = substr($variant, 2);
+                }
+            }
+        }
+        $items = [];
+        foreach ([...array_map(fn ($t) => 't:'.$t, $terms), ...array_map(fn ($p) => 'p:'.$p, array_unique($phrases))] as $item) {
+            $items[] = $this->variants($item, $synonyms, $expanded);
+        }
+
+        return $items;
+    }
+
+    /**
+     * @param  list<list<string>>  $synonyms
+     * @param  array<string, list<string>>  $expanded
+     * @return list<string>
+     */
+    private function variants(string $item, array $synonyms, array &$expanded): array
+    {
+        $out = [$item];
+        foreach ($synonyms as $group) {
+            $hit = in_array($item, $group, true)
+                || (str_starts_with($item, 't:') && collect($group)->contains(fn ($v) => str_starts_with($v, 't:') && str_starts_with(substr($v, 2), substr($item, 2)) && strlen($item) >= 5));
+            if ($hit) {
+                $out = [...$out, ...$group];
+            }
+        }
+        $out = array_values(array_unique($out));
+        if (count($out) > 1) {
+            $expanded[substr($item, 2)] = array_values(array_map(fn ($v) => substr($v, 2), array_diff($out, [$item])));
+        }
+
+        return $out;
+    }
+
+    /**
+     * Posição em que as palavras aparecem em sequência nos termos digitados (prefixo vale nos dois sentidos).
+     *
+     * @param  list<string>  $terms
+     * @param  list<string>  $words
+     */
+    private static function sequenceAt(array $terms, array $words): ?int
+    {
+        $n = count($words);
+        for ($i = 0; $i + $n <= count($terms); $i++) {
+            $ok = true;
+            for ($k = 0; $k < $n; $k++) {
+                if (! str_starts_with($words[$k], $terms[$i + $k]) && ! str_starts_with($terms[$i + $k], $words[$k])) {
+                    $ok = false;
+                    break;
+                }
+            }
+            if ($ok) {
+                return $i;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  array{q: string, especie: string, periodo: string, origem: string, situacao: string, ordem: string, pagina: int}  $f
+     * @return array<string, string>
+     */
+    private function scopedDocs(string $variant, array $f, bool &$truncated): array
+    {
+        return str_starts_with($variant, 'p:') ? $this->phraseDocs(substr($variant, 2), $f, $truncated) : $this->termDocs(substr($variant, 2), $f, $truncated);
     }
 
     /**

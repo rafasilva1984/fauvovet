@@ -152,6 +152,36 @@ final class SearchText
         return ['groups' => $groups, 'exclude' => array_values(array_unique($exclude)), 'ignored' => array_values(array_unique($ignored))];
     }
 
+    /** Palavra que vira termo de consulta (fora de aspas): 3+ letras e não é palavra comum. */
+    public static function significant(string $word): bool
+    {
+        return strlen($word) >= self::MIN_TERM && ! in_array($word, self::STOPWORDS, true);
+    }
+
+    /**
+     * Variantes de um grupo de sinônimos (uma expressão por linha ou separadas por vírgula/ponto e vírgula):
+     * palavra única → "t:radical"; expressão → "p:frase normalizada". Palavras comuns sozinhas são ignoradas.
+     *
+     * @return list<string>
+     */
+    public static function synonymVariants(string $terms): array
+    {
+        $out = [];
+        foreach (preg_split('/[\n;,]+/', $terms) ?: [] as $raw) {
+            $norm = trim((string) preg_replace('/\s+/', ' ', self::normalize($raw)));
+            if ($norm === '') {
+                continue;
+            }
+            if (str_contains($norm, ' ')) {
+                $out[] = 'p:'.$norm;
+            } elseif (strlen($norm) >= 2 && ! in_array($norm, self::STOPWORDS, true)) {
+                $out[] = 't:'.substr(self::stem($norm), 0, self::MAX_TERM);
+            }
+        }
+
+        return array_values(array_unique($out));
+    }
+
     /**
      * Trecho do texto original em volta da primeira ocorrência, com as ocorrências marcadas (<mark>). HTML escapado.
      *
