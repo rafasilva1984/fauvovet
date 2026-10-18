@@ -58,14 +58,17 @@ test('data de nascimento preenche a idade e CEP preenche o endereço', async ({ 
   const errors = trackConsoleErrors(page);
   await loginInto(page, USERS.carla);
   await page.goto('pacientes/novo');
-  const birth = new Date();
-  birth.setFullYear(birth.getFullYear() - 3);
-  birth.setMonth(birth.getMonth() - 2);
-  // Data no fuso LOCAL (o navegador calcula a idade no fuso local; toISOString usaria UTC).
-  const pad = (n: number) => String(n).padStart(2, '0');
-  await page
-    .getByLabel('Data de nascimento')
-    .fill(`${birth.getFullYear()}-${pad(birth.getMonth() + 1)}-${pad(birth.getDate())}`);
+  // Data calculada NO NAVEGADOR (fuso America/Sao_Paulo do Playwright): calcular no Node (UTC na CI) faz o dia
+  // divergir entre 21h e 0h e a idade sair com 1 mês a menos.
+  const birthIso = await page.evaluate(() => {
+    const d = new Date();
+    d.setDate(1); // evita estouro de mês (ex.: 31 → mês sem 31)
+    d.setFullYear(d.getFullYear() - 3);
+    d.setMonth(d.getMonth() - 2);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-01`;
+  });
+  await page.getByLabel('Data de nascimento').fill(birthIso);
   await expect(page.getByLabel('ou idade: anos')).toHaveValue('3');
   await expect(page.getByLabel('meses', { exact: true })).toHaveValue('2');
   // Digitar a idade limpa a data (vira estimada no servidor).
