@@ -110,7 +110,7 @@ projeto dele na Locaweb (Node só para build local, deploy por FTP), com isolame
   receituário + `prescription_items` imutáveis; "Medicamentos em uso" na ficha. Demonstração v7. Componentes
   `x-select`/`x-textarea` agora leem erros/old() de campos em lista. Guia da navegação renomeado de 2026-10-22 para
   2026-10-21 (data futura).
-- **Último guia HTML:** [`docs/changes/2026-10-21-prescricao-estruturada.html`](changes/2026-10-21-prescricao-estruturada.html) (anterior: [navegação reorganizada](changes/2026-10-21-navegacao-reorganizada.html), commit `5ffbdfc`)
+- **Último guia HTML:** [`docs/changes/2026-10-21-prescricao-estruturada.html`](changes/2026-10-21-prescricao-estruturada.html) (anterior: [navegação reorganizada](changes/2026-10-21-navegacao-reorganizada.html), commit `5ffbdfc`; prescrição: commit `a315ae6`)
 
 ## Ambiente (verificado)
 
@@ -208,14 +208,25 @@ Sem sudo. O PostgreSQL local antigo (`.data/pg`) não é mais usado.
 
 ## Próxima ação exata
 
-1. Proprietário: publicar a prescrição estruturada pela seção 7 de
-   `docs/changes/2026-10-21-prescricao-estruturada.html` (1 migração; apagar `config.php` e `routes-v7.php` depois) e
-   seguir a seção 5 com a demonstração (Atualizar → v7). HTTPS e backup continuam pendentes (ver acima).
-2. Próximo incremento sugerido: **recuperação de senha + MFA do titular** (pré-requisito para dados reais; exige
-   e-mail transacional — sem provedor configurado, entregar com envio em modo de desenvolvimento rotulado). Entrada:
-   `app/Http/Controllers/Auth/LoginController.php`, `app/Models/User.php`. Depois: **internação** (boxes, prescrição por
-   horário reaproveitando `Medication`/`DoseCalculator`, execução, alta). Lembrar: `DemoDataService::VERSION` → 8 e
-   seção de confirmação no guia.
+**Por onde começar ao voltar (22/10):**
+
+1. A 1ª tentativa de publicar a prescrição (21/10, à noite) **não mudou nada**: `C:\fauvovet-deploy` tinha o pacote
+   antigo `5ffbdfc`, porque `pnpm deploy:package` não foi rodado para o commit novo. Conferido de fora:
+   `/fauvovet/configuracoes/medicamentos` → 404. **Já corrigido:** o pacote do commit atual foi gerado e copiado para
+   `C:\fauvovet-deploy`, e `pnpm deploy:copiar` agora recusa pacote de commit anterior (`--pacote-antigo` só para rollback).
+2. Proprietário: abrir `docs/changes/2026-10-21-prescricao-estruturada.html`, **seção 7**, começando pelo **passo 2**
+   (backup no painel). Antes de enviar, conferir que a 1ª linha de `C:\fauvovet-deploy\LEIA-ME.txt` é o commit atual
+   (`git log --oneline -1`). Depois de publicar: `diagnostico` deve mostrar `pending_migrations: 1` → `migrar` →
+   `otimizar` → apagar `bootstrap/cache/config.php` e `routes-v7.php`. Conferência rápida sem login:
+   `curl -s -o /dev/null -w "%{http_code}" http://dradeboragaldino.com.br/fauvovet/configuracoes/medicamentos` → **302**.
+   Em seguida, seção 5 com a demonstração (Atualizar → v7).
+3. Se a sessão começar com um relato de problema na publicação: rodar o `curl` acima. 404 = código ou cache de rotas
+   antigo; 500 = migração pendente (`diagnostico`).
+4. Próximo incremento de desenvolvimento: **recuperação de senha + MFA do titular** (pré-requisito para dados reais;
+   exige e-mail transacional — sem provedor configurado, envio em modo de desenvolvimento rotulado). Entrada:
+   `app/Http/Controllers/Auth/LoginController.php`, `app/Models/User.php`. Depois: **internação** (boxes, prescrição
+   por horário reaproveitando `Medication`/`DoseCalculator`, execução, alta). Lembrar: `DemoDataService::VERSION` → 8
+   e seção de confirmação no guia.
 
 ## Histórico de incrementos
 

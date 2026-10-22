@@ -5,6 +5,7 @@
 //   --primeira-instalacao  cria também app-fauvovet/.env a partir do modelo, para você preencher no Bloco de Notas.
 // Outra pasta: DEPLOY_COPY_DIR=/caminho pnpm deploy:copiar
 import { cpSync, copyFileSync, existsSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { join, relative } from 'node:path';
 import { ROOT, log } from './lib.mjs';
 
@@ -24,6 +25,15 @@ const source = join(deployDir, packages[0].n);
 if (packages[0].n.endsWith('-modificado')) {
   console.error(
     `O pacote mais recente (${packages[0].n}) tem alterações não commitadas. Faça commit e rode pnpm deploy:package de novo.`,
+  );
+  process.exit(1);
+}
+// Pacote de um commit anterior = reenviar a versão que já está no servidor (aconteceu em 21/10). Recusa.
+const head = execFileSync('git', ['rev-parse', '--short=7', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+if (packages[0].n !== `fauvovet-${head}` && !process.argv.includes('--pacote-antigo')) {
+  console.error(
+    `O pacote mais recente (${packages[0].n}) NÃO é do commit atual (${head}). Rode antes: pnpm deploy:package\n` +
+      '(para copiar mesmo assim um pacote antigo, ex.: rollback, use: pnpm deploy:copiar --pacote-antigo)',
   );
   process.exit(1);
 }

@@ -120,6 +120,12 @@ pnpm verify --e2e</code></pre>
 
     <section><h2>7. Publicação na Locaweb / FileZilla</h2>
       <p>Se a última publicação foi a da navegação, o pacote leva <strong>1 migração nova</strong>.</p>
+      <div class="note"><p><strong>Correção de 22/10: a 1ª tentativa de publicar não mudou nada.</strong> O pacote para este commit não tinha sido gerado. O <code>pnpm deploy:copiar</code> copiou o último pacote existente (<code>5ffbdfc</code>, da navegação), e o FileZilla reenviou a versão que já estava no ar. A conferência de fora confirmou: <code>/fauvovet/configuracoes/medicamentos</code> respondia 404, e <code>/fauvovet/configuracoes</code>, 302.</p>
+      <ul>
+        <li><strong>Já resolvido:</strong> o pacote novo foi gerado e copiado para <code>C:\fauvovet-deploy</code>. Você pode pular o passo 1 e começar pelo passo 2.</li>
+        <li><strong>Confira antes de enviar:</strong> a 1ª linha de <code>C:\fauvovet-deploy\LEIA-ME.txt</code> deve mostrar o commit atual (<code>git log --oneline -1</code>), não <code>5ffbdfc</code>. Também deve existir <code>app-fauvovet\database\migrations\2026_10_21_000002_create_prescription_tables.php</code>.</li>
+        <li><strong>Proteção nova:</strong> o <code>pnpm deploy:copiar</code> agora <strong>recusa</strong> um pacote de commit anterior (“NÃO é do commit atual… Rode antes: pnpm deploy:package”). Para um rollback intencional, use <code>pnpm deploy:copiar --pacote-antigo</code>.</li>
+      </ul></div>
       <ol>
         <li><strong>Terminal:</strong> <code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm bootstrap</code> → <code>pnpm db:start</code> → <code>pnpm verify --e2e</code> → <code>pnpm deploy:package</code> → <code>pnpm deploy:copiar</code>.</li>
         <li><strong>Painel Locaweb:</strong> faça o backup do banco.</li>
@@ -145,6 +151,7 @@ pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet otimizar      # tudo
 
     <section><h2>9. Troubleshooting</h2>
       <table><thead><tr><th>Sintoma</th><th>Causa e solução</th></tr></thead><tbody>
+        <tr><td>Publiquei e nada mudou</td><td>O pacote enviado era antigo. Confira a 1ª linha de <code>C:\fauvovet-deploy\LEIA-ME.txt</code>: tem que ser o commit atual. Teste de fora, sem login: <code>curl -s -o /dev/null -w "%{http_code}" http://dradeboragaldino.com.br/fauvovet/configuracoes/medicamentos</code> deve dar <strong>302</strong> (vai para o login). <strong>404</strong> significa código antigo ou cache de rotas antigo.</td></tr>
         <tr><td>“Catálogo de medicamentos” ou “Nova receita” dá 404 depois de publicar</td><td>Cache de rotas antigo. Apague <code>bootstrap/cache/routes-v7.php</code>, ou a migração não rodou (<code>diagnostico</code> mostra <code>pending_migrations</code>).</td></tr>
         <tr><td>Não aparece “Nova receita”</td><td>Só quem assina receitas vê o botão (papel veterinário). O titular sem papel de veterinário vê o catálogo, mas não emite.</td></tr>
         <tr><td>“Informe o peso do paciente para calcular a dose”</td><td>O paciente não tem peso registrado. Preencha “Peso usado no cálculo” ou escreva a dose.</td></tr>
