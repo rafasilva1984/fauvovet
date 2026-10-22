@@ -9,7 +9,11 @@ use App\Models\Attachment;
 use App\Models\ExamRequest;
 use App\Models\ExamResultValue;
 use App\Models\ExamType;
+use App\Models\Medication;
 use App\Models\Membership;
+use App\Models\Patient;
+use App\Models\Tenant;
+use App\Models\TenantTheme;
 use App\Models\Unit;
 use App\Models\User;
 use App\Models\Vaccine;
@@ -38,9 +42,29 @@ final class DemoDataService
      * para a tela avisar "demonstração desatualizada" e oferecer "Atualizar" (remover + carregar).
      * 1 = 18/10 (base) · 2 = 19/10 (busca em texto livre) · 3 = 19/10 (anexos com texto + correções da busca) ·
      * 4 = 20/10 (sinônimos, pesquisa salva, modelo importado e exames) · 5 = 21/10 (fundos de documento e exames
-     * estruturados com série histórica) · 6 = 18/10 (navegação: um prontuário em rascunho para o painel).
+     * estruturados com série histórica) · 6 = 18/10 (navegação: um prontuário em rascunho para o painel) ·
+     * 7 = 21/10 (prescrição estruturada: catálogo de medicamentos e duas receitas em uso).
      */
-    public const VERSION = 6;
+    public const VERSION = 7;
+
+    /**
+     * v7: catálogo de medicamentos com valores FICTÍCIOS (não usar como referência clínica):
+     * [nome, princípio ativo, classe, forma, mg/unidade ou mg/mL, dose usual, mín., máx. (mg/kg), via, frequência, dias, espécies, controlado].
+     */
+    private const MEDICATIONS = [
+        ['Amoxicilina (demo)', 'amoxicilina', 'Penicilinas (betalactâmicos)', 'tablet', 250, 12.5, 10, 20, 'Oral', 'A cada 12 horas', 7, ['canine', 'feline'], false],
+        ['Cefalexina (demo)', 'cefalexina', 'Cefalosporinas', 'tablet', 500, 22, 15, 30, 'Oral', 'A cada 12 horas', 10, ['canine', 'feline'], false],
+        ['Meloxicam suspensão (demo)', 'meloxicam', 'Anti-inflamatório não esteroidal', 'suspension', 0.5, 0.1, 0.05, 0.2, 'Oral', 'A cada 24 horas', 3, ['canine'], false],
+        ['Tramadol (demo)', 'tramadol', 'Opioides', 'tablet', 50, 2, 1, 4, 'Oral', 'A cada 8 horas', 5, ['canine', 'feline'], true],
+        ['Pimobendan (demo)', 'pimobendan', 'Inodilatador', 'capsule', 1.25, 0.25, 0.2, 0.3, 'Oral', 'A cada 12 horas', null, ['canine'], false],
+        ['Colírio lubrificante (demo)', 'carmelose', 'Lubrificante ocular', 'ophthalmic', null, null, null, null, 'Oftálmica', 'A cada 8 horas', 15, [], false],
+    ];
+
+    /** v7: receitas emitidas (PDF sobre o receituário) — [paciente, [[medicamento (índice), dose (null = calculada), instruções, uso contínuo]], orientações]. */
+    private const PRESCRIPTIONS = [
+        [7, [[4, null, 'Dar 1 hora antes da refeição.', true]], 'Manter a restrição de esforço; retorno com novo ecocardiograma em 3 meses.'],
+        [2, [[2, null, 'Dar junto com a refeição; agitar antes de usar.', false], [5, '1 gota em cada olho', null, false]], 'Repouso por 3 dias. Em caso de vômito ou fezes escuras, suspender e ligar para a clínica.'],
+    ];
 
     /** v6: rascunho aberto hoje e ainda não assinado — [paciente, queixa]. Aparece no painel em "rascunho". */
     private const DRAFT = [9, 'Coceira nas orelhas há 3 dias (rascunho de demonstração, ainda não assinado).'];
@@ -389,6 +413,7 @@ final class DemoDataService
                 $this->exams($userId, $tz);
                 $this->examValues($userId);
                 $written = [...$written, ...$this->backgrounds($userId)];
+                $written = [...$written, ...$this->prescriptions($userId, $membership)];
                 // Busca clínica: os pacientes demo já entram no índice.
                 foreach (array_keys(self::PATIENTS) as $i) {
                     $this->search->reindexPatient($this->id('PT', $i + 1));
@@ -545,6 +570,73 @@ final class DemoDataService
             $bg = $service->store('prescription', $docx, ['mime' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'extension' => 'docx'],
                 'receituario-demonstracao.docx', $actor, $this->id('BG', 2));
             $written = [...$written, $bg->source_path, $bg->render_path];
+        }
+
+        return $written;
+    }
+
+    /**
+     * Catálogo de medicamentos demo e receitas emitidas pelo mesmo caminho do sistema (plano, texto, PDF sobre o
+     * receituário), gravadas direto porque quem carrega a demonstração é o titular, que não assina receitas.
+     *
+     * @return list<string> arquivos gravados
+     */
+    private function prescriptions(string $userId, string $membership): array
+    {
+        $tenant = $this->context->requireId();
+        $now = now();
+        foreach (self::MEDICATIONS as $i => [$name, $ingredient, $class, $form, $conc, $dose, $min, $max, $route, $frequency, $days, $species, $controlled]) {
+            if (Medication::query()->where('name', $name)->exists()) {
+                continue; // a clínica já tem um medicamento com este nome
+            }
+            DB::table('medications')->insert(['id' => $this->id('MD', $i + 1), 'tenant_id' => $tenant, 'name' => $name, 'active_ingredient' => $ingredient,
+                'drug_class' => $class, 'form' => $form, 'concentration_mg' => $conc, 'dose_mg_kg' => $dose, 'dose_min_mg_kg' => $min, 'dose_max_mg_kg' => $max,
+                'route' => $route, 'frequency' => $frequency, 'duration_days' => $days, 'species' => json_encode($species), 'controlled' => $controlled,
+                'notes' => 'Valores fictícios de demonstração — não usar como referência clínica.', 'active' => true, 'updated_by' => $userId,
+                'created_at' => $now, 'updated_at' => $now]);
+        }
+        $service = app(PrescriptionService::class);
+        $documents = app(DocumentService::class);
+        $issuer = User::query()->findOrFail($userId);
+        $written = [];
+        foreach (self::PRESCRIPTIONS as $n => [$p, $lines, $guidance]) {
+            $patient = Patient::query()->findOrFail($this->id('PT', $p + 1));
+            $weight = $service->latestWeight($patient);
+            $rows = array_map(fn ($l) => ['medication_id' => $this->id('MD', $l[0] + 1), 'dose_text' => $l[1], 'instructions' => $l[2], 'continuous' => $l[3]], $lines);
+            $plan = $service->plan($patient, $rows, $weight);
+            if ($plan['errors'] !== [] || count($plan['items']) !== count($rows)) {
+                continue; // catálogo demo não carregado (nome já existia na clínica)
+            }
+            $docId = $this->id('DC', $n + 1);
+            $body = $service->body($patient, $plan['items'], $weight, $guidance);
+            $code = 'DEMO'.strtoupper(Str::random(8));
+            $issuedAt = Carbon::now();
+            $bg = app(DocumentBackgroundService::class)->resolve('auto', 'prescription');
+            $pdf = $documents->renderPdf([
+                'id' => $docId, 'code' => $code, 'title' => 'Receituário', 'body' => $body, 'category' => 'prescription',
+                'issuedAt' => $issuedAt->copy()->timezone('America/Sao_Paulo'), 'tenant' => Tenant::query()->firstOrFail(), 'unit' => null, 'issuer' => $issuer,
+                'patient' => $patient, 'values' => $documents->values($patient, null, $issuer),
+                'primary' => TenantTheme::query()->value('primary_color') ?? TenantTheme::DEFAULT['primary'],
+            ], $bg);
+            $path = sprintf('documents/%s/%s/%s.pdf', $tenant, $issuedAt->format('Y'), $docId);
+            Storage::disk('local')->put($path, $pdf);
+            $written[] = $path;
+            DB::table('issued_documents')->insert(['id' => $docId, 'tenant_id' => $tenant, 'patient_id' => $patient->id, 'background_id' => $bg?->id,
+                'category' => 'prescription', 'title' => 'Receituário', 'body' => $body, 'pdf_path' => $path, 'pdf_sha256' => hash('sha256', $pdf),
+                'pdf_bytes' => strlen($pdf), 'verification_code' => $code, 'issued_by' => $userId, 'issuer_membership_id' => $membership,
+                'issued_at' => $issuedAt, 'created_at' => $issuedAt, 'updated_at' => $issuedAt]);
+            $today = Carbon::now('America/Sao_Paulo')->startOfDay();
+            foreach ($plan['items'] as $pos => $item) {
+                DB::table('prescription_items')->insert(['id' => $this->id('RX', ($n + 1) * 10 + $pos), 'tenant_id' => $tenant, 'document_id' => $docId,
+                    'patient_id' => $patient->id, 'medication_id' => $item['medication_id'], 'position' => $pos + 1, 'name' => $item['name'], 'form' => $item['form'],
+                    'presentation' => $item['presentation'], 'concentration_mg' => $item['concentration_mg'], 'weight_kg' => $item['weight_kg'],
+                    'dose_mg_kg' => $item['dose_mg_kg'], 'dose_mg' => $item['from_calc'] ? $item['calc']['dose_mg'] : null,
+                    'quantity' => $item['from_calc'] ? $item['calc']['quantity'] : null, 'dose_text' => $item['dose_text'], 'route' => $item['route'],
+                    'frequency' => $item['frequency'], 'duration_days' => $item['duration_days'], 'continuous' => $item['continuous'],
+                    'instructions' => $item['instructions'], 'controlled' => $item['controlled'], 'starts_on' => $today->toDateString(),
+                    'ends_on' => $item['duration_days'] ? $today->copy()->addDays($item['duration_days'] - 1)->toDateString() : null,
+                    'created_by' => $userId, 'created_at' => $issuedAt]);
+            }
         }
 
         return $written;
@@ -714,7 +806,7 @@ final class DemoDataService
                     ...$t('issued_documents')->whereIn('patient_id', $patients)->pluck('pdf_path')->all(),
                     ...$t('attachments')->whereIn('patient_id', $patients)->pluck('storage_path')->all(),
                 ];
-                foreach (['clinical_search_documents', 'exam_result_values', 'exam_requests', 'vaccinations', 'issued_documents', 'attachments', 'patient_weights', 'patient_alerts', 'encounter_diagnoses'] as $table) {
+                foreach (['clinical_search_documents', 'exam_result_values', 'exam_requests', 'vaccinations', 'prescription_items', 'issued_documents', 'attachments', 'patient_weights', 'patient_alerts', 'encounter_diagnoses'] as $table) {
                     $t($table)->whereIn('patient_id', $patients)->delete();
                 }
                 if ($encounters !== []) {
@@ -742,6 +834,14 @@ final class DemoDataService
                 }
             }
             $demo('saved_searches')->delete();
+            // Medicamentos demo: apaga, a não ser que uma receita de paciente real o use — aí só desativa.
+            foreach ($demo('medications')->pluck('id') as $med) {
+                if ($t('prescription_items')->where('medication_id', $med)->exists()) {
+                    $t('medications')->where('id', $med)->update(['active' => false]);
+                } else {
+                    $t('medications')->where('id', $med)->delete();
+                }
+            }
             // Modelo importado demo: apaga (com o original), a não ser que um documento de paciente real o use — aí só desativa.
             foreach ($demo('document_templates')->get(['id', 'source_path']) as $tpl) {
                 if ($t('issued_documents')->where('template_id', $tpl->id)->exists()) {

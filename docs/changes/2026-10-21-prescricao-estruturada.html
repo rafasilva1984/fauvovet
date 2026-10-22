@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FauvoVet — Prescrição estruturada</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #1a2935; background: #f4f7f8; line-height: 1.65; }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 20px 80px; }
+    header { border-radius: 20px; padding: 32px; color: white; background: linear-gradient(120deg, #0b4652, #1a7375); }
+    header p { color: #e1f5f0; margin-bottom: 0; }
+    h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.2; margin: 0; }
+    h2 { font-size: 1.2rem; margin: 0 0 12px; }
+    section { margin-top: 20px; background: #fff; padding: 24px; border: 1px solid #dee7e8; border-radius: 14px; }
+    p, li { overflow-wrap: anywhere; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    pre { overflow-x: auto; border-radius: 8px; padding: 14px; color: #e9fbff; background: #172b32; }
+    .tag { display: inline-block; font-size: 0.8rem; font-weight: 700; border: 1px solid #f5cf83; background: #fff8e4; color: #7a4b12; border-radius: 30px; padding: 3px 10px; }
+    .note { border-left: 4px solid #338b96; padding-left: 12px; }
+    .todo { color: #9e3d26; font-weight: 650; }
+    table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+    th, td { padding: 10px; border-bottom: 1px solid #e0e7e8; text-align: left; }
+    small { color: #52646d; }
+    figure { margin: 16px 0; } figure img { width: 100%; height: auto; border: 1px solid #dee7e8; border-radius: 10px; }
+    figcaption { font-size: .85rem; color: #52646d; margin-top: 6px; }
+    .shots { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); align-items: start; }
+    .v-ok { color: #1d6b3a; font-weight: 700; } .v-mov { color: #8a5a00; font-weight: 700; } .v-fix { color: #9e3d26; font-weight: 700; }
+    td { vertical-align: top; font-size: .93rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="tag">IMPLEMENTADO · TESTADO LOCALMENTE · AINDA NÃO PUBLICADO</span>
+      <h1>FauvoVet — Prescrição estruturada (receita com dose pelo peso)</h1>
+      <p>ID: <strong>2026-10-21-prescricao-estruturada</strong> · Data: <strong>21–22/10/2026</strong> · Módulo: <strong>prontuário, documentos, catálogo de medicamentos (Fase 3)</strong> · Estado: <strong>IMPLEMENTADO E TESTADO LOCALMENTE</strong> · Decisão: <strong>ADR-022</strong></p>
+    </header>
+
+    <section><h2>1. Objetivo e contexto</h2>
+      <p>Antes, a receita era um texto com lacunas (“[Dose] — via [via]”) preenchido à mão. Agora o veterinário monta a receita <strong>item a item</strong>. O sistema calcula a quantidade pelo peso, mostra a dose efetiva depois do arredondamento e avisa sobre alergia registrada, dose fora da faixa da clínica, espécie e medicamento controlado. A receita sai em PDF sobre o receituário da clínica, e os medicamentos ficam registrados como “em uso” na ficha do paciente.</p>
+      <p class="note">O sistema faz a <strong>conta</strong> e mostra <strong>avisos</strong>. Ele não sugere tratamento nem bloqueia a prescrição: quem decide e assina é o médico-veterinário. Nenhum medicamento vem pré-cadastrado, porque doses e faixas são definidas pela clínica.</p>
+    </section>
+
+    <section><h2>2. O que mudou</h2>
+      <ul>
+        <li><strong>Configurações › Catálogo de medicamentos</strong> (<code>/configuracoes/medicamentos</code>, titular e veterinário). Cada medicamento tem nome, princípio ativo, classe, forma, concentração (mg por comprimido/cápsula ou mg/mL), dose usual e faixa mínima/máxima em mg/kg, via, frequência, duração, espécies e a marcação “controle especial”. Medicamentos são desativados, nunca apagados.</li>
+        <li><strong>Nova receita</strong> (<code>/pacientes/{id}/receitas/nova</code>), aberta pela ficha (aba Documentos ou cartão “Medicamentos em uso”) ou pelo atendimento (botão “Receita”). Só quem assina (veterinário com CRMV) emite.
+          <ul>
+            <li>O peso vem do registro mais recente e pode ser ajustado.</li>
+            <li>Cada linha pode vir do catálogo ou ser digitada (sem cálculo pelo peso).</li>
+            <li>“Calcular e revisar” não grava nada: preenche dose, via, frequência e duração do catálogo, mostra a conta e a prévia do texto, e acrescenta uma linha.</li>
+            <li>A dose escrita pelo veterinário prevalece. A dose preenchida pelo sistema é recalculada se o peso mudar.</li>
+            <li>Arredondamento: ¼ de comprimido, 1 cápsula, 0,1 mL de líquido oral, 0,05 mL de gotas e 0,01 mL de injetável.</li>
+            <li>Com qualquer aviso, emitir exige marcar “Revisei os avisos”.</li>
+          </ul></li>
+        <li><strong>Documento emitido:</strong> categoria Receita, PDF sobre o receituário (ou o fundo escolhido), texto agrupado por via (“VIA ORAL”, “VIA TÓPICA”), hash e código de verificação. A tela do documento lista os medicamentos prescritos com a conta gravada. Os itens não podem ser alterados: para corrigir, anule a receita e emita outra. Receita anulada sai de “em uso”.</li>
+        <li><strong>Ficha do paciente:</strong> o cartão <strong>Medicamentos em uso</strong> fica na aba Resumo e mostra uso contínuo e tratamentos ainda dentro da duração.</li>
+        <li><strong>Busca clínica:</strong> o texto da receita é indexado, então buscar pelo nome do medicamento encontra o paciente.</li>
+        <li><strong>Arquivos:</strong>
+          <ul>
+            <li>Lógica: <code>app/Clinical/DoseCalculator.php</code>, <code>app/Services/PrescriptionService.php</code>, <code>app/Http/Controllers/PrescriptionController.php</code>, <code>MedicationController.php</code>.</li>
+            <li>Modelos: <code>app/Models/Medication.php</code>, <code>PrescriptionItem.php</code>.</li>
+            <li>Telas: <code>resources/views/prescriptions/*</code>.</li>
+            <li>Ajustes: rotas, <code>Navigation</code>, <code>Roles</code> (permissão <code>medications:configure</code>), firewall de clínicas e os componentes <code>x-select</code>/<code>x-textarea</code>, que passaram a ler erros e valores antigos de campos em lista, como <code>rows[0][route]</code>.</li>
+          </ul></li>
+        <li><strong>Migração:</strong> <code>2026_10_21_000002_create_prescription_tables</code> (tabelas <code>medications</code> e <code>prescription_items</code>, com FKs compostas por clínica). Não há dependências novas.</li>
+        <li><strong>Demonstração v7:</strong> 6 medicamentos fictícios (um de controle especial) e 2 receitas em uso, do Toby e da Pipoca.</li>
+        <li><strong>Organização:</strong> o guia da navegação, que estava com data futura (22/10), foi renomeado para <code>2026-10-21-navegacao-reorganizada.html</code>.</li>
+      </ul>
+    </section>
+
+    <section><h2>3. Pré-requisitos (WSL2 e Git Bash)</h2><p>Os mesmos das entregas anteriores: PHP 8.3+, Node 24 e pnpm do projeto, MySQL local via <code>pnpm db:start</code>, portas 8000 (app) e 33079 (MySQL). Nenhuma variável de ambiente nova. Comandos testados no WSL2. No Git Bash valem os mesmos comandos <code>pnpm</code>, que são scripts Node portáveis.</p></section>
+
+    <section><h2>4. Passo a passo para aplicar a mudança</h2>
+<pre><code>git pull --ff-only
+pnpm bootstrap
+pnpm db:start
+pnpm db:migrate     # aplica 2026_10_21_000002_create_prescription_tables
+pnpm run build
+pnpm dev</code></pre>
+      <p>Abra <code>http://127.0.0.1:8000/fauvovet/</code> e entre como veterinário. Para a sua clínica, cadastre os medicamentos em Configurações › Catálogo de medicamentos com as doses e faixas que a clínica usa.</p></section>
+
+    <section><h2>5. Como testar</h2>
+<pre><code>node scripts/php.mjs vendor/bin/phpunit tests/Unit/DoseCalculatorTest.php tests/Feature/PrescriptionTest.php
+npx playwright test e2e/prescriptions.spec.ts
+pnpm verify --e2e</code></pre>
+      <ol>
+        <li><strong>Cálculo:</strong> no catálogo, cadastre um comprimido de 250 mg com dose usual de 12,5 mg/kg e faixa de 10 a 20. Abra a receita de um cão de 28,15 kg, escolha o medicamento e clique em “Calcular e revisar”. Deve aparecer “12,5 mg/kg × 28,15 kg = 351,88 mg → <strong>1 ½ comprimido (375 mg)</strong> · dose efetiva 13,32 mg/kg”.</li>
+        <li><strong>Peso:</strong> troque o peso para 40 e recalcule. A dose vira “2 comprimidos (500 mg)”. Escreva a dose à mão (“1 comprimido”): ela prevalece, e o aviso “A dose escrita acima prevalece sobre o cálculo” aparece.</li>
+        <li><strong>Avisos:</strong> no catálogo, ponha a classe “Penicilinas” e prescreva para um paciente com “Alergia a penicilina”. O aviso aparece e “Emitir” só funciona marcando “Revisei os avisos”. Testes equivalentes: dose de 6 mg/kg com faixa de 1 a 4, e medicamento marcado como controle especial.</li>
+        <li><strong>Emitir:</strong> confira o PDF sobre o receituário, a lista “Medicamentos prescritos” e o cartão “Medicamentos em uso” na ficha. Anule a receita: o medicamento sai de “em uso”.</li>
+        <li><strong>Falhas esperadas:</strong>
+          <ul>
+            <li>Linha sem dose, via ou frequência gera erro na própria linha.</li>
+            <li>Medicamento do catálogo sem peso cadastrado pede o peso.</li>
+            <li>A recepção e o assistente clínico recebem 403 na receita, e a recepção também no catálogo.</li>
+            <li>Na clínica B, o catálogo, a receita e o atendimento da clínica A respondem 404, inclusive com IDs válidos no formulário.</li>
+          </ul></li>
+      </ol>
+      <h3>Confirmar o funcionamento com os dados de demonstração</h3>
+      <ol>
+        <li>Como titular, abra Configurações › Dados de demonstração. Deve aparecer o aviso de demonstração desatualizada (versão 6). Use <strong>Atualizar demonstração</strong>.</li>
+        <li><strong>Configurações › Catálogo de medicamentos:</strong> 6 itens “(demo)”. O Tramadol tem a etiqueta <em>Controle especial</em>, e a faixa aparece em cada linha. Os valores são fictícios.</li>
+        <li><strong>Pacientes › Toby › Resumo:</strong> “Medicamentos em uso” mostra <strong>Pimobendan (demo)</strong>, “1 cápsula (1,25 mg)”, uso contínuo.</li>
+        <li><strong>Pacientes › Pipoca:</strong> mostra <strong>Meloxicam suspensão (demo)</strong>, “2,5 mL (1,25 mg)”, até daqui a 3 dias, e o <strong>Colírio lubrificante (demo)</strong>, “1 gota em cada olho”. Abra a receita: a lista mostra “0,1 mg/kg × 12,3 kg”, e “Abrir PDF” mostra o texto sobre o receituário fictício.</li>
+        <li>Entre como <strong>veterinário</strong> (o titular não assina receitas). Abra Pacientes › Bento › Documentos › <strong>Nova receita</strong>. O alerta “Alergias registradas: Alergia a penicilina — demonstração” fica no topo. Escolha <strong>Amoxicilina (demo)</strong> e clique em “Calcular e revisar”. O resultado deve ser “1 ½ comprimido (375 mg)” (30,4 kg) e o aviso <em>“o paciente tem alergia registrada”</em>, porque a classe é penicilinas.</li>
+        <li><strong>Busca clínica:</strong> buscar “pimobendan” encontra o Toby, com o trecho da receita.</li>
+        <li>Na produção, depois de publicar, repita os passos 1 a 6 em <code>/fauvovet</code>.</li>
+      </ol></section>
+
+    <section><h2>6. Performance e usabilidade</h2>
+      <table><thead><tr><th>Medida (servidor local, <code>pnpm perf:check</code>, 50 iterações)</th><th>Resultado</th></tr></thead><tbody>
+        <tr><td><code>GET /configuracoes/medicamentos</code></td><td>p50 31,9 ms · p95 36,6 ms · p99 38,9 ms</td></tr>
+        <tr><td><code>GET /pacientes/{id}</code> (ficha com prontuário, agora com “Medicamentos em uso”)</td><td>p50 77,2 ms · p95 89 ms · p99 93 ms</td></tr>
+        <tr><td>Fluxo E2E completo (cadastrar medicamento → calcular → emitir → anular)</td><td>≈ 5 s por viewport (desktop e Pixel 7)</td></tr>
+      </tbody></table>
+      <p>“Medicamentos em uso” é 1 consulta filtrada por clínica e paciente, usando o índice <code>(tenant_id, patient_id, starts_on)</code>. O cálculo roda no servidor, sem JavaScript novo, e o tamanho do bundle não mudou. No celular, a tela da receita passou no axe (WCAG 2.2 AA) e na checagem de “conteúdo além da borda”. Cada linha empilha os campos em 2 colunas. A ficha estava em 63 ms de p95 na entrega do prontuário; o aumento até 89 ms acumula as entregas seguintes (vacinas, exames, abas), não só esta. Não há medição na Locaweb.</p></section>
+
+    <section><h2>7. Publicação na Locaweb / FileZilla</h2>
+      <p>Se a última publicação foi a da navegação, o pacote leva <strong>1 migração nova</strong>.</p>
+      <ol>
+        <li><strong>Terminal:</strong> <code>cd ~/code/fauvovet</code> → <code>git pull --ff-only</code> → <code>pnpm bootstrap</code> → <code>pnpm db:start</code> → <code>pnpm verify --e2e</code> → <code>pnpm deploy:package</code> → <code>pnpm deploy:copiar</code>.</li>
+        <li><strong>Painel Locaweb:</strong> faça o backup do banco.</li>
+        <li><strong>Terminal:</strong> <code>pnpm deploy:token</code>.</li>
+        <li><strong>FileZilla (SFTP/FTPS):</strong> no <code>.env</code> do servidor, <code>DEPLOY_TOOLS_ENABLED=true</code> e o token novo. Envie o arquivo e apague <code>bootstrap/cache/config.php</code>.</li>
+        <li><strong>FileZilla:</strong> envie <code>app-fauvovet</code> (tudo exceto <code>storage</code>) e <code>public_html/fauvovet</code>, com <em>Sobrescrever</em>.</li>
+        <li><strong>Terminal</strong> (use <code>http://</code> enquanto o SSL do domínio não estiver ativo):
+<pre><code>pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet diagnostico   # pending_migrations: 1
+pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet migrar        # exit_code: 0
+pnpm deploy:remote https://dradeboragaldino.com.br/fauvovet otimizar      # tudo 0</code></pre></li>
+        <li><strong>FileZilla:</strong> volte <code>DEPLOY_TOOLS_ENABLED=false</code>, envie o arquivo e apague <code>bootstrap/cache/config.php</code> e <code>bootstrap/cache/routes-v7.php</code> (há rotas novas).</li>
+        <li><strong>Terminal:</strong> <code>SMOKE_URL=https://dradeboragaldino.com.br/fauvovet pnpm smoke</code>.</li>
+        <li><strong>Navegador:</strong> seção 5, “Confirmar o funcionamento com os dados de demonstração”.</li>
+      </ol>
+      <p class="note">Sem HTTPS válido, só dados fictícios. Antes do primeiro paciente real: remova a demonstração (os medicamentos e as receitas demo saem junto) e volte <code>FAUVOVET_DEMO_DATA=false</code>.</p></section>
+
+    <section><h2>8. Backup e rollback</h2>
+      <ul>
+        <li><strong>Código:</strong> reenvie o pacote anterior (<code>.deploy/</code>) e rode <em>otimizar</em>. As tabelas novas ficam sem uso. Receitas emitidas continuam como documentos com PDF, porque o documento não depende das tabelas novas para abrir.</li>
+        <li><strong>Banco:</strong> restaure o backup do passo 2. Catálogo e receitas criados depois somem, e os PDFs dessas receitas em <code>storage/app/private/documents</code> podem ser apagados.</li>
+        <li><strong>Local:</strong> <code>git revert</code> e <code>node scripts/php.mjs artisan migrate:rollback --step=1</code> (só em desenvolvimento).</li>
+      </ul></section>
+
+    <section><h2>9. Troubleshooting</h2>
+      <table><thead><tr><th>Sintoma</th><th>Causa e solução</th></tr></thead><tbody>
+        <tr><td>“Catálogo de medicamentos” ou “Nova receita” dá 404 depois de publicar</td><td>Cache de rotas antigo. Apague <code>bootstrap/cache/routes-v7.php</code>, ou a migração não rodou (<code>diagnostico</code> mostra <code>pending_migrations</code>).</td></tr>
+        <tr><td>Não aparece “Nova receita”</td><td>Só quem assina receitas vê o botão (papel veterinário). O titular sem papel de veterinário vê o catálogo, mas não emite.</td></tr>
+        <tr><td>“Informe o peso do paciente para calcular a dose”</td><td>O paciente não tem peso registrado. Preencha “Peso usado no cálculo” ou escreva a dose.</td></tr>
+        <tr><td>A conta não aparece para um medicamento</td><td>Medicamento digitado fora do catálogo, ou catálogo sem concentração ou dose/kg. Formas tópicas, oftálmicas e otológicas não têm cálculo de quantidade.</td></tr>
+        <tr><td>Receita de controle especial</td><td>Ainda não é emitida pelo sistema. A receita mostra um aviso e o item sai com “(controle especial)”. Use o receituário oficial em duas vias.</td></tr>
+        <tr><td>“Cadastre seu CRMV”</td><td>Abra Meu perfil e preencha o CRMV.</td></tr>
+      </tbody></table></section>
+
+    <section>
+      <h2>10. Evidências e rastreabilidade</h2>
+      <table><thead><tr><th>Validação</th><th>Status</th><th>Evidência/observação</th></tr></thead>
+      <tbody>
+        <tr><td>Lint, tipos, build, segredos, documentação, auditoria</td><td>PASS</td><td><code>pnpm verify --e2e</code>: Pint, Prettier, PHPStan nível 6, <code>composer audit</code>, docs, varredura de segredos e vite build.</td></tr>
+        <tr><td>Testes PHP</td><td>PASS</td><td>PHPUnit <strong>234/234</strong> (2.626 asserções), incluindo <code>DoseCalculatorTest</code> 5/5, <code>PrescriptionTest</code> 11/11 e <code>DemoDataTest</code> com a demonstração v7.</td></tr>
+        <tr><td>Isolamento multi-tenant</td><td>PASS</td><td><code>test_isolamento_catalogo_receita_e_atendimento_de_outra_clinica</code> (grupo <code>tenant-isolation</code>); tabelas novas no firewall (o teste de arquitetura confere); FKs compostas.</td></tr>
+        <tr><td>E2E desktop/celular</td><td>PASS</td><td>Na execução completa: 85 passaram, 1 ignorado de propósito, 2 falharam (agenda no celular). As 2 falhas aconteceram porque a meia-noite virou durante a execução (os agendamentos semeados “hoje” ficaram no dia anterior). Ao rodar <code>agenda.spec.ts</code> + <code>prescriptions.spec.ts</code> de novo: 8/8 PASS, sem retry.</td></tr>
+        <tr><td>Performance</td><td>PASS (local)</td><td>Seção 6. Locaweb: NOT RUN.</td></tr>
+        <tr><td>Publicação</td><td>NOT RUN</td><td>Cabe ao proprietário (seção 7).</td></tr>
+      </tbody></table>
+      <p class="note"><strong>Commit:</strong> registrado no PROGRESS depois do push. <strong>Rollback:</strong> seção 8. <strong>Próximo passo:</strong> publicar e conferir com a demonstração. Desenvolvimento sugerido: recuperação de senha + MFA do titular (pré-requisito para dados reais), depois internação.</p>
+    </section>
+  </main>
+</body>
+</html>

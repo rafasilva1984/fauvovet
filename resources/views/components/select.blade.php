@@ -1,8 +1,9 @@
 @props(['name', 'label', 'options' => [], 'value' => null, 'required' => false, 'hint' => null, 'placeholder' => null])
 @php
     $id = $attributes->get('id', 'f-'.str_replace(['[', ']', '.'], '-', $name));
-    $error = $errors->first($name);
-    $current = (string) old($name, $value);
+    $key = str_replace(['[', ']'], ['.', ''], $name); // "rows[0][route]" → "rows.0.route" (old/erros)
+    $error = $errors->first($key);
+    $current = (string) old($key, $value);
     $describedBy = trim(($hint && ! $error ? "{$id}-hint " : '').($error ? "{$id}-err" : ''));
 @endphp
 <div {{ $attributes->only('class')->merge(['class' => 'flex flex-col gap-1.5']) }}>

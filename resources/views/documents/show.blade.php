@@ -20,10 +20,29 @@
     @endif
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div class="flex min-w-0 flex-col gap-6">
+        @if ($document->prescriptionItems->isNotEmpty())
+            <x-card>
+                <h2 class="mb-3 flex items-center gap-2 text-lg font-bold tracking-tight"><x-icon name="pill" :size="18" class="text-link" /> Medicamentos prescritos</h2>
+                <ol class="flex flex-col gap-2" data-testid="rx-items">
+                    @foreach ($document->prescriptionItems as $it)
+                        <li class="rounded-xl border border-line px-3 py-2 text-sm">
+                            <span class="font-semibold">{{ $it->position }}. {{ $it->name }}</span>@if ($it->presentation)<span class="text-muted"> — {{ $it->presentation }}</span>@endif
+                            @if ($it->controlled) <x-badge tone="warning">Controle especial</x-badge>@endif
+                            <span class="block">{{ $it->dose_text }} · via {{ mb_strtolower($it->route) }} · {{ mb_strtolower($it->frequency) }}{{ $it->continuous ? ' · uso contínuo' : ($it->duration_days ? ' · por '.$it->duration_days.' '.($it->duration_days === 1 ? 'dia' : 'dias') : '') }}</span>
+                            @if ($it->dose_mg_kg !== null)
+                                <span class="block text-xs text-muted">Calculado: {{ \App\Models\Medication::num((float) $it->dose_mg_kg) }} mg/kg × {{ \App\Models\Medication::num((float) $it->weight_kg, 3) }} kg → {{ \App\Clinical\DoseCalculator::mg((float) $it->dose_mg) }} por administração</span>
+                            @endif
+                        </li>
+                    @endforeach
+                </ol>
+            </x-card>
+        @endif
         <x-card>
             <h2 class="mb-3 text-lg font-bold tracking-tight">Texto emitido</h2>
             <div class="whitespace-pre-line rounded-xl bg-surface-2 p-4 text-sm leading-relaxed">{{ $document->body }}</div>
         </x-card>
+        </div>
         <aside class="flex flex-col gap-4">
             <x-card>
                 <dl class="grid gap-3 text-sm">

@@ -8,6 +8,7 @@ use App\Tenancy\TenantOwned;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -77,6 +78,12 @@ class IssuedDocument extends Model implements TenantOwned
     public function issuer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'issued_by');
+    }
+
+    /** @return HasMany<PrescriptionItem, $this> */
+    public function prescriptionItems(): HasMany
+    {
+        return $this->hasMany(PrescriptionItem::class, 'document_id')->orderBy('position');
     }
 
     /** @return BelongsTo<Encounter, $this> */

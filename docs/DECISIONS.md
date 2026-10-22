@@ -340,7 +340,7 @@ modelo de outro projeto dele já operado na Locaweb (Laravel + Vite, Node só pa
   "Imprimir → Salvar como PDF"). Sem GD na hospedagem, PNG com transparência pode falhar no dompdf (o diagnóstico de
   deploy passa a mostrar `gd`).
 
-## ADR-021 — Navegação reorganizada: mapa único, Configurações agrupadas e ficha do paciente em abas (2026-10-22)
+## ADR-021 — Navegação reorganizada: mapa único, Configurações agrupadas e ficha do paciente em abas (2026-10-21)
 
 - **Contexto:** pedido do proprietário: revisão crítica de cada menu e feature, e otimização da navegação. A análise
   na clínica de demonstração encontrou: menu lateral com 18 itens (8 de configuração invisíveis numa tela de 900 px,
@@ -369,3 +369,33 @@ modelo de outro projeto dele já operado na Locaweb (Laravel + Vite, Node só pa
     códigos e tira leituras/downloads/buscas do feed (continuam na auditoria).
 - **Consequências:** mover um item de menu é uma linha em `Navigation`. As rotas não mudaram (`/unidades` etc. seguem
   válidas). Novo cache de rotas no servidor: apagar `routes-v7.php` ao publicar. Pendências de UX em `docs/IDEAS.md`.
+
+## ADR-022 — Prescrição estruturada: catálogo de medicamentos, dose pelo peso e avisos (2026-10-21)
+
+- **Contexto:** a receita era um modelo de texto com lacunas ("[Dose] — via [via]"). Sem itens estruturados não há
+  cálculo pelo peso, lista de medicamentos em uso, nem conferência contra alergias registradas; a próxima ação do
+  checkpoint indicava este incremento.
+- **Decisão:**
+  - **Catálogo da clínica** (`medications`, permissão nova `medications:configure` para titular e veterinário):
+    forma, concentração (mg por comprimido/cápsula ou mg/mL), dose usual e faixa mínima/máxima em mg/kg, via,
+    frequência, duração, espécies, classe e "controle especial". **Nada vem pré-cadastrado** (como as faixas de exame):
+    doses são responsabilidade da clínica; a demonstração usa valores marcados como fictícios.
+  - **Receita estruturada** (`/pacientes/{id}/receitas/nova`, só `clinical:sign` + CRMV): linhas do catálogo ou
+    digitadas. `App\Clinical\DoseCalculator` faz só aritmética: mg/kg × kg, quantidade arredondada à fração possível
+    (¼ comprimido, 1 cápsula, 0,1 mL de líquido oral, 0,05 mL de gotas, 0,01 mL de injetável) e **dose efetiva** após o
+    arredondamento. A dose escrita pelo veterinário prevalece; a preenchida pelo sistema é recalculada se o peso mudar
+    (campo oculto `dose_auto`). Só a dose vinda do cálculo grava peso/mg/kg/quantidade no item.
+  - **Avisos, nunca bloqueio:** alergia ativa que cita nome, princípio ativo ou classe (termos normalizados de
+    `SearchText`, sem palavras genéricas), dose efetiva fora da faixa da clínica, espécie fora do catálogo, fração
+    menor que a mínima, e controle especial. Com aviso, emitir exige marcar "revisei os avisos". O sistema não sugere
+    dose nem substitui medicamento.
+  - **Emissão** = documento `prescription` existente (PDF sobre o receituário, hash, código de verificação, anulação)
+    - `prescription_items` na mesma transação; PDF apagado se a transação falhar. Texto agrupado por via. Itens
+      imutáveis; corrigir = anular a receita e emitir outra. "Medicamentos em uso" = itens de receitas não anuladas
+      com uso contínuo ou término ≥ hoje (ficha do paciente e tela da receita). O texto entra na busca clínica pelo
+      índice de documentos.
+  - **Controle especial:** só sinalizado. O receituário de controle especial (duas vias, modelo oficial) não é
+    emitido; fica no backlog com validação regulatória.
+- **Consequências:** 1 migração (`2026_10_21_000002_create_prescription_tables`), 2 tabelas no firewall de clínicas,
+  FKs compostas. O modelo de texto "Receita simples" continua disponível para quem preferir. Pendências: receituário
+  de controle especial, interações medicamentosas (exigiria base de referência licenciada), baixa de estoque.

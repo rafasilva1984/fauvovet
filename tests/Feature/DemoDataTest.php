@@ -182,7 +182,36 @@ final class DemoDataTest extends TestCase
         $this->get('/busca?q=coceira')->assertDontSee('Sinônimos da clínica usados');
     }
 
-    /** Demonstração v6: rascunho no painel (guia 2026-10-22-navegacao-reorganizada.html, seção 5). */
+    /** Demonstração v7: catálogo de medicamentos e receitas em uso (guia 2026-10-21-prescricao-estruturada.html, seção 5). */
+    public function test_demo_v7_medicamentos_e_receitas_em_uso(): void
+    {
+        config(['fauvovet.demo_data' => true]);
+        $this->loginInto('ana', Seed::TENANT_A);
+        $this->post(self::URL)->assertSessionHasNoErrors();
+        $id = fn (string $k, int $n) => DemoDataService::idFor(Seed::TENANT_A, $k, $n);
+        $this->get('/configuracoes/medicamentos')->assertOk()->assertSee('Amoxicilina (demo)')->assertSee('Controle especial');
+        $this->get('/pacientes/'.$id('PT', 8))->assertOk()->assertSee('Medicamentos em uso')->assertSee('Pimobendan (demo)')->assertSee('1 cápsula (1,25 mg)');
+        $this->get('/pacientes/'.$id('PT', 3))->assertSee('Meloxicam suspensão (demo)')->assertSee('2,5 mL (1,25 mg)')->assertSee('1 gota em cada olho');
+        $this->get('/documentos/'.$id('DC', 2))->assertOk()->assertSee('Medicamentos prescritos')->assertSee('0,1 mg/kg × 12,3 kg');
+        $this->get('/documentos/'.$id('DC', 2).'/pdf')->assertOk()->assertHeader('Content-Type', 'application/pdf');
+        $this->get('/busca?q=pimobendan')->assertOk()->assertSee('Toby');
+        $this->post('/sair');
+
+        // Veterinário: Bento tem alergia a penicilina → aviso ao prescrever Amoxicilina (classe penicilinas).
+        $this->loginInto('bruno', Seed::TENANT_A);
+        $this->post('/pacientes/'.$id('PT', 1).'/receitas', ['action' => 'preview', 'rows' => [['medication_id' => $id('MD', 1)]]]);
+        $this->get('/pacientes/'.$id('PT', 1).'/receitas/nova')->assertSee('o paciente tem alergia registrada')->assertSee('1 ½ comprimido (375 mg)');
+        $this->post('/sair');
+
+        $this->loginInto('ana', Seed::TENANT_A);
+        $pdf = $this->sys(fn () => DB::table('issued_documents')->where('id', $id('DC', 1))->value('pdf_path'));
+        $this->post(self::URL.'/remover', ['confirm' => '1'])->assertSessionHasNoErrors();
+        $this->assertSame(0, $this->demoRows('medications', Seed::TENANT_A));
+        $this->assertSame(0, $this->sys(fn () => DB::table('prescription_items')->where('tenant_id', Seed::TENANT_A)->count()));
+        Storage::disk('local')->assertMissing((string) $pdf);
+    }
+
+    /** Demonstração v6: rascunho no painel (guia 2026-10-21-navegacao-reorganizada.html, seção 5). */
     public function test_demo_v6_rascunho_aparece_no_painel_e_na_ficha(): void
     {
         config(['fauvovet.demo_data' => true]);

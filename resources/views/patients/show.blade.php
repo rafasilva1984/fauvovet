@@ -166,6 +166,15 @@
                 <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
                     @include('patients._alerts-card')
                     @include('patients._weight-card')
+                    <x-card>
+                        <div class="mb-3 flex items-center justify-between gap-2">
+                            <h3 class="flex items-center gap-2 font-bold"><x-icon name="pill" :size="18" class="text-link" /> Medicamentos em uso</h3>
+                            @if ($fvCan('clinical:sign') && $patient->status === 'active')
+                                <a href="{{ route('prescriptions.create', $patient) }}" class="inline-flex min-h-9 items-center gap-1 rounded-lg px-2 text-sm font-semibold text-link hover:bg-tint"><x-icon name="plus" :size="16" /> Nova receita</a>
+                            @endif
+                        </div>
+                        @include('prescriptions._current', ['current' => $clinical['currentMeds']])
+                    </x-card>
                 </div>
             @endif
         </section>

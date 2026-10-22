@@ -1,9 +1,14 @@
 <x-card>
     <div class="mb-3 flex items-center justify-between gap-2">
         <h2 class="font-bold">Documentos deste atendimento</h2>
-        @if ($fvCan('clinical:write'))
-            <a href="{{ route('documents.create', ['patient' => $encounter->patient_id, 'atendimento' => $encounter->id]) }}" class="inline-flex min-h-9 items-center gap-1 rounded-lg px-2 text-sm font-semibold text-link hover:bg-tint"><x-icon name="plus" :size="16" /> Emitir</a>
-        @endif
+        <div class="flex flex-wrap justify-end gap-1">
+            @if ($fvCan('clinical:sign'))
+                <a href="{{ route('prescriptions.create', ['patient' => $encounter->patient_id, 'atendimento' => $encounter->id]) }}" class="inline-flex min-h-9 items-center gap-1 rounded-lg px-2 text-sm font-semibold text-link hover:bg-tint"><x-icon name="pill" :size="16" /> Receita</a>
+            @endif
+            @if ($fvCan('clinical:write'))
+                <a href="{{ route('documents.create', ['patient' => $encounter->patient_id, 'atendimento' => $encounter->id]) }}" class="inline-flex min-h-9 items-center gap-1 rounded-lg px-2 text-sm font-semibold text-link hover:bg-tint"><x-icon name="plus" :size="16" /> Emitir</a>
+            @endif
+        </div>
     </div>
     @include('documents._list', ['documents' => $documents])
 </x-card>

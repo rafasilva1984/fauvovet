@@ -12,7 +12,7 @@ final class AuditLabels
     public const QUIET = [
         'auth.context_selected', 'encounter.viewed', 'patient.clinical_viewed', 'exam.viewed', 'document.viewed', 'document.downloaded',
         'attachment.downloaded', 'attachment.text_extracted', 'clinical.search', 'patient.clinical_search', 'clinical_case.viewed',
-        'document_template.original_downloaded', 'document_background.original_downloaded', 'vaccination.card_exported',
+        'document_template.original_downloaded', 'document_background.original_downloaded', 'vaccination.card_exported', 'prescription.issued',
     ];
 
     private const LABELS = [
@@ -57,6 +57,9 @@ final class AuditLabels
         'exam_range.saved' => 'cadastrou uma faixa de referência',
         'exam_range.removed' => 'removeu uma faixa de referência',
         'document.issued' => 'emitiu um documento',
+        'prescription.issued' => 'emitiu uma receita',
+        'medication.created' => 'cadastrou um medicamento no catálogo',
+        'medication.updated' => 'alterou um medicamento do catálogo',
         'document.voided' => 'anulou um documento',
         'document_template.created' => 'criou um modelo de documento',
         'document_template.updated' => 'alterou um modelo de documento',
@@ -80,7 +83,7 @@ final class AuditLabels
         'demo_data.removed' => 'removeu os dados de demonstração',
     ];
 
-    private const ICONS = ['vaccination' => 'syringe', 'vaccine' => 'syringe', 'encounter' => 'stethoscope', 'appointment' => 'calendar', 'appointment_type' => 'calendar',
+    private const ICONS = ['vaccination' => 'syringe', 'medication' => 'pill', 'prescription' => 'pill', 'vaccine' => 'syringe', 'encounter' => 'stethoscope', 'appointment' => 'calendar', 'appointment_type' => 'calendar',
         'patient' => 'paw', 'guardian' => 'user', 'member' => 'users', 'invitation' => 'mail', 'unit' => 'building', 'exam' => 'flask', 'exam_type' => 'flask',
         'exam_analyte' => 'flask', 'exam_range' => 'flask', 'document' => 'file-text', 'document_template' => 'copy', 'document_background' => 'palette',
         'attachment' => 'copy', 'clinical_case' => 'file-text', 'tenant' => 'sparkles', 'auth' => 'shield'];

@@ -21,6 +21,7 @@ use App\Services\ClinicalSearchService;
 use App\Services\ExamService;
 use App\Services\PatientRegistry;
 use App\Services\PatientSearch;
+use App\Services\PrescriptionService;
 use App\Services\VaccinationService;
 use App\Support\Audit;
 use App\Tenancy\TenantContext;
@@ -167,6 +168,7 @@ final class PatientController extends Controller
                 'exams' => ExamRequest::query()->where('patient_id', $patient->id)->with('type:id,name')
                     ->withCount(['values as out_of_range_count' => fn ($q) => $q->whereIn('flag', ['low', 'high'])])->orderByDesc('requested_at')->limit(30)->get(),
                 'examTypes' => $this->context->can('clinical:write') ? $this->examTypes() : collect(),
+                'currentMeds' => app(PrescriptionService::class)->current($patient),
             ];
         }
 

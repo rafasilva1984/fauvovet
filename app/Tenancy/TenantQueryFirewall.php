@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Log;
 final class TenantQueryFirewall
 {
     /** Tabelas cujas linhas pertencem a uma clínica (manter em sincronia com as migrações). */
-    public const TENANT_TABLES = ['units', 'memberships', 'membership_units', 'tenant_themes', 'audit_events', 'invitations', 'guardians', 'patients', 'guardian_patient', 'appointment_types', 'appointments', 'encounters', 'encounter_diagnoses', 'encounter_addenda', 'patient_weights', 'patient_alerts', 'document_templates', 'issued_documents', 'attachments', 'vaccines', 'vaccinations', 'clinical_cases', 'clinical_case_patients', 'clinical_search_documents', 'clinical_search_terms', 'clinical_search_status', 'clinical_search_synonyms', 'saved_searches', 'exam_types', 'exam_requests', 'document_backgrounds', 'exam_analytes', 'exam_reference_ranges', 'exam_result_values'];
+    public const TENANT_TABLES = ['units', 'memberships', 'membership_units', 'tenant_themes', 'audit_events', 'invitations', 'guardians', 'patients', 'guardian_patient', 'appointment_types', 'appointments', 'encounters', 'encounter_diagnoses', 'encounter_addenda', 'patient_weights', 'patient_alerts', 'document_templates', 'issued_documents', 'attachments', 'vaccines', 'vaccinations', 'clinical_cases', 'clinical_case_patients', 'clinical_search_documents', 'clinical_search_terms', 'clinical_search_status', 'clinical_search_synonyms', 'saved_searches', 'exam_types', 'exam_requests', 'document_backgrounds', 'exam_analytes', 'exam_reference_ranges', 'exam_result_values', 'medications', 'prescription_items'];
 
     public function __construct(private readonly TenantContext $context) {}
 

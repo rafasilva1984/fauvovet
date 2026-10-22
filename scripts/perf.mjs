@@ -80,6 +80,7 @@ try {
     'GET /agenda (semana)': ['/agenda?visao=semana', true],
     'GET /pacientes/{id} (prontuário)': ['/pacientes/01K7FV0000000000000PTB0001', true],
     'GET /atendimentos/{id}': ['/atendimentos/01K7FV0000000000000ENB0001', true],
+    'GET /configuracoes/medicamentos': ['/configuracoes/medicamentos', true],
   };
   const report = {
     date: new Date().toISOString(),

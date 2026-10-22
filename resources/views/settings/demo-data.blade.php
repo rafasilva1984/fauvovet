@@ -40,6 +40,9 @@
                     <li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('exams.index') }}">Exames: painel por situação (solicitado → revisado)</a></li>
                     <li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('document-templates.index') }}">Modelos de documento: termo de sedação importado de DOCX</a></li>
                     <li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('document-backgrounds.index') }}">Papel timbrado (PDF) e receituário (Word) fictícios</a></li>
+                    @php($demoTenant = (string) app(\App\Tenancy\TenantContext::class)->id())
+                    @if ($fvCan('medications:configure'))<li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('medications.index') }}">Catálogo de medicamentos (6 fictícios, um de controle especial)</a></li>@endif
+                    <li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('patients.show', \App\Services\DemoDataService::idFor($demoTenant, 'PT', 3)) }}">Receita estruturada em uso: Pipoca (meloxicam calculado pelo peso + colírio)</a></li>
                     <li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('exams.show', \App\Services\DemoDataService::idFor((string) app(\App\Tenancy\TenantContext::class)->id(), 'EX', 1)) }}">Exame com série histórica: creatinina do Simba em 3 exames (gráfico comparativo)</a></li>
                     <li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('vaccinations.index') }}">Vacinas atrasadas e a vencer</a></li>
                     <li><a class="font-semibold text-link underline underline-offset-4" href="{{ route('cases.index') }}">Casos científicos (série aberta, série encerrada e relato)</a></li>
@@ -49,7 +52,7 @@
                 <p class="text-sm">Nenhum dado de demonstração nesta clínica.</p>
                 <p class="text-sm text-muted">
                     Serão criados 10 responsáveis e 22 pacientes (cães, gatos, aves, jabuti, coelho, hamster e furão), 33 atendimentos
-                    finalizados em 3 anos com diagnósticos suspeitos, confirmados e descartados, adendos, 3 anexos (laudo PDF, exame DOCX e uma foto), 10 exames em todas as situações (3 com valores estruturados e série histórica), papel timbrado e receituário fictícios (só se a clínica ainda não enviou os seus), 3 grupos de sinônimos, 1 pesquisa salva, 1 modelo importado de DOCX, pesos, alertas, 15 vacinas
+                    finalizados em 3 anos com diagnósticos suspeitos, confirmados e descartados, adendos, 3 anexos (laudo PDF, exame DOCX e uma foto), 10 exames em todas as situações (3 com valores estruturados e série histórica), papel timbrado e receituário fictícios (só se a clínica ainda não enviou os seus), 6 medicamentos no catálogo e 2 receitas estruturadas em uso, 3 grupos de sinônimos, 1 pesquisa salva, 1 modelo importado de DOCX, pesos, alertas, 15 vacinas
                     (atrasadas, a vencer e em dia), 10 agendamentos nesta semana e 3 casos científicos.
                 </p>
                 <form method="POST" action="{{ route('settings.demo-data.load') }}">

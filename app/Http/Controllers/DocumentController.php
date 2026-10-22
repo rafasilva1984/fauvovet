@@ -72,7 +72,7 @@ final class DocumentController extends Controller
 
     public function show(Request $request, IssuedDocument $document): View
     {
-        $document->load(['patient', 'issuer:id,name,crmv', 'encounter:id,started_at']);
+        $document->load(['patient', 'issuer:id,name,crmv', 'encounter:id,started_at', 'prescriptionItems']);
         $this->audit->record('document.viewed', (string) $this->user($request)->id, 'document', $document->id);
 
         return view('documents.show', ['document' => $document]);

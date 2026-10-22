@@ -18,10 +18,12 @@ use App\Http\Controllers\ExamController;
 use App\Http\Controllers\ExamTypeController;
 use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\InvitationController;
+use App\Http\Controllers\MedicationController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\PatientAlertController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PostalCodeController;
+use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SavedSearchController;
 use App\Http\Controllers\SearchSynonymController;
@@ -113,6 +115,16 @@ Route::middleware('auth')->group(function () {
             Route::get('/pacientes/{patient}/documentos/novo', [DocumentController::class, 'create'])->name('documents.create');
             Route::post('/pacientes/{patient}/documentos', [DocumentController::class, 'store'])->name('documents.store');
             Route::post('/documentos/{document}/anular', [DocumentController::class, 'void'])->name('documents.void');
+            // Receita estruturada (ADR-022): emitir exige clinical:sign, verificado no controlador/serviço.
+            Route::get('/pacientes/{patient}/receitas/nova', [PrescriptionController::class, 'create'])->name('prescriptions.create');
+            Route::post('/pacientes/{patient}/receitas', [PrescriptionController::class, 'store'])->name('prescriptions.store');
+        });
+        Route::middleware('permission:medications:configure')->group(function () {
+            Route::get('/configuracoes/medicamentos', [MedicationController::class, 'index'])->name('medications.index');
+            Route::get('/configuracoes/medicamentos/novo', [MedicationController::class, 'create'])->name('medications.create');
+            Route::post('/configuracoes/medicamentos', [MedicationController::class, 'store'])->name('medications.store');
+            Route::get('/configuracoes/medicamentos/{medication}/editar', [MedicationController::class, 'edit'])->name('medications.edit');
+            Route::put('/configuracoes/medicamentos/{medication}', [MedicationController::class, 'update'])->name('medications.update');
         });
         Route::middleware('permission:documents:templates')->group(function () {
             Route::get('/configuracoes/modelos-de-documento', [DocumentTemplateController::class, 'index'])->name('document-templates.index');

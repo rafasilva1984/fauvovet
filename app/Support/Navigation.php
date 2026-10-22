@@ -16,7 +16,7 @@ final class Navigation
         'Atendimento' => [
             ['route' => 'dashboard', 'label' => 'Painel', 'icon' => 'home', 'perm' => 'tenant:read'],
             ['route' => 'agenda.index', 'label' => 'Agenda', 'icon' => 'calendar', 'perm' => 'schedule:read'],
-            ['route' => 'patients.index', 'label' => 'Pacientes', 'icon' => 'paw', 'perm' => 'patients:read', 'active' => ['patients.*', 'encounters.*', 'documents.*']],
+            ['route' => 'patients.index', 'label' => 'Pacientes', 'icon' => 'paw', 'perm' => 'patients:read', 'active' => ['patients.*', 'encounters.*', 'documents.*', 'prescriptions.*']],
             ['route' => 'guardians.index', 'label' => 'Responsáveis', 'icon' => 'users', 'perm' => 'patients:read'],
             ['route' => 'search.index', 'label' => 'Busca clínica', 'icon' => 'search', 'perm' => 'clinical:read'],
         ],
@@ -37,6 +37,7 @@ final class Navigation
         ],
         'Catálogos clínicos' => [
             ['route' => 'exam-types.index', 'label' => 'Catálogo de exames', 'icon' => 'flask', 'perm' => 'exams:configure', 'hint' => 'Exames que a clínica pede, parâmetros, unidades e faixas de referência por espécie.', 'active' => ['exam-types.*', 'exam-analytes.*', 'exam-ranges.*']],
+            ['route' => 'medications.index', 'label' => 'Catálogo de medicamentos', 'icon' => 'pill', 'perm' => 'medications:configure', 'hint' => 'Medicamentos, concentrações e doses por kg usados na receita estruturada; faixas para avisar dose fora do padrão.', 'active' => ['medications.*']],
             ['route' => 'vaccines.index', 'label' => 'Catálogo de vacinas', 'icon' => 'syringe', 'perm' => 'vaccines:configure', 'hint' => 'Vacinas, espécies, número de doses e intervalo dos reforços.', 'active' => ['vaccines.*']],
             ['route' => 'search.synonyms', 'label' => 'Sinônimos da busca', 'icon' => 'search', 'perm' => 'search:configure', 'hint' => 'Termos equivalentes para a busca clínica, como “DRC” e “doença renal crônica”.', 'active' => ['search.synonyms*']],
         ],
